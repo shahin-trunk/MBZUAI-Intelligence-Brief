@@ -1,0 +1,926 @@
+{
+  "date": "2026-04-09",
+  "gatekeeper_input": {
+    "selected": [
+      {
+        "id": "2026-04-09-s013",
+        "headline": "Anthropic's annualised revenue surpasses OpenAI at $30 billion",
+        "source": "Reuters AI",
+        "source_name": "Reuters AI",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-09",
+        "summary": "**Anthropic** ARR exceeded $30 billion — up from $1 billion in January 2025 — versus **OpenAI**'s approximately $25 billion, driven by 1,000+ enterprise customers each spending $1 million+ annually. Anthropic projects positive free cash flow by 2027; OpenAI projects $14 billion in losses for 2026 and has pushed breakeven to 2030.",
+        "raw_content": "**Anthropic** ARR exceeded $30 billion — up from $1 billion in January 2025 — versus **OpenAI**'s approximately $25 billion, driven by 1,000+ enterprise customers each spending $1 million+ annually. Anthropic projects positive free cash flow by 2027; OpenAI projects $14 billion in losses for 2026 and has pushed breakeven to 2030.\n\nThe revenue crossover is notable not just for its scale but for its composition: Anthropic's growth is 80% enterprise, characterised by high retention and expansion economics, while OpenAI's base remains more consumer-weighted. The structural cost gap — OpenAI projecting $121 billion in annual compute spend versus Anthropic's projected $30 billion by 2030 — suggests the revenue lead may widen rather than narrow as both labs scale. The comparison carries a methodology caveat: OpenAI supporters dispute the accounting equivalence of the two figures.\n\nKey facts:\n- **Anthropic** ARR exceeded $30 billion — up from $1 billion in January 2025 — versus **OpenAI**'s approximately $25 billion, driven by 1,000+ enterprise customers each spending $1 million+ annually.\n- Anthropic projects positive free cash flow by 2027; OpenAI projects $14 billion in losses for 2026 and has pushed breakeven to 2030.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.the-ai-corner.com/p/anthropic-30b-arr-passed-openai-revenue-2026",
+            "name": "The AI Corner"
+          }
+        ],
+        "entities": [
+          "**Anthropic**",
+          "**OpenAI**"
+        ],
+        "category": "",
+        "cluster": "Frontier Model Releases",
+        "composite_score": 7.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-09 for eval-fixture.",
+        "brief_section": "International Business & Technology",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "Anthropic",
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-09-s042",
+        "headline": "Fire breaks out at Abu Dhabi's Habshan gas processing facility",
+        "source": "The National",
+        "source_name": "The National",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-09",
+        "summary": "Abu Dhabi authorities responded to a fire at the Habshan gas processing facility on 8 April. Incident occurred simultaneously with the US-Iran ceasefire announcement.",
+        "raw_content": "Abu Dhabi authorities responded to a fire at the Habshan gas processing facility on 8 April. Incident occurred simultaneously with the US-Iran ceasefire announcement.\n\nThe Habshan facility is a critical node in Abu Dhabi's gas processing infrastructure. The timing — concurrent with the ceasefire announcement — leaves causation ambiguous, but the incident follows the pattern of Iranian-linked attacks on UAE energy infrastructure during the conflict. No attribution has been reported in available sources.\n\nKey facts:\n- Abu Dhabi authorities responded to a fire at the Habshan gas processing facility on 8 April.\n- Incident occurred simultaneously with the US-Iran ceasefire announcement.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**Abu Dhabi**",
+          "**Habshan**"
+        ],
+        "category": "",
+        "cluster": "Iran-Gulf Conflict — New Attacks",
+        "composite_score": 6.4,
+        "selection_rationale": "Reconstructed from production brief 2026-04-09 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "UAE",
+        "depth": "brief"
+      },
+      {
+        "id": "2026-04-09-s005",
+        "headline": "Abu Dhabi University patents AI multilingual sign language translation app",
+        "source": "Abu Dhabi Media Office",
+        "source_name": "Abu Dhabi Media Office",
+        "source_url": "https://www.mediaoffice.abudhabi/en/education/abu-dhabi-university-secures-patent-for-ai-powered-multilingual-sign-language-translation-application/",
+        "source_domain": "mediaoffice.abudhabi",
+        "date": "2026-04-09",
+        "summary": "ADU patents HearMe, an AI app enabling real-time bidirectional sign language and text translation. Supports American and French sign language systems; aligns with UAE's National Policy for People of Determination.",
+        "raw_content": "ADU patents HearMe, an AI app enabling real-time bidirectional sign language and text translation. Supports American and French sign language systems; aligns with UAE's National Policy for People of Determination.\n\nA peer Abu Dhabi institution has secured applied-AI IP in accessibility—a domain aligned with UAE national inclusion priorities. The patent reflects the growing expectation that regional universities demonstrate socially embedded AI applications, not only research output.\n\nKey facts:\n- ADU patents HearMe, an AI app enabling real-time bidirectional sign language and text translation.\n- Supports American and French sign language systems; aligns with UAE's National Policy for People of Determination.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "",
+            "name": "Middle East AI News"
+          },
+          {
+            "url": "",
+            "name": "WAM"
+          }
+        ],
+        "entities": [
+          "**Abu Dhabi University**",
+          "**HearMe**"
+        ],
+        "category": "Education",
+        "cluster": null,
+        "composite_score": 5.4,
+        "selection_rationale": "Reconstructed from production brief 2026-04-09 for eval-fixture.",
+        "brief_section": "Regional Research & Academic Events",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "Abu Dhabi University",
+        "depth": "brief"
+      },
+      {
+        "id": "2026-04-09-s034",
+        "headline": "UAE and Saudi Arabia explore low-cost Ukrainian interceptor drone",
+        "source": "Reuters Daily Briefing",
+        "source_name": "Reuters Daily Briefing",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-09",
+        "summary": "UAE and Saudi Arabia exploring a $2,500 Ukrainian-designed interceptor drone. Aim is to counter Iranian attacks while preserving US-made missile stockpiles.",
+        "raw_content": "UAE and Saudi Arabia exploring a $2,500 Ukrainian-designed interceptor drone. Aim is to counter Iranian attacks while preserving US-made missile stockpiles.\n\nThe cost asymmetry is the strategic logic: at $2,500 per unit, the Ukrainian interceptor would allow Gulf states to absorb mass drone and missile barrages without depleting expensive US-supplied air defence inventories. Exploration rather than procurement means no commitment yet, but it extends the UAE-Ukraine defence cooperation framework signed in late March into a potential volume procurement channel.\n\nKey facts:\n- UAE and Saudi Arabia exploring a $2,500 Ukrainian-designed interceptor drone.\n- Aim is to counter Iranian attacks while preserving US-made missile stockpiles.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**UAE**",
+          "**Saudi Arabia**",
+          "**Ukraine**"
+        ],
+        "category": "",
+        "cluster": null,
+        "composite_score": 5.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-09 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "UAE",
+        "depth": "brief"
+      },
+      {
+        "id": "2026-04-09-s015",
+        "headline": "Oman and Microsoft launch AI startup accelerator for ICT ventures",
+        "source": "Middle East AI News",
+        "source_name": "Middle East AI News",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-09",
+        "summary": "**Oman**'s Ministry of Transport, Communications and IT partnered with **Microsoft** to launch the Numo–Microsoft for Startups Accelerator, offering Azure credits, AI tools, and go-to-market support to Omani ICT startups. Applications close April 12; eligible startups must be Oman-registered, software-product-driven, and have received less than $10,000 in prior Azure credits.",
+        "raw_content": "**Oman**'s Ministry of Transport, Communications and IT partnered with **Microsoft** to launch the Numo–Microsoft for Startups Accelerator, offering Azure credits, AI tools, and go-to-market support to Omani ICT startups. Applications close April 12; eligible startups must be Oman-registered, software-product-driven, and have received less than $10,000 in prior Azure credits.\n\nThe programme reflects a Gulf-wide pattern of governments using hyperscaler partnerships to convert digital economy policy into startup pipeline development. Oman's selective eligibility design — excluding service businesses and educational institutions — targets companies with product scaling potential rather than broad innovation awareness. As Gulf states compete to build domestic AI startup ecosystems, these accelerator programmes function as distribution channels for cloud adoption and represent incremental competitive activity in MBZUAI's regional environment.\n\nKey facts:\n- **Oman**'s Ministry of Transport, Communications and IT partnered with **Microsoft** to launch the Numo–Microsoft for Startups Accelerator, offering Azure credits, AI tools, and go-to-market support to Omani ICT startups.\n- Applications close April 12; eligible startups must be Oman-registered, software-product-driven, and have received less than $10,000 in prior Azure credits.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.muscatdaily.com/2026/04/06/new-accelerator-programme-launched-to-boost-tech-startups/",
+            "name": "Muscat Daily"
+          }
+        ],
+        "entities": [
+          "**Oman**",
+          "**Microsoft**",
+          "**Numo**"
+        ],
+        "category": "",
+        "cluster": null,
+        "composite_score": 6.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-09 for eval-fixture.",
+        "brief_section": "Regional Research & Academic Events",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "Oman",
+        "depth": "brief"
+      },
+      {
+        "id": "2026-04-09-s001",
+        "headline": "Missile and drone attacks continue across Gulf during nominal ceasefire",
+        "source": "The National",
+        "source_name": "The National",
+        "source_url": "",
+        "source_domain": "thenationalnews.com",
+        "date": "2026-04-09",
+        "summary": "UAE air defences engaged 17 ballistic missiles and 35 drones from Iran on April 8; operations at Habshan gas complex suspended after debris fire injured two Emiratis and one Indian national. Kuwait intercepted 28 Iranian drones targeting oil installations and power stations, reporting severe material damage; Qatar intercepted 7 ballistic missiles; Bahrain reported two injuries. UAE and Kuwait had each depleted roughly 75% of Patriot interceptor stocks by late March; Bahrain an estimated 87%, per JINSA.",
+        "raw_content": "UAE air defences engaged 17 ballistic missiles and 35 drones from Iran on April 8; operations at Habshan gas complex suspended after debris fire injured two Emiratis and one Indian national. Kuwait intercepted 28 Iranian drones targeting oil installations and power stations, reporting severe material damage; Qatar intercepted 7 ballistic missiles; Bahrain reported two injuries. UAE and Kuwait had each depleted roughly 75% of Patriot interceptor stocks by late March; Bahrain an estimated 87%, per JINSA.\n\nThe truce did not hold on the ground. Iran's Defence Ministry attributed continued launches to ongoing Israeli strikes on Lebanon — a linkage Tehran built into the ceasefire's terms that neither Washington nor Jerusalem accepted. The decentralised structure of Iranian military operations means lower-echelon units continued fire while diplomatic orders filtered down. With interceptor inventories severely depleted and the Habshan complex offline, the cumulative cost to UAE critical infrastructure is now material, not incidental. The two-week negotiating window opens in Islamabad on Saturday under conditions in which none of the parties agree on what was actually agreed.\n\nKey facts:\n- UAE air defences engaged 17 ballistic missiles and 35 drones from Iran on April 8; operations at Habshan gas complex suspended after debris fire injured two Emiratis and one Indian national.\n- Kuwait intercepted 28 Iranian drones targeting oil installations and power stations, reporting severe material damage; Qatar intercepted 7 ballistic missiles; Bahrain reported two injuries.\n- UAE and Kuwait had each depleted roughly 75% of Patriot interceptor stocks by late March; Bahrain an estimated 87%, per JINSA.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.aljazeera.com/news/2026/4/8/uae-kuwait-bahrain-report-attacks-despite-iran-us-ceasefire",
+            "name": "Al Jazeera"
+          },
+          {
+            "url": "https://www.cnbc.com/2026/04/08/iran-missile-attacks-after-us-ceasefire-gulf-air-defenses.html",
+            "name": "CNBC"
+          }
+        ],
+        "entities": [
+          "**UAE**",
+          "**Iran**",
+          "**Kuwait**",
+          "**Qatar**",
+          "**Bahrain**"
+        ],
+        "category": "",
+        "cluster": "US-Iran Ceasefire & Gulf Security",
+        "composite_score": 9.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-09 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "UAE",
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-09-s004",
+        "headline": "US, Israel, and Iran announce two-week ceasefire with contradictory terms",
+        "source": "Axios AM/PM",
+        "source_name": "Axios AM/PM",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-09",
+        "summary": "US, Israel, and Iran agreed to a two-week ceasefire announced less than 90 minutes before Trump's deadline; S&P 500 rose 2.5%, Brent fell 13.3% to $94.75 on the news. Iran's parliament speaker called the deal \"unreasonable,\" accusing the US of violating three of Tehran's 10 conditions; Iran published a chart suggesting the IRGC seeded sea mines in the Strait of Hormuz during the conflict. Netanyahu stated the ceasefire does not cover Hezbollah operations in Lebanon, contradicting Pakistan, Egypt, and France; both sides say they can resume fighting rapidly.",
+        "raw_content": "US, Israel, and Iran agreed to a two-week ceasefire announced less than 90 minutes before Trump's deadline; S&P 500 rose 2.5%, Brent fell 13.3% to $94.75 on the news. Iran's parliament speaker called the deal \"unreasonable,\" accusing the US of violating three of Tehran's 10 conditions; Iran published a chart suggesting the IRGC seeded sea mines in the Strait of Hormuz during the conflict. Netanyahu stated the ceasefire does not cover Hezbollah operations in Lebanon, contradicting Pakistan, Egypt, and France; both sides say they can resume fighting rapidly.\n\nThe Soufan Center assessed the ceasefire \"hovers on the verge of collapse\" within hours of announcement. The core structural problem is that each party announced a different deal: Iran claims it may charge transit fees through Hormuz; Washington says Trump opposes that; Netanyahu excluded Lebanon unilaterally. The mine-chart publication by Iranian state media is both a pressure tactic and an explanation for why Hormuz remains functionally closed despite nominal ceasefire — ships still require Iranian coordination for passage and face undisclosed mining risk.\n\nKey facts:\n- US, Israel, and Iran agreed to a two-week ceasefire announced less than 90 minutes before Trump's deadline; S&P 500 rose 2.5%, Brent fell 13.3% to $94.75 on the news.\n- Iran's parliament speaker called the deal \"unreasonable,\" accusing the US of violating three of Tehran's 10 conditions; Iran published a chart suggesting the IRGC seeded sea mines in the Strait of Hormuz during the conflict.\n- Netanyahu stated the ceasefire does not cover Hezbollah operations in Lebanon, contradicting Pakistan, Egypt, and France; both sides say they can resume fighting rapidly.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://apnews.com/live/iran-war-israel-trump-04-08-2026",
+            "name": "AP News"
+          },
+          {
+            "url": "https://www.bbc.com/news/articles/c79j7jnnpz1o",
+            "name": "BBC"
+          },
+          {
+            "url": "https://www.military.com/daily-news/2026/04/08/us-israel-and-iran-agree-2-week-ceasefire-details-remain-unclear.html",
+            "name": "Military.com"
+          }
+        ],
+        "entities": [
+          "**Iran**",
+          "**United States**",
+          "**Israel**",
+          "**Pakistan**",
+          "**Benjamin Netanyahu**"
+        ],
+        "category": "",
+        "cluster": "US-Iran Ceasefire & Gulf Security",
+        "composite_score": 8.4,
+        "selection_rationale": "Reconstructed from production brief 2026-04-09 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "Iran",
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-09-s038",
+        "headline": "Iran submits 10-point peace proposal containing apparent non-starters",
+        "source": "The National",
+        "source_name": "The National",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-09",
+        "summary": "Trump says Iran submitted a 10-point proposal the US views as a workable negotiating basis. Proposal contains elements Washington is unlikely to accept; both sides are claiming victory.",
+        "raw_content": "Trump says Iran submitted a 10-point proposal the US views as a workable negotiating basis. Proposal contains elements Washington is unlikely to accept; both sides are claiming victory.\n\nThe gap between Trump describing the proposal as a workable basis and the proposal reportedly including Iranian Hormuz control and US military withdrawal is the central instability of the current ceasefire. Both parties claiming victory is a standard face-saving mechanism, but it means the compromise positions needed for a durable agreement remain unspoken. The Islamabad talks will reveal whether the 10-point framework is a genuine opening bid or a maximalist document designed to be negotiated down.\n\nKey facts:\n- Trump says Iran submitted a 10-point proposal the US views as a workable negotiating basis.\n- Proposal contains elements Washington is unlikely to accept; both sides are claiming victory.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**Iran**",
+          "**Trump**"
+        ],
+        "category": "",
+        "cluster": "Iran-Gulf Conflict — Ceasefire",
+        "composite_score": 6.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-09 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "Iran",
+        "depth": "brief"
+      },
+      {
+        "id": "2026-04-09-s012",
+        "headline": "Anthropic's Mythos model withheld from public release over cyberattack risks",
+        "source": "Axios AI+",
+        "source_name": "Axios AI+",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-09",
+        "summary": "**Anthropic** confirmed restricted deployment of **Claude Mythos Preview** via Project Glasswing to ~52 companies including Apple, Google, Microsoft, Nvidia, AWS, CrowdStrike, and Palo Alto Networks for defensive cybersecurity use only. Mythos can autonomously find tens of thousands of vulnerabilities across all major operating systems and browsers; Anthropic committed up to $100 million in usage credits for partners.",
+        "raw_content": "**Anthropic** confirmed restricted deployment of **Claude Mythos Preview** via Project Glasswing to ~52 companies including Apple, Google, Microsoft, Nvidia, AWS, CrowdStrike, and Palo Alto Networks for defensive cybersecurity use only. Mythos can autonomously find tens of thousands of vulnerabilities across all major operating systems and browsers; Anthropic committed up to $100 million in usage credits for partners.\n\nCovered in depth in yesterday's brief. Eight-source mainstream corroboration today — Bloomberg, WSJ, TechCrunch, Semafor — confirms this is now the dominant AI safety story in public discourse. The relevant new detail: Anthropic confirmed it is in ongoing discussions with CISA and the Center for AI Standards and Innovation, establishing a government-engagement framework for capability-restricted deployment that other labs will face pressure to replicate as model capabilities continue to advance.\n\nKey facts:\n- **Anthropic** confirmed restricted deployment of **Claude Mythos Preview** via Project Glasswing to ~52 companies including Apple, Google, Microsoft, Nvidia, AWS, CrowdStrike, and Palo Alto Networks for defensive cybersecurity use only.\n- Mythos can autonomously find tens of thousands of vulnerabilities across all major operating systems and browsers; Anthropic committed up to $100 million in usage credits for partners.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.cnbc.com/2026/04/07/anthropic-claude-mythos-ai-hackers-cyberattacks.html",
+            "name": "CNBC"
+          }
+        ],
+        "entities": [
+          "**Anthropic**",
+          "**Claude Mythos Preview**",
+          "**Project Glasswing**"
+        ],
+        "category": "",
+        "cluster": "Frontier Model Releases",
+        "composite_score": 8.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-09 for eval-fixture.",
+        "brief_section": "Model Releases & Technical Developments",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "Anthropic",
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-09-s014",
+        "headline": "Z.AI GLM-5.1 — Zhipu AI",
+        "source": "AINews (Latent Space)",
+        "source_name": "AINews (Latent Space)",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-09",
+        "summary": "**Z.AI** (Zhipu AI) released **GLM-5.1**, a 754B-parameter MoE model under MIT license, scoring 58.4 on SWE-Bench Pro — surpassing GPT-5.4 (57.7), Claude Opus 4.6 (57.3), and Gemini 3.1 Pro (54.2). The model sustains autonomous task execution for up to 8 hours and 1,700 tool-call steps; demonstrated a CUDA kernel optimisation improving throughput from 2.6× to 35.7× speedup. Weights available on Hugging Face; Zhipu raised model prices 8–17% alongside the release, signalling a shift toward monetisation after sustained investment.",
+        "raw_content": "**Z.AI** (Zhipu AI) released **GLM-5.1**, a 754B-parameter MoE model under MIT license, scoring 58.4 on SWE-Bench Pro — surpassing GPT-5.4 (57.7), Claude Opus 4.6 (57.3), and Gemini 3.1 Pro (54.2). The model sustains autonomous task execution for up to 8 hours and 1,700 tool-call steps; demonstrated a CUDA kernel optimisation improving throughput from 2.6× to 35.7× speedup. Weights available on Hugging Face; Zhipu raised model prices 8–17% alongside the release, signalling a shift toward monetisation after sustained investment.\n\nGLM-5.1 is the clearest demonstration to date that Chinese open-weight models can lead closed frontier models on real-world software engineering benchmarks. The MIT license removes the primary barrier to academic and commercial adoption outside China. The architectural bet — optimising for autonomous execution horizon rather than reasoning tokens — is differentiated from the approach taken by US labs and represents a genuine research contribution to the emerging agentic AI paradigm. Zhipu's public listing on Hong Kong Stock Exchange at a $52.83 billion market cap frames this as a commercial AI company, not purely a research institution.\n\nKey facts:\n- **Z.AI** (Zhipu AI) released **GLM-5.1**, a 754B-parameter MoE model under MIT license, scoring 58.4 on SWE-Bench Pro — surpassing GPT-5.4 (57.7), Claude Opus 4.6 (57.3), and Gemini 3.1 Pro (54.2).\n- The model sustains autonomous task execution for up to 8 hours and 1,700 tool-call steps; demonstrated a CUDA kernel optimisation improving throughput from 2.6× to 35.7× speedup.\n- Weights available on Hugging Face; Zhipu raised model prices 8–17% alongside the release, signalling a shift toward monetisation after sustained investment.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://venturebeat.com/technology/ai-joins-the-8-hour-work-day-as-glm-ships-5-1-open-source-llm-beating-opus-4",
+            "name": "VentureBeat"
+          },
+          {
+            "url": "https://www.marktechpost.com/2026/04/08/z-ai-introduces-glm-5-1-an-open-weight-754b-agentic-model-that-achieves-sota-on-swe-bench-pro-and-sustains-8-hour-autonomous-execution/",
+            "name": "MarkTechPost"
+          }
+        ],
+        "entities": [
+          "**Z.AI**",
+          "**Zhipu AI**",
+          "**GLM-5.1**"
+        ],
+        "category": "",
+        "cluster": "Frontier Model Releases",
+        "composite_score": 7.0,
+        "selection_rationale": "Reconstructed from production brief 2026-04-09 for eval-fixture.",
+        "brief_section": "Model Releases & Technical Developments",
+        "is_model_release": true,
+        "model_release_data": {
+          "specs": null,
+          "training": "Post-training RL refinement of GLM-5 with focus on coding and agentic tasks; 28% coding improvement from RL post-training. Trained for sustained goal alignment over extended execution traces spanning thousands of tool calls.",
+          "developer": "Z.AI (Zhipu AI)",
+          "benchmarks": {
+            "rows": [
+              {
+                "scores": [
+                  "58.4",
+                  "57.7",
+                  "57.3",
+                  "54.2"
+                ],
+                "benchmark": "SWE-Bench Pro"
+              },
+              {
+                "scores": [
+                  "95.3",
+                  "—",
+                  "—",
+                  "—"
+                ],
+                "benchmark": "AIME 2026"
+              },
+              {
+                "scores": [
+                  "86.2",
+                  "—",
+                  "—",
+                  "—"
+                ],
+                "benchmark": "GPQA Diamond"
+              },
+              {
+                "scores": [
+                  "68.7",
+                  "—",
+                  "—",
+                  "—"
+                ],
+                "benchmark": "CyberGym"
+              },
+              {
+                "scores": [
+                  "63.5",
+                  "—",
+                  "—",
+                  "—"
+                ],
+                "benchmark": "Terminal-Bench 2.0"
+              }
+            ],
+            "models": [
+              "GLM-5.1",
+              "GPT-5.4",
+              "Claude Opus 4.6",
+              "Gemini 3.1 Pro"
+            ],
+            "summary": "GLM-5.1 sets new open-weight SOTA on SWE-Bench Pro, surpassing all frontier closed models. CyberGym score of 68.7 represents a 43% improvement over GLM-5 (48.3).",
+            "highlighted_model_index": 0,
+            "highlighted_model_indexes": [
+              0
+            ]
+          },
+          "model_name": "GLM-5.1",
+          "commercials": null,
+          "key_numbers": [
+            {
+              "label": "Parameters",
+              "value": "754B",
+              "qualifier": "40B active (MoE)"
+            },
+            {
+              "label": "Context",
+              "value": "200K",
+              "qualifier": "tokens"
+            },
+            {
+              "label": "License",
+              "value": "MIT",
+              "qualifier": "open-weight, commercial use"
+            },
+            {
+              "label": "Pricing",
+              "value": "$1/$3.20",
+              "qualifier": "per 1M in/out tokens"
+            }
+          ],
+          "performance": null,
+          "architecture": "754B-parameter Mixture-of-Experts with DeepSeek Sparse Attention (DSA) for reduced training and inference cost. Novel asynchronous RL infrastructure decouples generation from training, enabling efficient long-horizon agentic learning. 'Staircase' optimisation pattern avoids plateau failure mode common in prior agentic models.",
+          "availability": "Hugging Face (zai-org/GLM-5.1) · Z.AI API (docs.z.ai) · Puter.js API",
+          "summary_pitch": "Open-weight 754B MoE agentic model. First open-weight model to top SWE-Bench Pro. Designed for 8-hour sustained autonomous execution across thousands of tool calls."
+        },
+        "primary_entity": "Zhipu AI",
+        "depth": "standard"
+      }
+    ],
+    "allowed_ids": [
+      "2026-04-09-s013",
+      "2026-04-09-s042",
+      "2026-04-09-s005",
+      "2026-04-09-s034",
+      "2026-04-09-s015",
+      "2026-04-09-s001",
+      "2026-04-09-s004",
+      "2026-04-09-s038",
+      "2026-04-09-s012",
+      "2026-04-09-s014"
+    ]
+  },
+  "old_output": {
+    "items": [
+      {
+        "id": "2026-04-09-s013",
+        "rank": 1,
+        "depth": "standard",
+        "cluster": "Frontier Model Releases",
+        "context": "The revenue crossover is notable not just for its scale but for its composition: Anthropic's growth is 80% enterprise, characterised by high retention and expansion economics, while OpenAI's base remains more consumer-weighted. The structural cost gap — OpenAI projecting $121 billion in annual compute spend versus Anthropic's projected $30 billion by 2030 — suggests the revenue lead may widen rather than narrow as both labs scale. The comparison carries a methodology caveat: OpenAI supporters dispute the accounting equivalence of the two figures.",
+        "section": "International Business & Technology",
+        "analysis": "The revenue crossover is notable not just for its scale but for its composition: Anthropic's growth is 80% enterprise, characterised by high retention and expansion economics, while OpenAI's base remains more consumer-weighted. The structural cost gap — OpenAI projecting $121 billion in annual compute spend versus Anthropic's projected $30 billion by 2030 — suggests the revenue lead may widen rather than narrow as both labs scale. The comparison carries a methodology caveat: OpenAI supporters dispute the accounting equivalence of the two figures.",
+        "category": "",
+        "entities": [
+          "**Anthropic**",
+          "**OpenAI**"
+        ],
+        "exhibits": [],
+        "headline": "Anthropic's annualised revenue surpasses OpenAI at $30 billion",
+        "continuity": null,
+        "source_url": null,
+        "implication": "",
+        "key_bullets": [
+          "**Anthropic** ARR exceeded $30 billion — up from $1 billion in January 2025 — versus **OpenAI**'s approximately $25 billion, driven by 1,000+ enterprise customers each spending $1 million+ annually.",
+          "Anthropic projects positive free cash flow by 2027; OpenAI projects $14 billion in losses for 2026 and has pushed breakeven to 2030."
+        ],
+        "main_bullet": "**Anthropic** ARR exceeded $30 billion — up from $1 billion in January 2025 — versus **OpenAI**'s approximately $25 billion, driven by 1,000+ enterprise customers each spending $1 million+ annually. Anthropic projects positive free cash flow by 2027; OpenAI projects $14 billion in losses for 2026 and has pushed breakeven to 2030.",
+        "source_name": "Reuters AI",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "primary_entity": "Anthropic",
+        "composite_score": 7.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.the-ai-corner.com/p/anthropic-30b-arr-passed-openai-revenue-2026",
+            "name": "The AI Corner"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-09-s042",
+        "rank": 2,
+        "depth": "brief",
+        "cluster": "Iran-Gulf Conflict — New Attacks",
+        "context": "The Habshan facility is a critical node in Abu Dhabi's gas processing infrastructure. The timing — concurrent with the ceasefire announcement — leaves causation ambiguous, but the incident follows the pattern of Iranian-linked attacks on UAE energy infrastructure during the conflict. No attribution has been reported in available sources.",
+        "section": "UAE",
+        "analysis": "The Habshan facility is a critical node in Abu Dhabi's gas processing infrastructure. The timing — concurrent with the ceasefire announcement — leaves causation ambiguous, but the incident follows the pattern of Iranian-linked attacks on UAE energy infrastructure during the conflict. No attribution has been reported in available sources.",
+        "category": "",
+        "entities": [
+          "**Abu Dhabi**",
+          "**Habshan**"
+        ],
+        "exhibits": [],
+        "headline": "Fire breaks out at Abu Dhabi's Habshan gas processing facility",
+        "continuity": null,
+        "source_url": "",
+        "implication": "",
+        "key_bullets": [
+          "Abu Dhabi authorities responded to a fire at the Habshan gas processing facility on 8 April.",
+          "Incident occurred simultaneously with the US-Iran ceasefire announcement."
+        ],
+        "main_bullet": "Abu Dhabi authorities responded to a fire at the Habshan gas processing facility on 8 April. Incident occurred simultaneously with the US-Iran ceasefire announcement.",
+        "source_name": "The National",
+        "source_domain": "newsletter",
+        "primary_entity": "UAE",
+        "composite_score": 6.4,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-09-s005",
+        "rank": 3,
+        "depth": "brief",
+        "cluster": null,
+        "context": "A peer Abu Dhabi institution has secured applied-AI IP in accessibility—a domain aligned with UAE national inclusion priorities. The patent reflects the growing expectation that regional universities demonstrate socially embedded AI applications, not only research output.",
+        "section": "Regional Research & Academic Events",
+        "analysis": "A peer Abu Dhabi institution has secured applied-AI IP in accessibility—a domain aligned with UAE national inclusion priorities. The patent reflects the growing expectation that regional universities demonstrate socially embedded AI applications, not only research output.",
+        "category": "Education",
+        "entities": [
+          "**Abu Dhabi University**",
+          "**HearMe**"
+        ],
+        "exhibits": [],
+        "headline": "Abu Dhabi University patents AI multilingual sign language translation app",
+        "continuity": null,
+        "source_url": "https://www.mediaoffice.abudhabi/en/education/abu-dhabi-university-secures-patent-for-ai-powered-multilingual-sign-language-translation-application/",
+        "implication": "",
+        "key_bullets": [
+          "ADU patents HearMe, an AI app enabling real-time bidirectional sign language and text translation.",
+          "Supports American and French sign language systems; aligns with UAE's National Policy for People of Determination."
+        ],
+        "main_bullet": "ADU patents HearMe, an AI app enabling real-time bidirectional sign language and text translation. Supports American and French sign language systems; aligns with UAE's National Policy for People of Determination.",
+        "source_name": "Abu Dhabi Media Office",
+        "source_domain": "mediaoffice.abudhabi",
+        "primary_entity": "Abu Dhabi University",
+        "composite_score": 5.4,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "",
+            "name": "Middle East AI News"
+          },
+          {
+            "url": "",
+            "name": "WAM"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "low"
+      },
+      {
+        "id": "2026-04-09-s034",
+        "rank": 4,
+        "depth": "brief",
+        "cluster": null,
+        "context": "The cost asymmetry is the strategic logic: at $2,500 per unit, the Ukrainian interceptor would allow Gulf states to absorb mass drone and missile barrages without depleting expensive US-supplied air defence inventories. Exploration rather than procurement means no commitment yet, but it extends the UAE-Ukraine defence cooperation framework signed in late March into a potential volume procurement channel.",
+        "section": "UAE",
+        "analysis": "The cost asymmetry is the strategic logic: at $2,500 per unit, the Ukrainian interceptor would allow Gulf states to absorb mass drone and missile barrages without depleting expensive US-supplied air defence inventories. Exploration rather than procurement means no commitment yet, but it extends the UAE-Ukraine defence cooperation framework signed in late March into a potential volume procurement channel.",
+        "category": "",
+        "entities": [
+          "**UAE**",
+          "**Saudi Arabia**",
+          "**Ukraine**"
+        ],
+        "exhibits": [],
+        "headline": "UAE and Saudi Arabia explore low-cost Ukrainian interceptor drone",
+        "continuity": null,
+        "source_url": "",
+        "implication": "",
+        "key_bullets": [
+          "UAE and Saudi Arabia exploring a $2,500 Ukrainian-designed interceptor drone.",
+          "Aim is to counter Iranian attacks while preserving US-made missile stockpiles."
+        ],
+        "main_bullet": "UAE and Saudi Arabia exploring a $2,500 Ukrainian-designed interceptor drone. Aim is to counter Iranian attacks while preserving US-made missile stockpiles.",
+        "source_name": "Reuters Daily Briefing",
+        "source_domain": "newsletter",
+        "primary_entity": "UAE",
+        "composite_score": 5.6,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "low"
+      },
+      {
+        "id": "2026-04-09-s015",
+        "rank": 5,
+        "depth": "brief",
+        "cluster": null,
+        "context": "The programme reflects a Gulf-wide pattern of governments using hyperscaler partnerships to convert digital economy policy into startup pipeline development. Oman's selective eligibility design — excluding service businesses and educational institutions — targets companies with product scaling potential rather than broad innovation awareness. As Gulf states compete to build domestic AI startup ecosystems, these accelerator programmes function as distribution channels for cloud adoption and represent incremental competitive activity in MBZUAI's regional environment.",
+        "section": "Regional Research & Academic Events",
+        "analysis": "The programme reflects a Gulf-wide pattern of governments using hyperscaler partnerships to convert digital economy policy into startup pipeline development. Oman's selective eligibility design — excluding service businesses and educational institutions — targets companies with product scaling potential rather than broad innovation awareness. As Gulf states compete to build domestic AI startup ecosystems, these accelerator programmes function as distribution channels for cloud adoption and represent incremental competitive activity in MBZUAI's regional environment.",
+        "category": "",
+        "entities": [
+          "**Oman**",
+          "**Microsoft**",
+          "**Numo**"
+        ],
+        "exhibits": [],
+        "headline": "Oman and Microsoft launch AI startup accelerator for ICT ventures",
+        "continuity": null,
+        "source_url": null,
+        "implication": "",
+        "key_bullets": [
+          "**Oman**'s Ministry of Transport, Communications and IT partnered with **Microsoft** to launch the Numo–Microsoft for Startups Accelerator, offering Azure credits, AI tools, and go-to-market support to Omani ICT startups.",
+          "Applications close April 12; eligible startups must be Oman-registered, software-product-driven, and have received less than $10,000 in prior Azure credits."
+        ],
+        "main_bullet": "**Oman**'s Ministry of Transport, Communications and IT partnered with **Microsoft** to launch the Numo–Microsoft for Startups Accelerator, offering Azure credits, AI tools, and go-to-market support to Omani ICT startups. Applications close April 12; eligible startups must be Oman-registered, software-product-driven, and have received less than $10,000 in prior Azure credits.",
+        "source_name": "Middle East AI News",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "primary_entity": "Oman",
+        "composite_score": 6.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.muscatdaily.com/2026/04/06/new-accelerator-programme-launched-to-boost-tech-startups/",
+            "name": "Muscat Daily"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-09-s001",
+        "rank": 6,
+        "depth": "full",
+        "cluster": "US-Iran Ceasefire & Gulf Security",
+        "context": "The truce did not hold on the ground. Iran's Defence Ministry attributed continued launches to ongoing Israeli strikes on Lebanon — a linkage Tehran built into the ceasefire's terms that neither Washington nor Jerusalem accepted. The decentralised structure of Iranian military operations means lower-echelon units continued fire while diplomatic orders filtered down. With interceptor inventories severely depleted and the Habshan complex offline, the cumulative cost to UAE critical infrastructure is now material, not incidental. The two-week negotiating window opens in Islamabad on Saturday under conditions in which none of the parties agree on what was actually agreed.",
+        "section": "UAE",
+        "analysis": "The truce did not hold on the ground. Iran's Defence Ministry attributed continued launches to ongoing Israeli strikes on Lebanon — a linkage Tehran built into the ceasefire's terms that neither Washington nor Jerusalem accepted. The decentralised structure of Iranian military operations means lower-echelon units continued fire while diplomatic orders filtered down. With interceptor inventories severely depleted and the Habshan complex offline, the cumulative cost to UAE critical infrastructure is now material, not incidental. The two-week negotiating window opens in Islamabad on Saturday under conditions in which none of the parties agree on what was actually agreed.",
+        "category": "",
+        "entities": [
+          "**UAE**",
+          "**Iran**",
+          "**Kuwait**",
+          "**Qatar**",
+          "**Bahrain**"
+        ],
+        "exhibits": [],
+        "headline": "Missile and drone attacks continue across Gulf during nominal ceasefire",
+        "continuity": null,
+        "source_url": null,
+        "implication": "",
+        "key_bullets": [
+          "UAE air defences engaged 17 ballistic missiles and 35 drones from Iran on April 8; operations at Habshan gas complex suspended after debris fire injured two Emiratis and one Indian national.",
+          "Kuwait intercepted 28 Iranian drones targeting oil installations and power stations, reporting severe material damage; Qatar intercepted 7 ballistic missiles; Bahrain reported two injuries.",
+          "UAE and Kuwait had each depleted roughly 75% of Patriot interceptor stocks by late March; Bahrain an estimated 87%, per JINSA."
+        ],
+        "main_bullet": "UAE air defences engaged 17 ballistic missiles and 35 drones from Iran on April 8; operations at Habshan gas complex suspended after debris fire injured two Emiratis and one Indian national. Kuwait intercepted 28 Iranian drones targeting oil installations and power stations, reporting severe material damage; Qatar intercepted 7 ballistic missiles; Bahrain reported two injuries. UAE and Kuwait had each depleted roughly 75% of Patriot interceptor stocks by late March; Bahrain an estimated 87%, per JINSA.",
+        "source_name": "The National",
+        "source_domain": "thenationalnews.com",
+        "source_origin": "newsletter",
+        "primary_entity": "UAE",
+        "composite_score": 9.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.aljazeera.com/news/2026/4/8/uae-kuwait-bahrain-report-attacks-despite-iran-us-ceasefire",
+            "name": "Al Jazeera"
+          },
+          {
+            "url": "https://www.cnbc.com/2026/04/08/iran-missile-attacks-after-us-ceasefire-gulf-air-defenses.html",
+            "name": "CNBC"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-09-s004",
+        "rank": 7,
+        "depth": "full",
+        "cluster": "US-Iran Ceasefire & Gulf Security",
+        "context": "The Soufan Center assessed the ceasefire \"hovers on the verge of collapse\" within hours of announcement. The core structural problem is that each party announced a different deal: Iran claims it may charge transit fees through Hormuz; Washington says Trump opposes that; Netanyahu excluded Lebanon unilaterally. The mine-chart publication by Iranian state media is both a pressure tactic and an explanation for why Hormuz remains functionally closed despite nominal ceasefire — ships still require Iranian coordination for passage and face undisclosed mining risk.",
+        "section": "International Politics & Policy",
+        "analysis": "The Soufan Center assessed the ceasefire \"hovers on the verge of collapse\" within hours of announcement. The core structural problem is that each party announced a different deal: Iran claims it may charge transit fees through Hormuz; Washington says Trump opposes that; Netanyahu excluded Lebanon unilaterally. The mine-chart publication by Iranian state media is both a pressure tactic and an explanation for why Hormuz remains functionally closed despite nominal ceasefire — ships still require Iranian coordination for passage and face undisclosed mining risk.",
+        "category": "",
+        "entities": [
+          "**Iran**",
+          "**United States**",
+          "**Israel**",
+          "**Pakistan**",
+          "**Benjamin Netanyahu**"
+        ],
+        "exhibits": [],
+        "headline": "US, Israel, and Iran announce two-week ceasefire with contradictory terms",
+        "continuity": null,
+        "source_url": null,
+        "implication": "",
+        "key_bullets": [
+          "US, Israel, and Iran agreed to a two-week ceasefire announced less than 90 minutes before Trump's deadline; S&P 500 rose 2.5%, Brent fell 13.3% to $94.75 on the news.",
+          "Iran's parliament speaker called the deal \"unreasonable,\" accusing the US of violating three of Tehran's 10 conditions; Iran published a chart suggesting the IRGC seeded sea mines in the Strait of Hormuz during the conflict.",
+          "Netanyahu stated the ceasefire does not cover Hezbollah operations in Lebanon, contradicting Pakistan, Egypt, and France; both sides say they can resume fighting rapidly."
+        ],
+        "main_bullet": "US, Israel, and Iran agreed to a two-week ceasefire announced less than 90 minutes before Trump's deadline; S&P 500 rose 2.5%, Brent fell 13.3% to $94.75 on the news. Iran's parliament speaker called the deal \"unreasonable,\" accusing the US of violating three of Tehran's 10 conditions; Iran published a chart suggesting the IRGC seeded sea mines in the Strait of Hormuz during the conflict. Netanyahu stated the ceasefire does not cover Hezbollah operations in Lebanon, contradicting Pakistan, Egypt, and France; both sides say they can resume fighting rapidly.",
+        "source_name": "Axios AM/PM",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "primary_entity": "Iran",
+        "composite_score": 8.4,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://apnews.com/live/iran-war-israel-trump-04-08-2026",
+            "name": "AP News"
+          },
+          {
+            "url": "https://www.bbc.com/news/articles/c79j7jnnpz1o",
+            "name": "BBC"
+          },
+          {
+            "url": "https://www.military.com/daily-news/2026/04/08/us-israel-and-iran-agree-2-week-ceasefire-details-remain-unclear.html",
+            "name": "Military.com"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-09-s038",
+        "rank": 8,
+        "depth": "brief",
+        "cluster": "Iran-Gulf Conflict — Ceasefire",
+        "context": "The gap between Trump describing the proposal as a workable basis and the proposal reportedly including Iranian Hormuz control and US military withdrawal is the central instability of the current ceasefire. Both parties claiming victory is a standard face-saving mechanism, but it means the compromise positions needed for a durable agreement remain unspoken. The Islamabad talks will reveal whether the 10-point framework is a genuine opening bid or a maximalist document designed to be negotiated down.",
+        "section": "International Politics & Policy",
+        "analysis": "The gap between Trump describing the proposal as a workable basis and the proposal reportedly including Iranian Hormuz control and US military withdrawal is the central instability of the current ceasefire. Both parties claiming victory is a standard face-saving mechanism, but it means the compromise positions needed for a durable agreement remain unspoken. The Islamabad talks will reveal whether the 10-point framework is a genuine opening bid or a maximalist document designed to be negotiated down.",
+        "category": "",
+        "entities": [
+          "**Iran**",
+          "**Trump**"
+        ],
+        "exhibits": [],
+        "headline": "Iran submits 10-point peace proposal containing apparent non-starters",
+        "continuity": null,
+        "source_url": "",
+        "implication": "",
+        "key_bullets": [
+          "Trump says Iran submitted a 10-point proposal the US views as a workable negotiating basis.",
+          "Proposal contains elements Washington is unlikely to accept; both sides are claiming victory."
+        ],
+        "main_bullet": "Trump says Iran submitted a 10-point proposal the US views as a workable negotiating basis. Proposal contains elements Washington is unlikely to accept; both sides are claiming victory.",
+        "source_name": "The National",
+        "source_domain": "newsletter",
+        "primary_entity": "Iran",
+        "composite_score": 6.6,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-09-s012",
+        "rank": 9,
+        "depth": "full",
+        "cluster": "Frontier Model Releases",
+        "context": "Covered in depth in yesterday's brief. Eight-source mainstream corroboration today — Bloomberg, WSJ, TechCrunch, Semafor — confirms this is now the dominant AI safety story in public discourse. The relevant new detail: Anthropic confirmed it is in ongoing discussions with CISA and the Center for AI Standards and Innovation, establishing a government-engagement framework for capability-restricted deployment that other labs will face pressure to replicate as model capabilities continue to advance.",
+        "section": "Model Releases & Technical Developments",
+        "analysis": "Covered in depth in yesterday's brief. Eight-source mainstream corroboration today — Bloomberg, WSJ, TechCrunch, Semafor — confirms this is now the dominant AI safety story in public discourse. The relevant new detail: Anthropic confirmed it is in ongoing discussions with CISA and the Center for AI Standards and Innovation, establishing a government-engagement framework for capability-restricted deployment that other labs will face pressure to replicate as model capabilities continue to advance.",
+        "category": "",
+        "entities": [
+          "**Anthropic**",
+          "**Claude Mythos Preview**",
+          "**Project Glasswing**"
+        ],
+        "exhibits": [],
+        "headline": "Anthropic's Mythos model withheld from public release over cyberattack risks",
+        "continuity": null,
+        "source_url": null,
+        "implication": "",
+        "key_bullets": [
+          "**Anthropic** confirmed restricted deployment of **Claude Mythos Preview** via Project Glasswing to ~52 companies including Apple, Google, Microsoft, Nvidia, AWS, CrowdStrike, and Palo Alto Networks for defensive cybersecurity use only.",
+          "Mythos can autonomously find tens of thousands of vulnerabilities across all major operating systems and browsers; Anthropic committed up to $100 million in usage credits for partners."
+        ],
+        "main_bullet": "**Anthropic** confirmed restricted deployment of **Claude Mythos Preview** via Project Glasswing to ~52 companies including Apple, Google, Microsoft, Nvidia, AWS, CrowdStrike, and Palo Alto Networks for defensive cybersecurity use only. Mythos can autonomously find tens of thousands of vulnerabilities across all major operating systems and browsers; Anthropic committed up to $100 million in usage credits for partners.",
+        "source_name": "Axios AI+",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "primary_entity": "Anthropic",
+        "composite_score": 8.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.cnbc.com/2026/04/07/anthropic-claude-mythos-ai-hackers-cyberattacks.html",
+            "name": "CNBC"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-09-s014",
+        "rank": 10,
+        "depth": "standard",
+        "cluster": "Frontier Model Releases",
+        "context": "GLM-5.1 is the clearest demonstration to date that Chinese open-weight models can lead closed frontier models on real-world software engineering benchmarks. The MIT license removes the primary barrier to academic and commercial adoption outside China. The architectural bet — optimising for autonomous execution horizon rather than reasoning tokens — is differentiated from the approach taken by US labs and represents a genuine research contribution to the emerging agentic AI paradigm. Zhipu's public listing on Hong Kong Stock Exchange at a $52.83 billion market cap frames this as a commercial AI company, not purely a research institution.",
+        "section": "Model Releases & Technical Developments",
+        "analysis": "GLM-5.1 is the clearest demonstration to date that Chinese open-weight models can lead closed frontier models on real-world software engineering benchmarks. The MIT license removes the primary barrier to academic and commercial adoption outside China. The architectural bet — optimising for autonomous execution horizon rather than reasoning tokens — is differentiated from the approach taken by US labs and represents a genuine research contribution to the emerging agentic AI paradigm. Zhipu's public listing on Hong Kong Stock Exchange at a $52.83 billion market cap frames this as a commercial AI company, not purely a research institution.",
+        "category": "",
+        "entities": [
+          "**Z.AI**",
+          "**Zhipu AI**",
+          "**GLM-5.1**"
+        ],
+        "exhibits": [],
+        "headline": "Z.AI GLM-5.1 — Zhipu AI",
+        "continuity": null,
+        "source_url": null,
+        "implication": "",
+        "key_bullets": [
+          "**Z.AI** (Zhipu AI) released **GLM-5.1**, a 754B-parameter MoE model under MIT license, scoring 58.4 on SWE-Bench Pro — surpassing GPT-5.4 (57.7), Claude Opus 4.6 (57.3), and Gemini 3.1 Pro (54.2).",
+          "The model sustains autonomous task execution for up to 8 hours and 1,700 tool-call steps; demonstrated a CUDA kernel optimisation improving throughput from 2.6× to 35.7× speedup.",
+          "Weights available on Hugging Face; Zhipu raised model prices 8–17% alongside the release, signalling a shift toward monetisation after sustained investment."
+        ],
+        "main_bullet": "**Z.AI** (Zhipu AI) released **GLM-5.1**, a 754B-parameter MoE model under MIT license, scoring 58.4 on SWE-Bench Pro — surpassing GPT-5.4 (57.7), Claude Opus 4.6 (57.3), and Gemini 3.1 Pro (54.2). The model sustains autonomous task execution for up to 8 hours and 1,700 tool-call steps; demonstrated a CUDA kernel optimisation improving throughput from 2.6× to 35.7× speedup. Weights available on Hugging Face; Zhipu raised model prices 8–17% alongside the release, signalling a shift toward monetisation after sustained investment.",
+        "source_name": "AINews (Latent Space)",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "primary_entity": "Zhipu AI",
+        "composite_score": 7,
+        "is_model_release": true,
+        "additional_sources": [
+          {
+            "url": "https://venturebeat.com/technology/ai-joins-the-8-hour-work-day-as-glm-ships-5-1-open-source-llm-beating-opus-4",
+            "name": "VentureBeat"
+          },
+          {
+            "url": "https://www.marktechpost.com/2026/04/08/z-ai-introduces-glm-5-1-an-open-weight-754b-agentic-model-that-achieves-sota-on-swe-bench-pro-and-sustains-8-hour-autonomous-execution/",
+            "name": "MarkTechPost"
+          }
+        ],
+        "model_release_data": {
+          "specs": null,
+          "training": "Post-training RL refinement of GLM-5 with focus on coding and agentic tasks; 28% coding improvement from RL post-training. Trained for sustained goal alignment over extended execution traces spanning thousands of tool calls.",
+          "developer": "Z.AI (Zhipu AI)",
+          "benchmarks": {
+            "rows": [
+              {
+                "scores": [
+                  "58.4",
+                  "57.7",
+                  "57.3",
+                  "54.2"
+                ],
+                "benchmark": "SWE-Bench Pro"
+              },
+              {
+                "scores": [
+                  "95.3",
+                  "—",
+                  "—",
+                  "—"
+                ],
+                "benchmark": "AIME 2026"
+              },
+              {
+                "scores": [
+                  "86.2",
+                  "—",
+                  "—",
+                  "—"
+                ],
+                "benchmark": "GPQA Diamond"
+              },
+              {
+                "scores": [
+                  "68.7",
+                  "—",
+                  "—",
+                  "—"
+                ],
+                "benchmark": "CyberGym"
+              },
+              {
+                "scores": [
+                  "63.5",
+                  "—",
+                  "—",
+                  "—"
+                ],
+                "benchmark": "Terminal-Bench 2.0"
+              }
+            ],
+            "models": [
+              "GLM-5.1",
+              "GPT-5.4",
+              "Claude Opus 4.6",
+              "Gemini 3.1 Pro"
+            ],
+            "summary": "GLM-5.1 sets new open-weight SOTA on SWE-Bench Pro, surpassing all frontier closed models. CyberGym score of 68.7 represents a 43% improvement over GLM-5 (48.3).",
+            "highlighted_model_index": 0,
+            "highlighted_model_indexes": [
+              0
+            ]
+          },
+          "model_name": "GLM-5.1",
+          "commercials": null,
+          "key_numbers": [
+            {
+              "label": "Parameters",
+              "value": "754B",
+              "qualifier": "40B active (MoE)"
+            },
+            {
+              "label": "Context",
+              "value": "200K",
+              "qualifier": "tokens"
+            },
+            {
+              "label": "License",
+              "value": "MIT",
+              "qualifier": "open-weight, commercial use"
+            },
+            {
+              "label": "Pricing",
+              "value": "$1/$3.20",
+              "qualifier": "per 1M in/out tokens"
+            }
+          ],
+          "performance": null,
+          "architecture": "754B-parameter Mixture-of-Experts with DeepSeek Sparse Attention (DSA) for reduced training and inference cost. Novel asynchronous RL infrastructure decouples generation from training, enabling efficient long-horizon agentic learning. 'Staircase' optimisation pattern avoids plateau failure mode common in prior agentic models.",
+          "availability": "Hugging Face (zai-org/GLM-5.1) · Z.AI API (docs.z.ai) · Puter.js API",
+          "summary_pitch": "Open-weight 754B MoE agentic model. First open-weight model to top SWE-Bench Pro. Designed for 8-hour sustained autonomous execution across thousands of tool calls."
+        },
+        "significance_level": "medium"
+      }
+    ]
+  }
+}

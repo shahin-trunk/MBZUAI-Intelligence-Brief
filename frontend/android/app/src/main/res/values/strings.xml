@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MBZUAI Intel</string>
+    <string name="title_activity_main">MBZUAI Intel</string>
+    <string name="package_name">com.mbzuai.intel</string>
+    <string name="custom_url_scheme">com.mbzuai.intel</string>
+</resources>

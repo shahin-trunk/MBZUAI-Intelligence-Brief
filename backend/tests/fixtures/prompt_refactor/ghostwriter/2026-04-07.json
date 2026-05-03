@@ -1,0 +1,925 @@
+{
+  "date": "2026-04-07",
+  "gatekeeper_input": {
+    "selected": [
+      {
+        "id": "2026-04-07-s001",
+        "headline": "IRGC names Abu Dhabi AI firms among missile strike targets",
+        "source": "TechCrunch",
+        "source_name": "TechCrunch",
+        "source_url": "https://www.wired.com/story/iran-threatens-to-start-attacking-major-us-tech-firms-on-april-1/",
+        "source_domain": "wired.com",
+        "date": "2026-04-07",
+        "summary": "**Iran's Islamic Revolutionary Guard Corps** issued a threat on 1 April designating 18 U.S.-linked technology companies — including **Apple**, **Google**, **Microsoft**, **NVIDIA**, **Palantir**, and UAE-based **G42** — as \"legitimate targets,\" with strikes promised after 8 p.m. Tehran time. Iranian drones struck two **Amazon Web Services** data centers in the UAE and Bahrain on March 1, causing regional cloud outages, establishing that these threats carry operational precedent. Over 3,000 missiles and drones have been fired across the Gulf since the conflict began on 28 February.",
+        "raw_content": "**Iran's Islamic Revolutionary Guard Corps** issued a threat on 1 April designating 18 U.S.-linked technology companies — including **Apple**, **Google**, **Microsoft**, **NVIDIA**, **Palantir**, and UAE-based **G42** — as \"legitimate targets,\" with strikes promised after 8 p.m. Tehran time. Iranian drones struck two **Amazon Web Services** data centers in the UAE and Bahrain on March 1, causing regional cloud outages, establishing that these threats carry operational precedent. Over 3,000 missiles and drones have been fired across the Gulf since the conflict began on 28 February.\n\nThe IRGC frames these commercial entities as military enablers, citing their role in U.S.-Israeli targeting operations — **Palantir**, which maintains an Abu Dhabi office, builds data architecture for Pentagon Project Maven. The threat extends a pattern of Iran targeting civilian digital infrastructure as a strategic lever in the broader U.S.-Iran conflict.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.cnbc.com/2026/04/01/iran-irgc-nvidia-appple-attack-threat.html",
+            "name": "CNBC"
+          },
+          {
+            "url": "https://www.newarab.com/news/iran-just-threatened-attack-us-companies-whos-list",
+            "name": "The New Arab"
+          }
+        ],
+        "entities": [
+          "**Iran**",
+          "**IRGC**",
+          "**Apple**",
+          "**Google**",
+          "**Microsoft**",
+          "**NVIDIA**",
+          "**Palantir**",
+          "**G42**",
+          "**Amazon Web Services**"
+        ],
+        "category": "",
+        "cluster": "Iran-Gulf conflict",
+        "composite_score": 9.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-07-s003",
+        "headline": "Trump issues power-plant ultimatum to Iran over Hormuz closure",
+        "source": "Bloomberg Briefing",
+        "source_name": "Bloomberg Briefing",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-07",
+        "summary": "**President Trump** threatened to destroy **Iran**'s power plants and bring \"Hell\" starting Tuesday if Iran does not reopen the **Strait of Hormuz**, setting an explicit deadline for kinetic escalation. Iran rejected ceasefire discussions, though U.S., Iranian, and regional mediators are separately exploring a 45-day ceasefire framework.",
+        "raw_content": "**President Trump** threatened to destroy **Iran**'s power plants and bring \"Hell\" starting Tuesday if Iran does not reopen the **Strait of Hormuz**, setting an explicit deadline for kinetic escalation. Iran rejected ceasefire discussions, though U.S., Iranian, and regional mediators are separately exploring a 45-day ceasefire framework.\n\nThe ultimatum follows the rescue of a U.S. airman whose fighter jet was shot down, and marks a discrete escalation beyond Trump's prior posture of continued bombardment — adding civilian infrastructure to the target set for the first time.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**Trump**",
+          "**Iran**",
+          "**Strait of Hormuz**"
+        ],
+        "category": "",
+        "cluster": "Iran-Gulf conflict",
+        "composite_score": 9.4,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-07-s005",
+        "headline": "Qatar confirmed as direct Iranian strike target after Emir-Macron call",
+        "source": "WAM",
+        "source_name": "WAM",
+        "source_url": "https://www.wam.ae/en/article/bzkwbk6-emir-qatar-french-president-discuss-iranian",
+        "source_domain": "wam.ae",
+        "date": "2026-04-07",
+        "summary": "**H.H. Sheikh Tamim bin Hamad Al-Thani**, Emir of Qatar, received a call from **President Macron** to discuss ongoing Iranian drone strikes directly targeting Qatar and their impact on regional and global energy security, with both leaders emphasizing the need for de-escalation. [Source: https://www.wam.ae/en/article/bzkwbk6-emir-qatar-french-president-discuss-iranian]",
+        "raw_content": "**H.H. Sheikh Tamim bin Hamad Al-Thani**, Emir of Qatar, received a call from **President Macron** to discuss ongoing Iranian drone strikes directly targeting Qatar and their impact on regional and global energy security, with both leaders emphasizing the need for de-escalation. [Source: https://www.wam.ae/en/article/bzkwbk6-emir-qatar-french-president-discuss-iranian]\n\nPrevious briefs recorded Iranian strikes on the UAE and Bahrain; Qatar's confirmation as a direct Iranian target is a discrete geographic escalation. The Emir-Macron call signals European diplomatic engagement as the conflict spreads across Gulf states.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.zawya.com/en/business/energy/qatar-france-discuss-iranian-aggression-global-energy-security-concerns-x8bz5ef1",
+            "name": "Zawya"
+          }
+        ],
+        "entities": [
+          "**H.H. Sheikh Tamim bin Hamad Al-Thani**",
+          "**Macron**",
+          "**Iran**",
+          "**HBKU**",
+          "**QCRI**"
+        ],
+        "category": "",
+        "cluster": "Iran-Gulf conflict",
+        "composite_score": 8.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-07-s010",
+        "headline": "Anthropic accuses three Chinese AI labs of industrial-scale model distillation",
+        "source": "Bloomberg Briefing",
+        "source_name": "Bloomberg Briefing",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-07",
+        "summary": "**Anthropic** publicly accused **DeepSeek**, **Moonshot AI**, and **MiniMax** of running coordinated campaigns to extract Claude's capabilities through 16 million exchanges across 24,000 fraudulent accounts — a technique called distillation that trains weaker models on frontier model outputs. **OpenAI** leveled parallel charges before U.S. lawmakers. Both companies are calling for coordinated industry and government action; according to Bloomberg Briefing, **Google** is associated with the emerging response coalition.",
+        "raw_content": "**Anthropic** publicly accused **DeepSeek**, **Moonshot AI**, and **MiniMax** of running coordinated campaigns to extract Claude's capabilities through 16 million exchanges across 24,000 fraudulent accounts — a technique called distillation that trains weaker models on frontier model outputs. **OpenAI** leveled parallel charges before U.S. lawmakers. Both companies are calling for coordinated industry and government action; according to Bloomberg Briefing, **Google** is associated with the emerging response coalition.\n\nThe accused firms allegedly routed traffic through proxy services to bypass China-access restrictions, concentrating on Claude's coding, agentic reasoning, and tool-use capabilities — areas Anthropic regards as core differentiators. The practice circumvents U.S. export controls designed to constrain China's frontier AI access.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.theguardian.com/technology/2026/feb/23/us-ai-anthropic-china",
+            "name": "The Guardian"
+          },
+          {
+            "url": "https://fortune.com/2026/02/24/anthropic-china-deepseek-theft-claude-distillation-copyright-national-security/",
+            "name": "Fortune"
+          }
+        ],
+        "entities": [
+          "**Anthropic**",
+          "**DeepSeek**",
+          "**Moonshot AI**",
+          "**MiniMax**",
+          "**OpenAI**",
+          "**Google**"
+        ],
+        "category": "",
+        "cluster": "AI geopolitics",
+        "composite_score": 8.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "International Business & Technology",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-07-s004",
+        "headline": "Strait of Hormuz vessel traffic reaches six-week high",
+        "source": "Semafor Flagship",
+        "source_name": "Semafor Flagship",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-07",
+        "summary": "Ship traffic through the **Strait of Hormuz** reached 21 vessels over the weekend — the highest two-day total since early March — as **India**, **Iraq**, **China**, **Japan**, and **the Philippines** secured bilateral safe-passage agreements with **Iran**, which is simultaneously formalizing a fee-based transit law. Pre-war traffic averaged approximately 135 vessels per day.",
+        "raw_content": "Ship traffic through the **Strait of Hormuz** reached 21 vessels over the weekend — the highest two-day total since early March — as **India**, **Iraq**, **China**, **Japan**, and **the Philippines** secured bilateral safe-passage agreements with **Iran**, which is simultaneously formalizing a fee-based transit law. Pre-war traffic averaged approximately 135 vessels per day.\n\nIran is selectively granting exemptions to non-belligerent or friendly states while reinforcing its legal and operational control of the waterway. **JPMorgan** warned oil prices could spike above $150 per barrel if disruptions persist into mid-May; Brent settled near $109 last week.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://finance.yahoo.com/sectors/energy/articles/hormuz-traffic-rises-highest-weeks-102027155.html",
+            "name": "Bloomberg / Yahoo Finance"
+          },
+          {
+            "url": "https://www.aol.com/articles/trumps-hormuz-deadline-looms-asian-233724963.html",
+            "name": "AOL / AP"
+          }
+        ],
+        "entities": [
+          "**Strait of Hormuz**",
+          "**Iran**",
+          "**India**",
+          "**Iraq**",
+          "**China**",
+          "**Japan**",
+          "**Philippines**",
+          "**JPMorgan**"
+        ],
+        "category": "",
+        "cluster": "Iran-Gulf conflict",
+        "composite_score": 8.0,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-07-s012",
+        "headline": "Khalifa University launches RF-GPT, a radio-frequency foundation model",
+        "source": "WAM",
+        "source_name": "WAM",
+        "source_url": "https://www.wam.ae/en/article/bzkwau4-khalifa-university-launches-radio-frequency",
+        "source_domain": "wam.ae",
+        "date": "2026-04-07",
+        "summary": "**Khalifa University**'s Digital Future Institute released **RF-GPT**, the first multimodal language model to natively process radio-frequency spectrograms, trained on 625,000 synthetically generated RF instruction examples across six wireless technologies (5G NR, LTE, UMTS, WLAN, DVB-S2, Bluetooth). The model outperformed **OpenAI**'s GPT-4 and **Alibaba**'s Qwen 2.5 on modulation classification, overlap analysis, and 5G NR parameter extraction, with up to 75.4% improvement over baseline models and 98% signal-counting accuracy. [Source: https://www.wam.ae/en/article/bzkwau4-khalifa-university-launches-radio-frequency]",
+        "raw_content": "**Khalifa University**'s Digital Future Institute released **RF-GPT**, the first multimodal language model to natively process radio-frequency spectrograms, trained on 625,000 synthetically generated RF instruction examples across six wireless technologies (5G NR, LTE, UMTS, WLAN, DVB-S2, Bluetooth). The model outperformed **OpenAI**'s GPT-4 and **Alibaba**'s Qwen 2.5 on modulation classification, overlap analysis, and 5G NR parameter extraction, with up to 75.4% improvement over baseline models and 98% signal-counting accuracy. [Source: https://www.wam.ae/en/article/bzkwau4-khalifa-university-launches-radio-frequency]\n\nRF-GPT was led by Professor **Merouane Debbah**, Senior Director of the Digital Future Institute, and targets a fundamental gap: existing LLMs process only text and structured data, requiring separate neural networks per RF task. The model enables natural-language queries over wireless spectrum — a capability the team frames as foundational for AI-native 6G networks.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.middleeastainews.com/p/khalifa-university-unveils-breakthrough",
+            "name": "Middle East AI News"
+          },
+          {
+            "url": "https://arxiv.org/html/2602.14833v1",
+            "name": "arXiv"
+          },
+          {
+            "url": "https://en.emirates7.com/article/11943",
+            "name": "Emirates 7"
+          }
+        ],
+        "entities": [
+          "**Khalifa University**",
+          "**RF-GPT**",
+          "**Merouane Debbah**",
+          "**OpenAI**",
+          "**Alibaba**"
+        ],
+        "category": "",
+        "cluster": null,
+        "composite_score": 7.8,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "Regional Research & Academic Events",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-07-s015",
+        "headline": "Presight AI Accelerator triples applications to 376 from 62 countries",
+        "source": "WAM",
+        "source_name": "WAM",
+        "source_url": "https://www.wam.ae/en/article/bzkwb5p-global-interest-surges-presight-accelerator",
+        "source_domain": "wam.ae",
+        "date": "2026-04-07",
+        "summary": "**Presight**'s AI Accelerator Programme received 376 applications from 62 countries for Cohort II — more than triple the 120 applications from 17 countries in its inaugural cohort — with the UAE (140), U.S. (37), India (26), UK (19), and South Korea (16) as the top five source nations. Ten companies will be selected in May 2026. Cohort I participants collectively hold $26 million in potential contract value, with **NodeShift** securing $1 million in confirmed investment from the Presight-Shorooq Fund. [Source: https://www.wam.ae/en/article/bzkwb5p-global-interest-surges-presight-accelerator]",
+        "raw_content": "**Presight**'s AI Accelerator Programme received 376 applications from 62 countries for Cohort II — more than triple the 120 applications from 17 countries in its inaugural cohort — with the UAE (140), U.S. (37), India (26), UK (19), and South Korea (16) as the top five source nations. Ten companies will be selected in May 2026. Cohort I participants collectively hold $26 million in potential contract value, with **NodeShift** securing $1 million in confirmed investment from the Presight-Shorooq Fund. [Source: https://www.wam.ae/en/article/bzkwb5p-global-interest-surges-presight-accelerator]\n\nPresight, a **G42** Group entity, posted AED 3.03 billion ($825 million) in 2025 revenue — 36.9% year-on-year growth — with international revenue up 130% to 38.5% of total. The accelerator's key differentiator is direct access to G42's government and enterprise relationships across the Gulf and emerging markets.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.presight.ai/news/global-interest-surges-as-presight-ai-accelerator-triples-applications-for-cohort-ii",
+            "name": "Presight"
+          },
+          {
+            "url": "https://www.middleeastainews.com/p/presight-ai-accelerator-triples-applications",
+            "name": "Middle East AI News"
+          }
+        ],
+        "entities": [
+          "**Presight**",
+          "**NodeShift**",
+          "**G42**"
+        ],
+        "category": "",
+        "cluster": null,
+        "composite_score": 7.8,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "Regional Research & Academic Events",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-07-s014",
+        "headline": "OpenAI proposes robot taxes and public wealth funds to address AI disruption",
+        "source": "TechCrunch",
+        "source_name": "TechCrunch",
+        "source_url": "",
+        "source_domain": "techcrunch.com",
+        "date": "2026-04-07",
+        "summary": "**OpenAI** released a policy framework proposing taxes on AI-driven capital gains and \"automated labor,\" a Public Wealth Fund distributing AI returns directly to citizens, and government-subsidized four-day workweeks — framing these as responses to AI-driven erosion of the payroll tax base that funds U.S. social safety nets.",
+        "raw_content": "**OpenAI** released a policy framework proposing taxes on AI-driven capital gains and \"automated labor,\" a Public Wealth Fund distributing AI returns directly to citizens, and government-subsidized four-day workweeks — framing these as responses to AI-driven erosion of the payroll tax base that funds U.S. social safety nets.\n\nThe document was released as **Trump** advances a national AI framework and ahead of U.S. midterm elections, representing OpenAI's attempt at bipartisan positioning on AI's economic disruption — at the same time the company's president **Greg Brockman** has donated heavily to Trump-aligned super PACs favoring light-touch AI regulation.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://techcrunch.com/2026/04/06/openais-vision-for-the-ai-economy-public-wealth-funds-robot-taxes-and-a-four-day-work-week/",
+            "name": "TechCrunch"
+          },
+          {
+            "url": "https://www.businessinsider.com/openai-superintelligence-ai-upheaval-tax-shorter-workweek-public-wealth-fund-2026-4",
+            "name": "Business Insider"
+          }
+        ],
+        "entities": [
+          "**OpenAI**",
+          "**Trump**",
+          "**Greg Brockman**"
+        ],
+        "category": "",
+        "cluster": "AI geopolitics",
+        "composite_score": 7.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-07-s009",
+        "headline": "Saudi Arabia evacuates Riyadh financial district amid Iranian missile threat",
+        "source": "Semafor Gulf",
+        "source_name": "Semafor Gulf",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-07",
+        "summary": "**Saudi Arabia** ordered workers to evacuate **Riyadh**'s King Abdullah Financial District on 2 April — home to **Goldman Sachs**, **Deloitte**, and **PIF**, the sovereign wealth fund — with orders extended through at least 6 April amid Iranian missile and drone threats. Residents in KAFD's residential towers were advised to shelter indoors; many companies shifted to remote work.",
+        "raw_content": "**Saudi Arabia** ordered workers to evacuate **Riyadh**'s King Abdullah Financial District on 2 April — home to **Goldman Sachs**, **Deloitte**, and **PIF**, the sovereign wealth fund — with orders extended through at least 6 April amid Iranian missile and drone threats. Residents in KAFD's residential towers were advised to shelter indoors; many companies shifted to remote work.\n\nThe evacuation is one of the clearest indicators that Riyadh cannot maintain normal business operations under the current threat environment. A prior Iranian strike hit near the U.S. embassy, and missile attacks occurred during a diplomatic meeting in March.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.lankanewspapers.com/2026/04/07/saudi-arabia-evacuates-riyadh-s-key-financial-hub-amid-iran-threat",
+            "name": "Lanka Newspapers"
+          }
+        ],
+        "entities": [
+          "**Saudi Arabia**",
+          "**Riyadh**",
+          "**Goldman Sachs**",
+          "**Deloitte**",
+          "**PIF**",
+          "**KAUST**"
+        ],
+        "category": "",
+        "cluster": "Iran-Gulf conflict",
+        "composite_score": 7.4,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-07-s011",
+        "headline": "Gemma 4 dominates local deployment adoption, runs on iPhone 17 Pro",
+        "source": "AINews (Latent Space)",
+        "source_name": "AINews (Latent Space)",
+        "source_url": "",
+        "source_domain": null,
+        "date": "2026-04-07",
+        "summary": "**Google DeepMind's Gemma 4** has surged to the #1 trending position on **Hugging Face** within 48 hours of release, with community developers confirming successful on-device deployment on the **iPhone 17 Pro** — a first for a model of this capability tier. The 2B and 4B parameter variants are driving adoption, optimised for maximum intelligence-per-parameter on mobile and IoT hardware.",
+        "raw_content": "**Google DeepMind's Gemma 4** has surged to the #1 trending position on **Hugging Face** within 48 hours of release, with community developers confirming successful on-device deployment on the **iPhone 17 Pro** — a first for a model of this capability tier. The 2B and 4B parameter variants are driving adoption, optimised for maximum intelligence-per-parameter on mobile and IoT hardware.\n\nThe rapid adoption follows yesterday's Apache 2.0 release of the four-variant Gemma 4 family. Community benchmarks are validating **Google DeepMind's** efficiency claims, with the smallest variants matching or exceeding larger competitors on reasoning tasks while fitting within mobile memory constraints.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "Google DeepMind",
+          "Gemma 4",
+          "Hugging Face"
+        ],
+        "category": "",
+        "cluster": "Gemma 4 adoption",
+        "composite_score": 8.2,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "Model Releases & Technical Developments",
+        "is_model_release": true,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-07-s008",
+        "headline": "OPEC+ warns energy asset damage will outlast the Iran conflict",
+        "source": "Bloomberg Briefing",
+        "source_name": "Bloomberg Briefing",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-07",
+        "summary": "**OPEC+** approved a symbolic 206,000-barrel-per-day quota increase for May while its ministerial committee formally warned that damage to Middle East energy assets \"is both costly and takes a long time\" to restore — signaling that supply constraints will persist well beyond any ceasefire. Oil peaked near $120 per barrel last month, with **Brent** settling near $109 after Trump's latest escalation threats.",
+        "raw_content": "**OPEC+** approved a symbolic 206,000-barrel-per-day quota increase for May while its ministerial committee formally warned that damage to Middle East energy assets \"is both costly and takes a long time\" to restore — signaling that supply constraints will persist well beyond any ceasefire. Oil peaked near $120 per barrel last month, with **Brent** settling near $109 after Trump's latest escalation threats.\n\nThe quota increase is largely theoretical: key OPEC+ members **Saudi Arabia**, the UAE, Kuwait, and Iraq cannot raise output while Hormuz remains effectively closed, and **JPMorgan** warned prices could exceed $150 if disruptions persist into mid-May.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://finance.yahoo.com/news/opec-plans-symbolic-oil-quota-101905778.html",
+            "name": "Bloomberg / Yahoo Finance"
+          },
+          {
+            "url": "https://www.aljazeera.com/news/2026/4/5/opec-agrees-to-hike-oil-output-warns-of-slow-recovery-after-attacks",
+            "name": "Al Jazeera"
+          }
+        ],
+        "entities": [
+          "**OPEC+**",
+          "**Saudi Arabia**",
+          "**Brent**",
+          "**JPMorgan**"
+        ],
+        "category": "",
+        "cluster": "Iran-Gulf conflict",
+        "composite_score": 7.0,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-07-s013",
+        "headline": "Nvidia open-sources Nemotron 3, a 120B-parameter reasoning model",
+        "source": "The Deep View",
+        "source_name": "The Deep View",
+        "source_url": "",
+        "source_domain": null,
+        "date": "2026-04-07",
+        "summary": "**Nvidia** open-sourced **Nemotron 3**, a 120B-parameter reasoning model (12B active via mixture-of-experts) built on a hybrid Mamba-2 and Transformer architecture with multi-token prediction. The model supports up to 1M token context windows and targets agentic reasoning, coding, planning, and tool-calling workloads — released under an open licence to accelerate enterprise and research adoption.",
+        "raw_content": "**Nvidia** open-sourced **Nemotron 3**, a 120B-parameter reasoning model (12B active via mixture-of-experts) built on a hybrid Mamba-2 and Transformer architecture with multi-token prediction. The model supports up to 1M token context windows and targets agentic reasoning, coding, planning, and tool-calling workloads — released under an open licence to accelerate enterprise and research adoption.\n\n**Nvidia** is positioning Nemotron 3 as infrastructure for agentic AI systems rather than a chatbot competitor. The LatentMoE architecture — combining Mamba-2 state-space layers with sparse MoE attention — delivers high throughput at a fraction of the compute cost of dense models of equivalent capability.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "Nvidia",
+          "Nemotron 3"
+        ],
+        "category": "",
+        "cluster": null,
+        "composite_score": 8.2,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "Model Releases & Technical Developments",
+        "is_model_release": true,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-07-s016",
+        "headline": "Saudi Arabia advances responsible AI governance consultation via ISPA",
+        "source": "Middle East AI News",
+        "source_name": "Middle East AI News",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-07",
+        "summary": "**Saudi Arabia** is advancing a responsible AI policy consultation process through ISPA, framed around embedding efficiency, inclusivity, and environmental sustainability into AI systems from design. The initiative builds on the **Saudi Data & AI Authority** (SDAIA) and the National Strategy for Data and AI under Vision 2030. [Limited source access — ISPA mandate and specific consultation outputs not confirmed in available sources.]",
+        "raw_content": "**Saudi Arabia** is advancing a responsible AI policy consultation process through ISPA, framed around embedding efficiency, inclusivity, and environmental sustainability into AI systems from design. The initiative builds on the **Saudi Data & AI Authority** (SDAIA) and the National Strategy for Data and AI under Vision 2030. [Limited source access — ISPA mandate and specific consultation outputs not confirmed in available sources.]\n\nSaudi Arabia's **ICAIRE** director highlighted the Kingdom's national AI Ethics Principles as a maturing governance layer translating principles into operational systems, with **UNESCO** providing multilateral support.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.unesco.org/en/articles/advancing-sustainable-ai-innovation-saudi-arabia",
+            "name": "UNESCO"
+          }
+        ],
+        "entities": [
+          "**Saudi Arabia**",
+          "**SDAIA**",
+          "**ICAIRE**",
+          "**UNESCO**",
+          "**KAUST**"
+        ],
+        "category": "",
+        "cluster": null,
+        "composite_score": 6.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-07 for eval-fixture.",
+        "brief_section": "Regional Research & Academic Events",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "brief"
+      }
+    ],
+    "allowed_ids": [
+      "2026-04-07-s001",
+      "2026-04-07-s003",
+      "2026-04-07-s005",
+      "2026-04-07-s010",
+      "2026-04-07-s004",
+      "2026-04-07-s012",
+      "2026-04-07-s015",
+      "2026-04-07-s014",
+      "2026-04-07-s009",
+      "2026-04-07-s011",
+      "2026-04-07-s008",
+      "2026-04-07-s013",
+      "2026-04-07-s016"
+    ]
+  },
+  "old_output": {
+    "items": [
+      {
+        "id": "2026-04-07-s001",
+        "rank": 1,
+        "depth": "full",
+        "cluster": "Iran-Gulf conflict",
+        "context": "The IRGC frames these commercial entities as military enablers, citing their role in U.S.-Israeli targeting operations — **Palantir**, which maintains an Abu Dhabi office, builds data architecture for Pentagon Project Maven. The threat extends a pattern of Iran targeting civilian digital infrastructure as a strategic lever in the broader U.S.-Iran conflict.",
+        "section": "UAE",
+        "entities": [
+          "**Iran**",
+          "**IRGC**",
+          "**Apple**",
+          "**Google**",
+          "**Microsoft**",
+          "**NVIDIA**",
+          "**Palantir**",
+          "**G42**",
+          "**Amazon Web Services**"
+        ],
+        "headline": "IRGC names Abu Dhabi AI firms among missile strike targets",
+        "continuity": null,
+        "source_url": "https://www.wired.com/story/iran-threatens-to-start-attacking-major-us-tech-firms-on-april-1/",
+        "implication": "The explicit naming of G42 — a cornerstone of Abu Dhabi's AI infrastructure and MBZUAI's ecosystem — alongside Palantir's Abu Dhabi presence signals that the Gulf's AI data center buildout is now considered a theater of operations by one conflict party, not merely collateral risk. Institutions dependent on U.S. hyperscale cloud infrastructure operating from the UAE face non-trivial disruption exposure.",
+        "main_bullet": "**Iran's Islamic Revolutionary Guard Corps** issued a threat on 1 April designating 18 U.S.-linked technology companies — including **Apple**, **Google**, **Microsoft**, **NVIDIA**, **Palantir**, and UAE-based **G42** — as \"legitimate targets,\" with strikes promised after 8 p.m. Tehran time. Iranian drones struck two **Amazon Web Services** data centers in the UAE and Bahrain on March 1, causing regional cloud outages, establishing that these threats carry operational precedent. Over 3,000 missiles and drones have been fired across the Gulf since the conflict began on 28 February.",
+        "source_name": "TechCrunch",
+        "source_domain": "wired.com",
+        "source_origin": "newsletter",
+        "composite_score": 9.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.cnbc.com/2026/04/01/iran-irgc-nvidia-appple-attack-threat.html",
+            "name": "CNBC"
+          },
+          {
+            "url": "https://www.newarab.com/news/iran-just-threatened-attack-us-companies-whos-list",
+            "name": "The New Arab"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-07-s003",
+        "rank": 2,
+        "depth": "full",
+        "cluster": "Iran-Gulf conflict",
+        "context": "The ultimatum follows the rescue of a U.S. airman whose fighter jet was shot down, and marks a discrete escalation beyond Trump's prior posture of continued bombardment — adding civilian infrastructure to the target set for the first time.",
+        "section": "International Politics & Policy",
+        "entities": [
+          "**Trump**",
+          "**Iran**",
+          "**Strait of Hormuz**"
+        ],
+        "headline": "Trump issues power-plant ultimatum to Iran over Hormuz closure",
+        "continuity": null,
+        "source_url": null,
+        "implication": "A presidential ultimatum with a named deadline and a new target category (civilian power infrastructure) structurally raises the probability of a major escalation event. Gulf energy and data infrastructure operate on the same grid systems that would be destabilized by Iranian power plant losses, and a counter-strike cycle would directly affect the UAE's operating environment.",
+        "main_bullet": "**President Trump** threatened to destroy **Iran**'s power plants and bring \"Hell\" starting Tuesday if Iran does not reopen the **Strait of Hormuz**, setting an explicit deadline for kinetic escalation. Iran rejected ceasefire discussions, though U.S., Iranian, and regional mediators are separately exploring a 45-day ceasefire framework.",
+        "source_name": "Bloomberg Briefing",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 9.4,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-07-s005",
+        "rank": 3,
+        "depth": "full",
+        "cluster": "Iran-Gulf conflict",
+        "context": "Previous briefs recorded Iranian strikes on the UAE and Bahrain; Qatar's confirmation as a direct Iranian target is a discrete geographic escalation. The Emir-Macron call signals European diplomatic engagement as the conflict spreads across Gulf states.",
+        "section": "International Politics & Policy",
+        "entities": [
+          "**H.H. Sheikh Tamim bin Hamad Al-Thani**",
+          "**Macron**",
+          "**Iran**",
+          "**HBKU**",
+          "**QCRI**"
+        ],
+        "headline": "Qatar confirmed as direct Iranian strike target after Emir-Macron call",
+        "continuity": null,
+        "source_url": "https://www.wam.ae/en/article/bzkwbk6-emir-qatar-french-president-discuss-iranian",
+        "implication": "Qatar hosts **HBKU** and **QCRI** — among the Gulf's most significant AI research institutions — making Iranian strikes on Qatari territory a direct threat to the regional academic and research infrastructure landscape.",
+        "main_bullet": "**H.H. Sheikh Tamim bin Hamad Al-Thani**, Emir of Qatar, received a call from **President Macron** to discuss ongoing Iranian drone strikes directly targeting Qatar and their impact on regional and global energy security, with both leaders emphasizing the need for de-escalation. [Source: https://www.wam.ae/en/article/bzkwbk6-emir-qatar-french-president-discuss-iranian]",
+        "source_name": "WAM",
+        "source_domain": "wam.ae",
+        "source_origin": "canonical",
+        "composite_score": 8.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.zawya.com/en/business/energy/qatar-france-discuss-iranian-aggression-global-energy-security-concerns-x8bz5ef1",
+            "name": "Zawya"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-07-s010",
+        "rank": 4,
+        "depth": "full",
+        "cluster": "AI geopolitics",
+        "context": "The accused firms allegedly routed traffic through proxy services to bypass China-access restrictions, concentrating on Claude's coding, agentic reasoning, and tool-use capabilities — areas Anthropic regards as core differentiators. The practice circumvents U.S. export controls designed to constrain China's frontier AI access.",
+        "section": "International Business & Technology",
+        "entities": [
+          "**Anthropic**",
+          "**DeepSeek**",
+          "**Moonshot AI**",
+          "**MiniMax**",
+          "**OpenAI**",
+          "**Google**"
+        ],
+        "headline": "Anthropic accuses three Chinese AI labs of industrial-scale model distillation",
+        "continuity": null,
+        "source_url": null,
+        "implication": "U.S. frontier labs formally framing Chinese distillation as a national security threat — and calling for coordinated enforcement — is likely to accelerate API access restrictions and tighter export controls on AI services, reshaping the access landscape for non-U.S. research institutions that depend on these models.",
+        "main_bullet": "**Anthropic** publicly accused **DeepSeek**, **Moonshot AI**, and **MiniMax** of running coordinated campaigns to extract Claude's capabilities through 16 million exchanges across 24,000 fraudulent accounts — a technique called distillation that trains weaker models on frontier model outputs. **OpenAI** leveled parallel charges before U.S. lawmakers. Both companies are calling for coordinated industry and government action; according to Bloomberg Briefing, **Google** is associated with the emerging response coalition.",
+        "source_name": "Bloomberg Briefing",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 8.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.theguardian.com/technology/2026/feb/23/us-ai-anthropic-china",
+            "name": "The Guardian"
+          },
+          {
+            "url": "https://fortune.com/2026/02/24/anthropic-china-deepseek-theft-claude-distillation-copyright-national-security/",
+            "name": "Fortune"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-07-s004",
+        "rank": 7,
+        "depth": "full",
+        "cluster": "Iran-Gulf conflict",
+        "context": "Iran is selectively granting exemptions to non-belligerent or friendly states while reinforcing its legal and operational control of the waterway. **JPMorgan** warned oil prices could spike above $150 per barrel if disruptions persist into mid-May; Brent settled near $109 last week.",
+        "section": "International Politics & Policy",
+        "entities": [
+          "**Strait of Hormuz**",
+          "**Iran**",
+          "**India**",
+          "**Iraq**",
+          "**China**",
+          "**Japan**",
+          "**Philippines**",
+          "**JPMorgan**"
+        ],
+        "headline": "Strait of Hormuz vessel traffic reaches six-week high",
+        "continuity": null,
+        "source_url": null,
+        "implication": "Iran is converting Hormuz control into a political sorting mechanism — rewarding diplomatic engagement while maintaining leverage against U.S. allies. The fragmentation of transit rights into bilateral deals entrenches Iranian sovereignty over a waterway through which a fifth of global oil flows, with long-term implications for Gulf energy pricing and the economics of AI data center operations in the region.",
+        "main_bullet": "Ship traffic through the **Strait of Hormuz** reached 21 vessels over the weekend — the highest two-day total since early March — as **India**, **Iraq**, **China**, **Japan**, and **the Philippines** secured bilateral safe-passage agreements with **Iran**, which is simultaneously formalizing a fee-based transit law. Pre-war traffic averaged approximately 135 vessels per day.",
+        "source_name": "Semafor Flagship",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 8.0,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://finance.yahoo.com/sectors/energy/articles/hormuz-traffic-rises-highest-weeks-102027155.html",
+            "name": "Bloomberg / Yahoo Finance"
+          },
+          {
+            "url": "https://www.aol.com/articles/trumps-hormuz-deadline-looms-asian-233724963.html",
+            "name": "AOL / AP"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-07-s012",
+        "rank": 8,
+        "depth": "standard",
+        "cluster": null,
+        "context": "RF-GPT was led by Professor **Merouane Debbah**, Senior Director of the Digital Future Institute, and targets a fundamental gap: existing LLMs process only text and structured data, requiring separate neural networks per RF task. The model enables natural-language queries over wireless spectrum — a capability the team frames as foundational for AI-native 6G networks.",
+        "section": "Regional Research & Academic Events",
+        "entities": [
+          "**Khalifa University**",
+          "**RF-GPT**",
+          "**Merouane Debbah**",
+          "**OpenAI**",
+          "**Alibaba**"
+        ],
+        "headline": "Khalifa University launches RF-GPT, a radio-frequency foundation model",
+        "continuity": null,
+        "source_url": "https://www.wam.ae/en/article/bzkwau4-khalifa-university-launches-radio-frequency",
+        "implication": "A UAE peer institution producing a domain-specific foundation model that outperforms GPT-4 on its target task demonstrates the viability of the synthetic-data pretraining approach for physically grounded AI — a model for how Gulf universities can establish research leadership in specialized domains without frontier training compute.",
+        "main_bullet": "**Khalifa University**'s Digital Future Institute released **RF-GPT**, the first multimodal language model to natively process radio-frequency spectrograms, trained on 625,000 synthetically generated RF instruction examples across six wireless technologies (5G NR, LTE, UMTS, WLAN, DVB-S2, Bluetooth). The model outperformed **OpenAI**'s GPT-4 and **Alibaba**'s Qwen 2.5 on modulation classification, overlap analysis, and 5G NR parameter extraction, with up to 75.4% improvement over baseline models and 98% signal-counting accuracy. [Source: https://www.wam.ae/en/article/bzkwau4-khalifa-university-launches-radio-frequency]",
+        "source_name": "WAM",
+        "source_domain": "wam.ae",
+        "source_origin": "canonical",
+        "composite_score": 7.8,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.middleeastainews.com/p/khalifa-university-unveils-breakthrough",
+            "name": "Middle East AI News"
+          },
+          {
+            "url": "https://arxiv.org/html/2602.14833v1",
+            "name": "arXiv"
+          },
+          {
+            "url": "https://en.emirates7.com/article/11943",
+            "name": "Emirates 7"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-07-s015",
+        "rank": 9,
+        "depth": "standard",
+        "cluster": null,
+        "context": "Presight, a **G42** Group entity, posted AED 3.03 billion ($825 million) in 2025 revenue — 36.9% year-on-year growth — with international revenue up 130% to 38.5% of total. The accelerator's key differentiator is direct access to G42's government and enterprise relationships across the Gulf and emerging markets.",
+        "section": "Regional Research & Academic Events",
+        "entities": [
+          "**Presight**",
+          "**NodeShift**",
+          "**G42**"
+        ],
+        "headline": "Presight AI Accelerator triples applications to 376 from 62 countries",
+        "continuity": null,
+        "source_url": "https://www.wam.ae/en/article/bzkwb5p-global-interest-surges-presight-accelerator",
+        "implication": "The program's rapid geographic expansion signals growing global recognition of Abu Dhabi's G42 ecosystem as a commercial gateway for applied AI deployment in government and critical infrastructure — markets that are structurally difficult for early-stage companies to enter independently.",
+        "main_bullet": "**Presight**'s AI Accelerator Programme received 376 applications from 62 countries for Cohort II — more than triple the 120 applications from 17 countries in its inaugural cohort — with the UAE (140), U.S. (37), India (26), UK (19), and South Korea (16) as the top five source nations. Ten companies will be selected in May 2026. Cohort I participants collectively hold $26 million in potential contract value, with **NodeShift** securing $1 million in confirmed investment from the Presight-Shorooq Fund. [Source: https://www.wam.ae/en/article/bzkwb5p-global-interest-surges-presight-accelerator]",
+        "source_name": "WAM",
+        "source_domain": "wam.ae",
+        "source_origin": "canonical",
+        "composite_score": 7.8,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.presight.ai/news/global-interest-surges-as-presight-ai-accelerator-triples-applications-for-cohort-ii",
+            "name": "Presight"
+          },
+          {
+            "url": "https://www.middleeastainews.com/p/presight-ai-accelerator-triples-applications",
+            "name": "Middle East AI News"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-07-s014",
+        "rank": 10,
+        "depth": "standard",
+        "cluster": "AI geopolitics",
+        "context": "The document was released as **Trump** advances a national AI framework and ahead of U.S. midterm elections, representing OpenAI's attempt at bipartisan positioning on AI's economic disruption — at the same time the company's president **Greg Brockman** has donated heavily to Trump-aligned super PACs favoring light-touch AI regulation.",
+        "section": "International Politics & Policy",
+        "entities": [
+          "**OpenAI**",
+          "**Trump**",
+          "**Greg Brockman**"
+        ],
+        "headline": "OpenAI proposes robot taxes and public wealth funds to address AI disruption",
+        "continuity": null,
+        "source_url": null,
+        "implication": "When the world's leading AI company publicly endorses sector-specific capital taxation and sovereign wealth redistribution, it reframes the global policy conversation in ways that Gulf AI jurisdictions — positioned as low-regulation alternatives — will need to explicitly address in their own AI governance narratives.",
+        "main_bullet": "**OpenAI** released a policy framework proposing taxes on AI-driven capital gains and \"automated labor,\" a Public Wealth Fund distributing AI returns directly to citizens, and government-subsidized four-day workweeks — framing these as responses to AI-driven erosion of the payroll tax base that funds U.S. social safety nets.",
+        "source_name": "TechCrunch",
+        "source_domain": "techcrunch.com",
+        "source_origin": "newsletter",
+        "composite_score": 7.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://techcrunch.com/2026/04/06/openais-vision-for-the-ai-economy-public-wealth-funds-robot-taxes-and-a-four-day-work-week/",
+            "name": "TechCrunch"
+          },
+          {
+            "url": "https://www.businessinsider.com/openai-superintelligence-ai-upheaval-tax-shorter-workweek-public-wealth-fund-2026-4",
+            "name": "Business Insider"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-07-s009",
+        "rank": 11,
+        "depth": "standard",
+        "cluster": "Iran-Gulf conflict",
+        "context": "The evacuation is one of the clearest indicators that Riyadh cannot maintain normal business operations under the current threat environment. A prior Iranian strike hit near the U.S. embassy, and missile attacks occurred during a diplomatic meeting in March.",
+        "section": "International Politics & Policy",
+        "entities": [
+          "**Saudi Arabia**",
+          "**Riyadh**",
+          "**Goldman Sachs**",
+          "**Deloitte**",
+          "**PIF**",
+          "**KAUST**"
+        ],
+        "headline": "Saudi Arabia evacuates Riyadh financial district amid Iranian missile threat",
+        "continuity": null,
+        "source_url": null,
+        "implication": "PIF's physical disruption has downstream implications for the regional AI investment pipeline it anchors, including **KAUST** and major Gulf AI infrastructure projects, at a moment when the conflict is actively threatening the multinational headquarters strategy Saudi Arabia has spent years building.",
+        "main_bullet": "**Saudi Arabia** ordered workers to evacuate **Riyadh**'s King Abdullah Financial District on 2 April — home to **Goldman Sachs**, **Deloitte**, and **PIF**, the sovereign wealth fund — with orders extended through at least 6 April amid Iranian missile and drone threats. Residents in KAFD's residential towers were advised to shelter indoors; many companies shifted to remote work.",
+        "source_name": "Semafor Gulf",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 7.4,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.lankanewspapers.com/2026/04/07/saudi-arabia-evacuates-riyadh-s-key-financial-hub-amid-iran-threat",
+            "name": "Lanka Newspapers"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-07-s011",
+        "rank": 11,
+        "depth": "full",
+        "cluster": "Gemma 4 adoption",
+        "context": "The rapid adoption follows yesterday's Apache 2.0 release of the four-variant Gemma 4 family. Community benchmarks are validating **Google DeepMind's** efficiency claims, with the smallest variants matching or exceeding larger competitors on reasoning tasks while fitting within mobile memory constraints.",
+        "section": "Model Releases & Technical Developments",
+        "entities": [
+          "Google DeepMind",
+          "Gemma 4",
+          "Hugging Face"
+        ],
+        "headline": "Gemma 4 dominates local deployment adoption, runs on iPhone 17 Pro",
+        "continuity": "Follow-on to the Gemma 4 launch briefed on 2026-04-06, but with a material new data point: Hugging Face #1 trending and confirmed on-device iPhone deployment are adoption signals, not just release news.",
+        "source_url": null,
+        "implication": "Confirmed on-device iPhone deployment signals that frontier-class reasoning is migrating to edge hardware faster than expected — compressing the timeline for sovereign AI deployments that require local inference without cloud dependency, a priority for Gulf institutions building on-premises AI infrastructure. [Limited source access — adoption metrics from newsletter aggregation]",
+        "main_bullet": "**Google DeepMind's Gemma 4** has surged to the #1 trending position on **Hugging Face** within 48 hours of release, with community developers confirming successful on-device deployment on the **iPhone 17 Pro** — a first for a model of this capability tier. The 2B and 4B parameter variants are driving adoption, optimised for maximum intelligence-per-parameter on mobile and IoT hardware.",
+        "source_name": "AINews (Latent Space)",
+        "source_domain": null,
+        "source_origin": "newsletter",
+        "composite_score": 8.2,
+        "is_model_release": true,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-07-s008",
+        "rank": 12,
+        "depth": "standard",
+        "cluster": "Iran-Gulf conflict",
+        "context": "The quota increase is largely theoretical: key OPEC+ members **Saudi Arabia**, the UAE, Kuwait, and Iraq cannot raise output while Hormuz remains effectively closed, and **JPMorgan** warned prices could exceed $150 if disruptions persist into mid-May.",
+        "section": "UAE",
+        "entities": [
+          "**OPEC+**",
+          "**Saudi Arabia**",
+          "**Brent**",
+          "**JPMorgan**"
+        ],
+        "headline": "OPEC+ warns energy asset damage will outlast the Iran conflict",
+        "continuity": null,
+        "source_url": null,
+        "implication": "OPEC+ institutionally acknowledging prolonged post-war supply damage — not just near-term disruption — reframes the energy cost baseline for the Gulf's AI infrastructure buildout, which depends on cheap, stable electricity to remain competitive globally.",
+        "main_bullet": "**OPEC+** approved a symbolic 206,000-barrel-per-day quota increase for May while its ministerial committee formally warned that damage to Middle East energy assets \"is both costly and takes a long time\" to restore — signaling that supply constraints will persist well beyond any ceasefire. Oil peaked near $120 per barrel last month, with **Brent** settling near $109 after Trump's latest escalation threats.",
+        "source_name": "Bloomberg Briefing",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 7.0,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://finance.yahoo.com/news/opec-plans-symbolic-oil-quota-101905778.html",
+            "name": "Bloomberg / Yahoo Finance"
+          },
+          {
+            "url": "https://www.aljazeera.com/news/2026/4/5/opec-agrees-to-hike-oil-output-warns-of-slow-recovery-after-attacks",
+            "name": "Al Jazeera"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-07-s013",
+        "rank": 13,
+        "depth": "full",
+        "cluster": null,
+        "context": "**Nvidia** is positioning Nemotron 3 as infrastructure for agentic AI systems rather than a chatbot competitor. The LatentMoE architecture — combining Mamba-2 state-space layers with sparse MoE attention — delivers high throughput at a fraction of the compute cost of dense models of equivalent capability.",
+        "section": "Model Releases & Technical Developments",
+        "entities": [
+          "Nvidia",
+          "Nemotron 3"
+        ],
+        "headline": "Nvidia open-sources Nemotron 3, a 120B-parameter reasoning model",
+        "continuity": null,
+        "source_url": null,
+        "implication": "An open 120B reasoning model from **Nvidia** lowers the barrier for organisations building autonomous AI agents and lowers dependence on closed API providers. For MBZUAI and Gulf sovereign AI programmes, this offers a locally deployable reasoning backbone that avoids export-control exposure tied to U.S. API services. [Limited source access — technical specifications from newsletter digest]",
+        "main_bullet": "**Nvidia** open-sourced **Nemotron 3**, a 120B-parameter reasoning model (12B active via mixture-of-experts) built on a hybrid Mamba-2 and Transformer architecture with multi-token prediction. The model supports up to 1M token context windows and targets agentic reasoning, coding, planning, and tool-calling workloads — released under an open licence to accelerate enterprise and research adoption.",
+        "source_name": "The Deep View",
+        "source_domain": null,
+        "source_origin": "newsletter",
+        "composite_score": 8.2,
+        "is_model_release": true,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-07-s016",
+        "rank": 13,
+        "depth": "brief",
+        "cluster": null,
+        "context": "Saudi Arabia's **ICAIRE** director highlighted the Kingdom's national AI Ethics Principles as a maturing governance layer translating principles into operational systems, with **UNESCO** providing multilateral support.",
+        "section": "Regional Research & Academic Events",
+        "entities": [
+          "**Saudi Arabia**",
+          "**SDAIA**",
+          "**ICAIRE**",
+          "**UNESCO**",
+          "**KAUST**"
+        ],
+        "headline": "Saudi Arabia advances responsible AI governance consultation via ISPA",
+        "continuity": null,
+        "source_url": null,
+        "implication": "A formal Saudi AI governance consultation process — run in parallel with active conflict — signals that Riyadh intends to continue advancing its AI regulatory positioning regardless of the security environment, which has direct bearing on **KAUST**'s research policy and the regional competitive landscape for AI governance frameworks.",
+        "main_bullet": "**Saudi Arabia** is advancing a responsible AI policy consultation process through ISPA, framed around embedding efficiency, inclusivity, and environmental sustainability into AI systems from design. The initiative builds on the **Saudi Data & AI Authority** (SDAIA) and the National Strategy for Data and AI under Vision 2030. [Limited source access — ISPA mandate and specific consultation outputs not confirmed in available sources.]",
+        "source_name": "Middle East AI News",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 6.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.unesco.org/en/articles/advancing-sustainable-ai-innovation-saudi-arabia",
+            "name": "UNESCO"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      }
+    ]
+  }
+}

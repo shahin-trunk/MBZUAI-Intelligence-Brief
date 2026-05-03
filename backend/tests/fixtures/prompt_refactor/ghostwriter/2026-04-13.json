@@ -1,0 +1,619 @@
+{
+  "date": "2026-04-13",
+  "gatekeeper_input": {
+    "selected": [
+      {
+        "id": "2026-04-13-s004",
+        "headline": "Crown Prince of Abu Dhabi arrives in Beijing on official state visit",
+        "source": "Abu Dhabi Media Office",
+        "source_name": "Abu Dhabi Media Office",
+        "source_url": "https://www.mediaoffice.abudhabi/en/crown-prince-news/crown-prince-of-abu-dhabi-arrives-in-beijing-on-official-visit-to-china/",
+        "source_domain": "mediaoffice.abudhabi",
+        "date": "2026-04-13",
+        "summary": "H.H. Sheikh Khaled bin Mohamed bin Zayed Al Nahyan arrived in Beijing at the head of a high-level delegation including ADNOC CEO Dr. Sultan Al Jaber and Minister of Investment Mohamed Alsuwaidi. The visit is framed around deepening the UAE–China comprehensive strategic partnership and expanding high-potential sector investment. The delegation's composition — spanning energy, investment, foreign trade, and foreign affairs — signals broad-spectrum economic rather than ceremonial engagement.",
+        "raw_content": "H.H. Sheikh Khaled bin Mohamed bin Zayed Al Nahyan arrived in Beijing at the head of a high-level delegation including ADNOC CEO Dr. Sultan Al Jaber and Minister of Investment Mohamed Alsuwaidi. The visit is framed around deepening the UAE–China comprehensive strategic partnership and expanding high-potential sector investment. The delegation's composition — spanning energy, investment, foreign trade, and foreign affairs — signals broad-spectrum economic rather than ceremonial engagement.\n\nThe timing is the story. Sheikh Khaled's arrival in Beijing coincides with Trump's naval blockade of Iran, a 50% tariff threat directed at Chinese military support for Tehran, and Chinese goodwill gestures toward Taiwan's opposition — a day of maximum US–China tension. The UAE's presence in Beijing at this moment is a deliberate signal of strategic autonomy: Abu Dhabi is unwilling to subordinate its China relationship to Washington's pressure campaign. For UAE-based institutions with US technology dependencies — including those navigating chip access, export controls, and American partnership agreements — this visit defines the diplomatic envelope within which they operate.\n\nKey facts:\n- H.H. Sheikh Khaled bin Mohamed bin Zayed Al Nahyan arrived in Beijing at the head of a high-level delegation including ADNOC CEO Dr. Sultan Al Jaber and Minister of Investment Mohamed Alsuwaidi.\n- The visit is framed around deepening the UAE–China comprehensive strategic partnership and expanding high-potential sector investment.\n- The delegation's composition — spanning energy, investment, foreign trade, and foreign affairs — signals broad-spectrum economic rather than ceremonial engagement.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**H.H. Sheikh Khaled bin Mohamed bin Zayed Al Nahyan**",
+          "**China**",
+          "**ADNOC**",
+          "**Dr. Sultan Al Jaber**"
+        ],
+        "category": "Crown Prince News",
+        "cluster": "UAE-China strategic alignment",
+        "composite_score": 8.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-13 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "H.H. Sheikh Khaled bin Mohamed bin Zayed Al Nahyan",
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-13-s005",
+        "headline": "UAE National Experts Programme shortlists 135 AI finalists from all seven emirates",
+        "source": "Middle East AI News",
+        "source_name": "Middle East AI News",
+        "source_url": "",
+        "source_domain": "zawya.com",
+        "date": "2026-04-13",
+        "summary": "The UAE's National Experts Programme AI track has shortlisted 135 finalists drawn from all seven emirates. Prior NEP AI cohorts have produced research spanning energy microgrids, port planning, marine mammal detection, and AI in education — indicating applied national-priority focus.",
+        "raw_content": "The UAE's National Experts Programme AI track has shortlisted 135 finalists drawn from all seven emirates. Prior NEP AI cohorts have produced research spanning energy microgrids, port planning, marine mammal detection, and AI in education — indicating applied national-priority focus.\n\nThe NEP-AI track is the UAE government's primary pipeline for building an indigenous AI professional class aligned with national priorities. Representation across all seven emirates signals deliberate geographic breadth rather than concentration in Abu Dhabi and Dubai. This cohort will enter a landscape shaped by MBZUAI, TII, and G42 — as competitors for talent, as potential research collaborators, and as future institutional partners. Selection criteria and finalist profiles remain undisclosed in current reporting.\n\nKey facts:\n- The UAE's National Experts Programme AI track has shortlisted 135 finalists drawn from all seven emirates.\n- Prior NEP AI cohorts have produced research spanning energy microgrids, port planning, marine mammal detection, and AI in education — indicating applied national-priority focus.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.zawya.com/en/press-release/companies-news/uaes-nep-ai-shortlists-135-finalists-drawing-talent-from-all-seven-emirates-hio98vhw",
+            "name": "Zawya"
+          },
+          {
+            "url": "https://www.bignewsnetwork.com/news/278975293/uae-national-experts-programme-ai-track-shortlists-135-finalists",
+            "name": "Big News Network"
+          },
+          {
+            "url": "https://uaenep.ae/en/ai-reports",
+            "name": "UAE NEP"
+          }
+        ],
+        "entities": [
+          "**UAE National Experts Programme**",
+          "**NEP**"
+        ],
+        "category": "UAE AI Policy",
+        "cluster": "UAE AI ecosystem",
+        "composite_score": 7.8,
+        "selection_rationale": "Reconstructed from production brief 2026-04-13 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "UAE National Experts Programme",
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-13-s010",
+        "headline": "UAE selected to host 2029 World Bank and IMF Annual Meetings in Abu Dhabi",
+        "source": "Abu Dhabi Media Office",
+        "source_name": "Abu Dhabi Media Office",
+        "source_url": "https://www.mediaoffice.abudhabi/en/economy/uae-to-host-2029-annual-meetings-of-world-bank-group-and-international-monetary-fund-in-abu-dhabi/",
+        "source_domain": "mediaoffice.abudhabi",
+        "date": "2026-04-13",
+        "summary": "The UAE won a competitive international ballot to host the 2029 Annual Meetings of the World Bank Group and IMF in Abu Dhabi — the first such hosting since Dubai in 2003. The gatherings convene finance ministers and central bank governors from 190 countries and are among the highest-attendance multilateral economic forums.",
+        "raw_content": "The UAE won a competitive international ballot to host the 2029 Annual Meetings of the World Bank Group and IMF in Abu Dhabi — the first such hosting since Dubai in 2003. The gatherings convene finance ministers and central bank governors from 190 countries and are among the highest-attendance multilateral economic forums.\n\nHosting the World Bank/IMF Annual Meetings cements Abu Dhabi's standing as a primary venue for global economic governance — a function that was previously concentrated in Washington and emerging market hosts. The selection validates Abu Dhabi's infrastructure, institutional stability, and diplomatic reach at a moment when that standing is actively stressed by regional conflict. For institutions based in Abu Dhabi, the designation increases the concentration of global financial and policy leadership in the city between now and 2029.\n\nKey facts:\n- The UAE won a competitive international ballot to host the 2029 Annual Meetings of the World Bank Group and IMF in Abu Dhabi — the first such hosting since Dubai in 2003.\n- The gatherings convene finance ministers and central bank governors from 190 countries and are among the highest-attendance multilateral economic forums.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**UAE**",
+          "**World Bank Group**",
+          "**IMF**",
+          "**H.H. Sheikh Mohammed bin Rashid Al Maktoum**"
+        ],
+        "category": "Economy",
+        "cluster": null,
+        "composite_score": 7.0,
+        "selection_rationale": "Reconstructed from production brief 2026-04-13 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "UAE",
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-13-c033",
+        "headline": "Crown Prince meets Brookfield CEO on investment cooperation",
+        "source": "Abu Dhabi Media Office",
+        "source_name": "Abu Dhabi Media Office",
+        "source_url": "https://www.mediaoffice.abudhabi/en/crown-prince-news/khaled-bin-mohamed-bin-zayed-meets-ceo-of-asset-and-alternative-investment-management-company-brookfield-corporation/",
+        "source_domain": "mediaoffice.abudhabi",
+        "date": "2026-04-13",
+        "summary": "H.H. Sheikh Khaled bin Mohamed bin Zayed met **Brookfield** CEO Bruce Flatt. Discussion focused on expanding cooperation in asset and alternative investment management.",
+        "raw_content": "H.H. Sheikh Khaled bin Mohamed bin Zayed met **Brookfield** CEO Bruce Flatt. Discussion focused on expanding cooperation in asset and alternative investment management.\n\nThe meeting convenes senior UAE investment officials—the Finance Department chairman and Economic Development head—signaling institutional priority for **Brookfield** partnership. The emphasis on alternative asset classes reflects the UAE's broader diversification away from hydrocarbon-dependent returns.\n\nKey facts:\n- H.H. Sheikh Khaled bin Mohamed bin Zayed met **Brookfield** CEO Bruce Flatt.\n- Discussion focused on expanding cooperation in asset and alternative investment management.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**H.H. Sheikh Khaled bin Mohamed bin Zayed**",
+          "**Brookfield Corporation**",
+          "**Bruce Flatt**"
+        ],
+        "category": "Investment",
+        "cluster": null,
+        "composite_score": 5.8,
+        "selection_rationale": "Reconstructed from production brief 2026-04-13 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "UAE",
+        "depth": "brief"
+      },
+      {
+        "id": "2026-04-13-s001",
+        "headline": "US declares naval blockade of Iran after peace talks collapse",
+        "source": "Axios AM/PM",
+        "source_name": "Axios AM/PM",
+        "source_url": "",
+        "source_domain": "axios.com",
+        "date": "2026-04-13",
+        "summary": "Trump announced a naval blockade targeting ships entering or leaving the Strait of Hormuz, effective Monday. Pakistan-brokered peace talks collapsed after Iran demanded control of the strait and refused to surrender its enriched uranium stockpile. Oil markets reacted immediately: US crude rose 8% to $104.24/barrel, Brent surged 7% to $102.29.",
+        "raw_content": "Trump announced a naval blockade targeting ships entering or leaving the Strait of Hormuz, effective Monday. Pakistan-brokered peace talks collapsed after Iran demanded control of the strait and refused to surrender its enriched uranium stockpile. Oil markets reacted immediately: US crude rose 8% to $104.24/barrel, Brent surged 7% to $102.29.\n\nThe blockade marks a qualitative escalation beyond the airstrike campaign — it transforms a military conflict into a chokepoint siege of a waterway through which roughly 20% of global oil supply transits. Iran's twin demands (strait control, uranium retention) functioned as deliberate non-starters, suggesting Tehran calculated that failed talks serve its interests better than a negotiated settlement. For the UAE, which sits at the strait's southern entrance, the operating environment shifts: ADNOC export logistics, ADNOC-linked infrastructure, and the broader Abu Dhabi fiscal position are all exposed to prolonged price volatility above $100/barrel. The blockade also forces every regional actor — including the UAE — to formally or informally position relative to US enforcement operations in waters that border their territory.\n\nKey facts:\n- Trump announced a naval blockade targeting ships entering or leaving the Strait of Hormuz, effective Monday.\n- Pakistan-brokered peace talks collapsed after Iran demanded control of the strait and refused to surrender its enriched uranium stockpile.\n- Oil markets reacted immediately: US crude rose 8% to $104.24/barrel, Brent surged 7% to $102.29.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**United States**",
+          "**Iran**",
+          "**Pakistan**",
+          "**Strait of Hormuz**"
+        ],
+        "category": "Energy / Geopolitics",
+        "cluster": "US-Iran conflict escalation",
+        "composite_score": 9.4,
+        "selection_rationale": "Reconstructed from production brief 2026-04-13 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "United States",
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-13-c144",
+        "headline": "China's Xi tells Taiwan opposition leader unification inevitable",
+        "source": "FT Briefing",
+        "source_name": "FT Briefing",
+        "source_url": "",
+        "source_domain": "ft.com",
+        "date": "2026-04-13",
+        "summary": "Xi Jinping met Taiwan opposition leader in Beijing; first such meeting in a decade. Xi emphasized unification is inevitable; opposition leader sought political dialogue.",
+        "raw_content": "Xi Jinping met Taiwan opposition leader in Beijing; first such meeting in a decade. Xi emphasized unification is inevitable; opposition leader sought political dialogue.\n\nThe meeting signals Beijing's continued engagement with non-DPP political forces in Taiwan. Framing unification as inevitable—rather than negotiable—reflects hardened position. The timing amid US-Iran tensions suggests China may be testing Taiwan's strategic resolve while US attention is divided.\n\nKey facts:\n- Xi Jinping met Taiwan opposition leader in Beijing; first such meeting in a decade.\n- Xi emphasized unification is inevitable; opposition leader sought political dialogue.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**Xi Jinping**",
+          "**Taiwan**"
+        ],
+        "category": "Cross-strait relations",
+        "cluster": null,
+        "composite_score": 6.4,
+        "selection_rationale": "Reconstructed from production brief 2026-04-13 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "China",
+        "depth": "brief"
+      },
+      {
+        "id": "2026-04-13-s007",
+        "headline": "Japan commits $16.3 billion to Rapidus for 2-nanometer chip production",
+        "source": "Bloomberg Briefing",
+        "source_name": "Bloomberg Briefing",
+        "source_url": "",
+        "source_domain": "bloomberg.com",
+        "date": "2026-04-13",
+        "summary": "Japan approved ¥631.5 billion in additional subsidies, bringing total government support for Rapidus to $16.3 billion through 2027. The funding targets mass production of 2-nanometer chips using gate-all-around transistor architecture, reducing Japan's dependence on TSMC.",
+        "raw_content": "Japan approved ¥631.5 billion in additional subsidies, bringing total government support for Rapidus to $16.3 billion through 2027. The funding targets mass production of 2-nanometer chips using gate-all-around transistor architecture, reducing Japan's dependence on TSMC.\n\nJapan's cumulative $16.3 billion commitment rivals the CHIPS Act allocations that drew TSMC and Samsung to the United States, signaling that sovereign semiconductor ambition has moved beyond rhetoric into sustained industrial policy. Rapidus is widely considered a long shot on schedule, but even partial success reshapes the 2nm supply landscape currently dominated by TSMC and Samsung. The investment lands alongside Japan's deepening security alignment with the US, suggesting Tokyo sees chip independence as a strategic hedge rather than purely commercial play.\n\nKey facts:\n- Japan approved ¥631.5 billion in additional subsidies, bringing total government support for Rapidus to $16.3 billion through 2027.\n- The funding targets mass production of 2-nanometer chips using gate-all-around transistor architecture, reducing Japan's dependence on TSMC.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://business.financialpost.com/pmn/business-pmn/japan-bets-16-billion-to-propel-rapidus-into-ai-chips",
+            "name": "Financial Post"
+          }
+        ],
+        "entities": [
+          "**Japan**",
+          "**Rapidus**",
+          "**TSMC**"
+        ],
+        "category": "Semiconductor / AI Infrastructure",
+        "cluster": "AI compute infrastructure",
+        "composite_score": 7.4,
+        "selection_rationale": "Reconstructed from production brief 2026-04-13 for eval-fixture.",
+        "brief_section": "International Business & Technology",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "Rapidus",
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-13-c147",
+        "headline": "Alibaba shifts strategy toward revenue over open-source AI",
+        "source": "FT Briefing",
+        "source_name": "FT Briefing",
+        "source_url": "",
+        "source_domain": "ft.com",
+        "date": "2026-04-13",
+        "summary": "Alibaba prioritizing revenue generation over open-source Qwen model development. Global developers relying on Qwen models face potential access restrictions.",
+        "raw_content": "Alibaba prioritizing revenue generation over open-source Qwen model development. Global developers relying on Qwen models face potential access restrictions.\n\nAlibaba's pivot away from open-source reflects competitive pressure from frontier US labs and profitability concerns. Qwen was used as a goodwill tool; closure narrows the open-weight ecosystem for developers outside China and reduces Alibaba's competitive leverage against OpenAI and Anthropic in emerging markets.\n\nKey facts:\n- Alibaba prioritizing revenue generation over open-source Qwen model development.\n- Global developers relying on Qwen models face potential access restrictions.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**Alibaba**"
+        ],
+        "category": "AI model strategy",
+        "cluster": null,
+        "composite_score": 6.4,
+        "selection_rationale": "Reconstructed from production brief 2026-04-13 for eval-fixture.",
+        "brief_section": "International Business & Technology",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "Alibaba",
+        "depth": "brief"
+      },
+      {
+        "id": "2026-04-13-c075",
+        "headline": "GLM-5.1 reaches number three on Code Arena benchmark",
+        "source": "AINews (Latent Space)",
+        "source_name": "AINews (Latent Space)",
+        "source_url": "",
+        "source_domain": "latentspace.substack.com",
+        "date": "2026-04-13",
+        "summary": "GLM-5.1 achieved #3 ranking on Code Arena, surpassing Gemini 3.1 and GPT-5.4. Performance roughly on par with Claude Sonnet 4.6; Z.ai holds #1 open model rank.",
+        "raw_content": "GLM-5.1 achieved #3 ranking on Code Arena, surpassing Gemini 3.1 and GPT-5.4. Performance roughly on par with Claude Sonnet 4.6; Z.ai holds #1 open model rank.\n\nChinese open-weight models are narrowing the capability gap with US frontier labs. GLM-5.1's placement in the top three signals maturity in the open-weight ecosystem. Z.ai's top open-model position contrasts with OpenAI's API-first strategy.\n\nKey facts:\n- GLM-5.1 achieved #3 ranking on Code Arena, surpassing Gemini 3.1 and GPT-5.4.\n- Performance roughly on par with Claude Sonnet 4.6; Z.ai holds #1 open model rank.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**Zhipu**",
+          "**Z.ai**"
+        ],
+        "category": "Model releases",
+        "cluster": null,
+        "composite_score": 6.8,
+        "selection_rationale": "Reconstructed from production brief 2026-04-13 for eval-fixture.",
+        "brief_section": "Model Releases & Technical Developments",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": "Zhipu",
+        "depth": "brief"
+      }
+    ],
+    "allowed_ids": [
+      "2026-04-13-s004",
+      "2026-04-13-s005",
+      "2026-04-13-s010",
+      "2026-04-13-c033",
+      "2026-04-13-s001",
+      "2026-04-13-c144",
+      "2026-04-13-s007",
+      "2026-04-13-c147",
+      "2026-04-13-c075"
+    ]
+  },
+  "old_output": {
+    "items": [
+      {
+        "id": "2026-04-13-s004",
+        "rank": 1,
+        "depth": "full",
+        "cluster": "UAE-China strategic alignment",
+        "context": "The timing is the story. Sheikh Khaled's arrival in Beijing coincides with Trump's naval blockade of Iran, a 50% tariff threat directed at Chinese military support for Tehran, and Chinese goodwill gestures toward Taiwan's opposition — a day of maximum US–China tension. The UAE's presence in Beijing at this moment is a deliberate signal of strategic autonomy: Abu Dhabi is unwilling to subordinate its China relationship to Washington's pressure campaign. For UAE-based institutions with US technology dependencies — including those navigating chip access, export controls, and American partnership agreements — this visit defines the diplomatic envelope within which they operate.",
+        "section": "UAE",
+        "analysis": "The timing is the story. Sheikh Khaled's arrival in Beijing coincides with Trump's naval blockade of Iran, a 50% tariff threat directed at Chinese military support for Tehran, and Chinese goodwill gestures toward Taiwan's opposition — a day of maximum US–China tension. The UAE's presence in Beijing at this moment is a deliberate signal of strategic autonomy: Abu Dhabi is unwilling to subordinate its China relationship to Washington's pressure campaign. For UAE-based institutions with US technology dependencies — including those navigating chip access, export controls, and American partnership agreements — this visit defines the diplomatic envelope within which they operate.",
+        "category": "Crown Prince News",
+        "entities": [
+          "**H.H. Sheikh Khaled bin Mohamed bin Zayed Al Nahyan**",
+          "**China**",
+          "**ADNOC**",
+          "**Dr. Sultan Al Jaber**"
+        ],
+        "exhibits": [],
+        "headline": "Crown Prince of Abu Dhabi arrives in Beijing on official state visit",
+        "continuity": null,
+        "source_url": "https://www.mediaoffice.abudhabi/en/crown-prince-news/crown-prince-of-abu-dhabi-arrives-in-beijing-on-official-visit-to-china/",
+        "implication": "",
+        "key_bullets": [
+          "H.H. Sheikh Khaled bin Mohamed bin Zayed Al Nahyan arrived in Beijing at the head of a high-level delegation including ADNOC CEO Dr. Sultan Al Jaber and Minister of Investment Mohamed Alsuwaidi.",
+          "The visit is framed around deepening the UAE–China comprehensive strategic partnership and expanding high-potential sector investment.",
+          "The delegation's composition — spanning energy, investment, foreign trade, and foreign affairs — signals broad-spectrum economic rather than ceremonial engagement."
+        ],
+        "main_bullet": "H.H. Sheikh Khaled bin Mohamed bin Zayed Al Nahyan arrived in Beijing at the head of a high-level delegation including ADNOC CEO Dr. Sultan Al Jaber and Minister of Investment Mohamed Alsuwaidi. The visit is framed around deepening the UAE–China comprehensive strategic partnership and expanding high-potential sector investment. The delegation's composition — spanning energy, investment, foreign trade, and foreign affairs — signals broad-spectrum economic rather than ceremonial engagement.",
+        "source_name": "Abu Dhabi Media Office",
+        "source_domain": "mediaoffice.abudhabi",
+        "source_origin": "canonical",
+        "primary_entity": "H.H. Sheikh Khaled bin Mohamed bin Zayed Al Nahyan",
+        "composite_score": 8.6,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-13-s005",
+        "rank": 2,
+        "depth": "standard",
+        "cluster": "UAE AI ecosystem",
+        "context": "The NEP-AI track is the UAE government's primary pipeline for building an indigenous AI professional class aligned with national priorities. Representation across all seven emirates signals deliberate geographic breadth rather than concentration in Abu Dhabi and Dubai. This cohort will enter a landscape shaped by MBZUAI, TII, and G42 — as competitors for talent, as potential research collaborators, and as future institutional partners. Selection criteria and finalist profiles remain undisclosed in current reporting.",
+        "section": "UAE",
+        "analysis": "The NEP-AI track is the UAE government's primary pipeline for building an indigenous AI professional class aligned with national priorities. Representation across all seven emirates signals deliberate geographic breadth rather than concentration in Abu Dhabi and Dubai. This cohort will enter a landscape shaped by MBZUAI, TII, and G42 — as competitors for talent, as potential research collaborators, and as future institutional partners. Selection criteria and finalist profiles remain undisclosed in current reporting.",
+        "category": "UAE AI Policy",
+        "entities": [
+          "**UAE National Experts Programme**",
+          "**NEP**"
+        ],
+        "exhibits": [],
+        "headline": "UAE National Experts Programme shortlists 135 AI finalists from all seven emirates",
+        "continuity": null,
+        "source_url": null,
+        "implication": "",
+        "key_bullets": [
+          "The UAE's National Experts Programme AI track has shortlisted 135 finalists drawn from all seven emirates.",
+          "Prior NEP AI cohorts have produced research spanning energy microgrids, port planning, marine mammal detection, and AI in education — indicating applied national-priority focus."
+        ],
+        "main_bullet": "The UAE's National Experts Programme AI track has shortlisted 135 finalists drawn from all seven emirates. Prior NEP AI cohorts have produced research spanning energy microgrids, port planning, marine mammal detection, and AI in education — indicating applied national-priority focus.",
+        "source_name": "Middle East AI News",
+        "source_domain": "zawya.com",
+        "source_origin": "newsletter",
+        "primary_entity": "UAE National Experts Programme",
+        "composite_score": 7.8,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.zawya.com/en/press-release/companies-news/uaes-nep-ai-shortlists-135-finalists-drawing-talent-from-all-seven-emirates-hio98vhw",
+            "name": "Zawya"
+          },
+          {
+            "url": "https://www.bignewsnetwork.com/news/278975293/uae-national-experts-programme-ai-track-shortlists-135-finalists",
+            "name": "Big News Network"
+          },
+          {
+            "url": "https://uaenep.ae/en/ai-reports",
+            "name": "UAE NEP"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-13-s010",
+        "rank": 3,
+        "depth": "standard",
+        "cluster": null,
+        "context": "Hosting the World Bank/IMF Annual Meetings cements Abu Dhabi's standing as a primary venue for global economic governance — a function that was previously concentrated in Washington and emerging market hosts. The selection validates Abu Dhabi's infrastructure, institutional stability, and diplomatic reach at a moment when that standing is actively stressed by regional conflict. For institutions based in Abu Dhabi, the designation increases the concentration of global financial and policy leadership in the city between now and 2029.",
+        "section": "UAE",
+        "analysis": "Hosting the World Bank/IMF Annual Meetings cements Abu Dhabi's standing as a primary venue for global economic governance — a function that was previously concentrated in Washington and emerging market hosts. The selection validates Abu Dhabi's infrastructure, institutional stability, and diplomatic reach at a moment when that standing is actively stressed by regional conflict. For institutions based in Abu Dhabi, the designation increases the concentration of global financial and policy leadership in the city between now and 2029.",
+        "category": "Economy",
+        "entities": [
+          "**UAE**",
+          "**World Bank Group**",
+          "**IMF**",
+          "**H.H. Sheikh Mohammed bin Rashid Al Maktoum**"
+        ],
+        "exhibits": [],
+        "headline": "UAE selected to host 2029 World Bank and IMF Annual Meetings in Abu Dhabi",
+        "continuity": null,
+        "source_url": "https://www.mediaoffice.abudhabi/en/economy/uae-to-host-2029-annual-meetings-of-world-bank-group-and-international-monetary-fund-in-abu-dhabi/",
+        "implication": "",
+        "key_bullets": [
+          "The UAE won a competitive international ballot to host the 2029 Annual Meetings of the World Bank Group and IMF in Abu Dhabi — the first such hosting since Dubai in 2003.",
+          "The gatherings convene finance ministers and central bank governors from 190 countries and are among the highest-attendance multilateral economic forums."
+        ],
+        "main_bullet": "The UAE won a competitive international ballot to host the 2029 Annual Meetings of the World Bank Group and IMF in Abu Dhabi — the first such hosting since Dubai in 2003. The gatherings convene finance ministers and central bank governors from 190 countries and are among the highest-attendance multilateral economic forums.",
+        "source_name": "Abu Dhabi Media Office",
+        "source_domain": "mediaoffice.abudhabi",
+        "source_origin": "canonical",
+        "primary_entity": "UAE",
+        "composite_score": 7,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-13-c033",
+        "rank": 4,
+        "depth": "brief",
+        "cluster": null,
+        "context": "The meeting convenes senior UAE investment officials—the Finance Department chairman and Economic Development head—signaling institutional priority for **Brookfield** partnership. The emphasis on alternative asset classes reflects the UAE's broader diversification away from hydrocarbon-dependent returns.",
+        "section": "UAE",
+        "analysis": "The meeting convenes senior UAE investment officials—the Finance Department chairman and Economic Development head—signaling institutional priority for **Brookfield** partnership. The emphasis on alternative asset classes reflects the UAE's broader diversification away from hydrocarbon-dependent returns.",
+        "category": "Investment",
+        "entities": [
+          "**H.H. Sheikh Khaled bin Mohamed bin Zayed**",
+          "**Brookfield Corporation**",
+          "**Bruce Flatt**"
+        ],
+        "exhibits": [],
+        "headline": "Crown Prince meets Brookfield CEO on investment cooperation",
+        "continuity": null,
+        "source_url": "https://www.mediaoffice.abudhabi/en/crown-prince-news/khaled-bin-mohamed-bin-zayed-meets-ceo-of-asset-and-alternative-investment-management-company-brookfield-corporation/",
+        "implication": "",
+        "key_bullets": [
+          "H.H. Sheikh Khaled bin Mohamed bin Zayed met **Brookfield** CEO Bruce Flatt.",
+          "Discussion focused on expanding cooperation in asset and alternative investment management."
+        ],
+        "main_bullet": "H.H. Sheikh Khaled bin Mohamed bin Zayed met **Brookfield** CEO Bruce Flatt. Discussion focused on expanding cooperation in asset and alternative investment management.",
+        "source_name": "Abu Dhabi Media Office",
+        "source_domain": "mediaoffice.abudhabi",
+        "primary_entity": "UAE",
+        "composite_score": 5.8,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "low"
+      },
+      {
+        "id": "2026-04-13-s001",
+        "rank": 5,
+        "depth": "full",
+        "cluster": "US-Iran conflict escalation",
+        "context": "The blockade marks a qualitative escalation beyond the airstrike campaign — it transforms a military conflict into a chokepoint siege of a waterway through which roughly 20% of global oil supply transits. Iran's twin demands (strait control, uranium retention) functioned as deliberate non-starters, suggesting Tehran calculated that failed talks serve its interests better than a negotiated settlement. For the UAE, which sits at the strait's southern entrance, the operating environment shifts: ADNOC export logistics, ADNOC-linked infrastructure, and the broader Abu Dhabi fiscal position are all exposed to prolonged price volatility above $100/barrel. The blockade also forces every regional actor — including the UAE — to formally or informally position relative to US enforcement operations in waters that border their territory.",
+        "section": "International Politics & Policy",
+        "analysis": "The blockade marks a qualitative escalation beyond the airstrike campaign — it transforms a military conflict into a chokepoint siege of a waterway through which roughly 20% of global oil supply transits. Iran's twin demands (strait control, uranium retention) functioned as deliberate non-starters, suggesting Tehran calculated that failed talks serve its interests better than a negotiated settlement. For the UAE, which sits at the strait's southern entrance, the operating environment shifts: ADNOC export logistics, ADNOC-linked infrastructure, and the broader Abu Dhabi fiscal position are all exposed to prolonged price volatility above $100/barrel. The blockade also forces every regional actor — including the UAE — to formally or informally position relative to US enforcement operations in waters that border their territory.",
+        "category": "Energy / Geopolitics",
+        "entities": [
+          "**United States**",
+          "**Iran**",
+          "**Pakistan**",
+          "**Strait of Hormuz**"
+        ],
+        "exhibits": [
+          {
+            "data": {
+              "metrics": [
+                {
+                  "label": "WTI Crude",
+                  "value": "$104.24/bbl",
+                  "change": "+8%"
+                },
+                {
+                  "label": "Brent Crude",
+                  "value": "$102.29/bbl",
+                  "change": "+7%"
+                }
+              ]
+            },
+            "type": "metric_highlight"
+          }
+        ],
+        "headline": "US declares naval blockade of Iran after peace talks collapse",
+        "continuity": null,
+        "source_url": null,
+        "implication": "",
+        "key_bullets": [
+          "Trump announced a naval blockade targeting ships entering or leaving the Strait of Hormuz, effective Monday.",
+          "Pakistan-brokered peace talks collapsed after Iran demanded control of the strait and refused to surrender its enriched uranium stockpile.",
+          "Oil markets reacted immediately: US crude rose 8% to $104.24/barrel, Brent surged 7% to $102.29."
+        ],
+        "main_bullet": "Trump announced a naval blockade targeting ships entering or leaving the Strait of Hormuz, effective Monday. Pakistan-brokered peace talks collapsed after Iran demanded control of the strait and refused to surrender its enriched uranium stockpile. Oil markets reacted immediately: US crude rose 8% to $104.24/barrel, Brent surged 7% to $102.29.",
+        "source_name": "Axios AM/PM",
+        "source_domain": "axios.com",
+        "source_origin": "newsletter",
+        "primary_entity": "United States",
+        "composite_score": 9.4,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-13-c144",
+        "rank": 6,
+        "depth": "brief",
+        "cluster": null,
+        "context": "The meeting signals Beijing's continued engagement with non-DPP political forces in Taiwan. Framing unification as inevitable—rather than negotiable—reflects hardened position. The timing amid US-Iran tensions suggests China may be testing Taiwan's strategic resolve while US attention is divided.",
+        "section": "International Politics & Policy",
+        "analysis": "The meeting signals Beijing's continued engagement with non-DPP political forces in Taiwan. Framing unification as inevitable—rather than negotiable—reflects hardened position. The timing amid US-Iran tensions suggests China may be testing Taiwan's strategic resolve while US attention is divided.",
+        "category": "Cross-strait relations",
+        "entities": [
+          "**Xi Jinping**",
+          "**Taiwan**"
+        ],
+        "exhibits": [],
+        "headline": "China's Xi tells Taiwan opposition leader unification inevitable",
+        "continuity": null,
+        "source_url": "",
+        "implication": "",
+        "key_bullets": [
+          "Xi Jinping met Taiwan opposition leader in Beijing; first such meeting in a decade.",
+          "Xi emphasized unification is inevitable; opposition leader sought political dialogue."
+        ],
+        "main_bullet": "Xi Jinping met Taiwan opposition leader in Beijing; first such meeting in a decade. Xi emphasized unification is inevitable; opposition leader sought political dialogue.",
+        "source_name": "FT Briefing",
+        "source_domain": "ft.com",
+        "primary_entity": "China",
+        "composite_score": 6.4,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-13-s007",
+        "rank": 7,
+        "depth": "standard",
+        "cluster": "AI compute infrastructure",
+        "context": "Japan's cumulative $16.3 billion commitment rivals the CHIPS Act allocations that drew TSMC and Samsung to the United States, signaling that sovereign semiconductor ambition has moved beyond rhetoric into sustained industrial policy. Rapidus is widely considered a long shot on schedule, but even partial success reshapes the 2nm supply landscape currently dominated by TSMC and Samsung. The investment lands alongside Japan's deepening security alignment with the US, suggesting Tokyo sees chip independence as a strategic hedge rather than purely commercial play.",
+        "section": "International Business & Technology",
+        "analysis": "Japan's cumulative $16.3 billion commitment rivals the CHIPS Act allocations that drew TSMC and Samsung to the United States, signaling that sovereign semiconductor ambition has moved beyond rhetoric into sustained industrial policy. Rapidus is widely considered a long shot on schedule, but even partial success reshapes the 2nm supply landscape currently dominated by TSMC and Samsung. The investment lands alongside Japan's deepening security alignment with the US, suggesting Tokyo sees chip independence as a strategic hedge rather than purely commercial play.",
+        "category": "Semiconductor / AI Infrastructure",
+        "entities": [
+          "**Japan**",
+          "**Rapidus**",
+          "**TSMC**"
+        ],
+        "exhibits": [],
+        "headline": "Japan commits $16.3 billion to Rapidus for 2-nanometer chip production",
+        "continuity": null,
+        "source_url": null,
+        "implication": "",
+        "key_bullets": [
+          "Japan approved ¥631.5 billion in additional subsidies, bringing total government support for Rapidus to $16.3 billion through 2027.",
+          "The funding targets mass production of 2-nanometer chips using gate-all-around transistor architecture, reducing Japan's dependence on TSMC."
+        ],
+        "main_bullet": "Japan approved ¥631.5 billion in additional subsidies, bringing total government support for Rapidus to $16.3 billion through 2027. The funding targets mass production of 2-nanometer chips using gate-all-around transistor architecture, reducing Japan's dependence on TSMC.",
+        "source_name": "Bloomberg Briefing",
+        "source_domain": "bloomberg.com",
+        "source_origin": "newsletter",
+        "primary_entity": "Rapidus",
+        "composite_score": 7.4,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://business.financialpost.com/pmn/business-pmn/japan-bets-16-billion-to-propel-rapidus-into-ai-chips",
+            "name": "Financial Post"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-13-c147",
+        "rank": 8,
+        "depth": "brief",
+        "cluster": null,
+        "context": "Alibaba's pivot away from open-source reflects competitive pressure from frontier US labs and profitability concerns. Qwen was used as a goodwill tool; closure narrows the open-weight ecosystem for developers outside China and reduces Alibaba's competitive leverage against OpenAI and Anthropic in emerging markets.",
+        "section": "International Business & Technology",
+        "analysis": "Alibaba's pivot away from open-source reflects competitive pressure from frontier US labs and profitability concerns. Qwen was used as a goodwill tool; closure narrows the open-weight ecosystem for developers outside China and reduces Alibaba's competitive leverage against OpenAI and Anthropic in emerging markets.",
+        "category": "AI model strategy",
+        "entities": [
+          "**Alibaba**"
+        ],
+        "exhibits": [],
+        "headline": "Alibaba shifts strategy toward revenue over open-source AI",
+        "continuity": null,
+        "source_url": "",
+        "implication": "",
+        "key_bullets": [
+          "Alibaba prioritizing revenue generation over open-source Qwen model development.",
+          "Global developers relying on Qwen models face potential access restrictions."
+        ],
+        "main_bullet": "Alibaba prioritizing revenue generation over open-source Qwen model development. Global developers relying on Qwen models face potential access restrictions.",
+        "source_name": "FT Briefing",
+        "source_domain": "ft.com",
+        "primary_entity": "Alibaba",
+        "composite_score": 6.4,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-13-c075",
+        "rank": 9,
+        "depth": "brief",
+        "cluster": null,
+        "context": "Chinese open-weight models are narrowing the capability gap with US frontier labs. GLM-5.1's placement in the top three signals maturity in the open-weight ecosystem. Z.ai's top open-model position contrasts with OpenAI's API-first strategy.",
+        "section": "Model Releases & Technical Developments",
+        "analysis": "Chinese open-weight models are narrowing the capability gap with US frontier labs. GLM-5.1's placement in the top three signals maturity in the open-weight ecosystem. Z.ai's top open-model position contrasts with OpenAI's API-first strategy.",
+        "category": "Model releases",
+        "entities": [
+          "**Zhipu**",
+          "**Z.ai**"
+        ],
+        "exhibits": [],
+        "headline": "GLM-5.1 reaches number three on Code Arena benchmark",
+        "continuity": null,
+        "source_url": "",
+        "implication": "",
+        "key_bullets": [
+          "GLM-5.1 achieved #3 ranking on Code Arena, surpassing Gemini 3.1 and GPT-5.4.",
+          "Performance roughly on par with Claude Sonnet 4.6; Z.ai holds #1 open model rank."
+        ],
+        "main_bullet": "GLM-5.1 achieved #3 ranking on Code Arena, surpassing Gemini 3.1 and GPT-5.4. Performance roughly on par with Claude Sonnet 4.6; Z.ai holds #1 open model rank.",
+        "source_name": "AINews (Latent Space)",
+        "source_domain": "latentspace.substack.com",
+        "primary_entity": "Zhipu",
+        "composite_score": 6.8,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "medium"
+      }
+    ]
+  }
+}

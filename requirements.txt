@@ -1,0 +1,15 @@
+anthropic
+python-dotenv
+pydantic
+requests
+beautifulsoup4
+feedparser
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+supabase
+httpx
+json-repair
+pydub
+trafilatura
+elevenlabs

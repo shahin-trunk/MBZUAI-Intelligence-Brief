@@ -1,0 +1,54 @@
+# Environment variables & secrets
+.env
+.env.local
+.env.production
+token.json
+credentials.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Pipeline outputs (generated daily)
+backend/output/
+backend/pipeline.log
+pipeline.log
+
+# Eval run artifacts — regenerated on every eval invocation
+backend/evals/output/
+
+# Local logo cache — downloaded by upload_real_logos.py, not tracked
+backend/logos/
+
+# Node
+node_modules/
+.next/
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Capacitor native build artifacts
+frontend/ios/App/Pods/
+frontend/ios/DerivedData/
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/
+frontend/out/
+
+# APNs key (sensitive)
+backend/keys/
+
+# Qoder IDE config
+.qoder/
+.claude/
+
+# Integration test artifacts (generated at runtime)
+/tmp/argent_test_*.mp3

@@ -1,0 +1,134 @@
+{
+  "engagements": [
+    {
+      "id": "eng-001",
+      "counterparty": {
+        "name": "Prof. Fei-Fei Li",
+        "title": "Co-Founder & CEO, World Labs; Sequoia Professor of Computer Science, Stanford University; Co-Director, Stanford HAI",
+        "profileSummary": "Fei-Fei Li is one of the most influential figures in modern AI. She is best known for creating ImageNet, the large-scale visual recognition dataset that catalyzed the deep learning revolution. She served as Vice President at Google and Chief Scientist of AI/ML at Google Cloud from 2017 to 2018. In 2024 she co-founded World Labs, a spatial intelligence startup that raised $230M at a $2B+ valuation to build large world models — AI systems that understand and generate 3D environments with physics-aware reasoning. Elected to the National Academy of Engineering and the National Academy of Medicine, she currently co-directs Stanford HAI, which has become the leading academic voice on AI policy and human-centered design. Her current research spans spatial intelligence, world models, embodied AI, healthcare AI, and cognitive neuroscience-inspired computer vision.",
+        "highlightTags": [
+          "ImageNet creator",
+          "CEO, World Labs ($2B+)",
+          "NAE & NAM member",
+          "Ex-Google Cloud AI lead",
+          "Spatial intelligence · World models"
+        ]
+      },
+      "meeting": {
+        "date": "2026-03-18",
+        "time": "10:00 AM GST",
+        "format": "in-person",
+        "location": "MBZUAI Campus, Executive Boardroom"
+      },
+      "dossier": {
+        "whyThisMatters": "Stanford HAI has recently announced a $200M expansion of its global partnerships program, with a specific interest in Gulf-based AI research institutions. Separately, World Labs is actively seeking academic partnerships with GPU-rich institutions to train and validate its large world models — MBZUAI's compute infrastructure makes it a natural fit. This meeting represents a rare opportunity to explore two parallel tracks: a HAI institutional research partnership, and a World Labs collaboration that could position MBZUAI at the center of the spatial intelligence research agenda. Prof. Li's emphasis on responsible AI and healthcare applications aligns directly with MBZUAI's 2026 strategic pillars.",
+        "relationshipHistory": "Prof. Xing and Prof. Li have met twice previously: at NeurIPS 2024 (brief conversation at the MBZUAI reception) and during a Stanford campus visit in September 2025 where Prof. Xing toured HAI facilities. Prof. Li visited Abu Dhabi in February 2025 for a government AI advisory session but did not visit MBZUAI. There are no co-authored papers or formal institutional ties at present.",
+        "materials": [
+          {
+            "id": "mat-001",
+            "title": "MBZUAI–Stanford partnership deck",
+            "url": "/documents/mbzuai-stanford-partnership-2026.pdf",
+            "type": "presentation"
+          },
+          {
+            "id": "mat-002",
+            "title": "Prof. Li — detailed profile",
+            "url": "/documents/fei-fei-li-profile.pdf",
+            "type": "profile"
+          },
+          {
+            "id": "mat-003",
+            "title": "Briefing note",
+            "url": "/documents/li-meeting-briefing-note.pdf",
+            "type": "briefing-note"
+          }
+        ]
+      }
+    },
+    {
+      "id": "eng-002",
+      "counterparty": {
+        "name": "Dr. Aisha Al Mansoori",
+        "title": "Director of AI Strategy, Abu Dhabi Department of Government Enablement",
+        "profileSummary": "Dr. Al Mansoori leads the AI strategy division within ADGDE, overseeing the integration of AI capabilities across Abu Dhabi's government services. She holds a PhD in machine learning from ETH Zurich and previously served as a senior researcher at the Technology Innovation Institute. She is a key architect of Abu Dhabi's national AI adoption framework and maintains close working relationships with all major AI entities in the emirate.",
+        "highlightTags": [
+          "ADGDE AI Strategy",
+          "ETH Zurich PhD",
+          "Ex-TII researcher",
+          "Gov AI adoption"
+        ]
+      },
+      "meeting": {
+        "date": "2026-03-20",
+        "time": "2:00 PM GST",
+        "format": "in-person",
+        "location": "ADGDE Headquarters, Abu Dhabi"
+      },
+      "dossier": {
+        "whyThisMatters": "ADGDE is finalizing its 2027–2030 AI integration roadmap and has signaled interest in designating MBZUAI as a preferred academic partner for government AI training programs. This meeting is the decision-point: Dr. Al Mansoori will present the partnership framework for Prof. Xing's input before it goes to the Executive Council. Securing this designation would provide MBZUAI with a steady pipeline of applied research projects and strengthen the university's position as the go-to AI institution for Abu Dhabi's public sector.",
+        "relationshipHistory": "Prof. Xing and Dr. Al Mansoori have interacted at three government-hosted AI roundtables in 2025. Dr. Al Mansoori visited MBZUAI campus in November 2025 for a facilities tour and research presentation. The relationship is cordial and professionally established, though no formal agreements have been signed.",
+        "materials": []
+      }
+    },
+    {
+      "id": "eng-003",
+      "counterparty": {
+        "name": "Prof. Yoshua Bengio",
+        "title": "Scientific Director, Mila – Quebec AI Institute; Professor, Université de Montréal",
+        "profileSummary": "Yoshua Bengio is a Turing Award laureate and one of the three pioneers of deep learning. He founded and directs Mila, the world's largest academic AI research lab. His recent work focuses on AI safety, causal reasoning, and GFlowNets. He is among the most cited computer scientists globally and has been a vocal advocate for international AI governance frameworks.",
+        "highlightTags": [
+          "Turing Award laureate",
+          "Mila founder",
+          "AI safety advocate",
+          "Deep learning pioneer"
+        ]
+      },
+      "meeting": {
+        "date": "2026-03-23",
+        "time": "4:00 PM GST",
+        "format": "virtual",
+        "location": "Virtual call"
+      }
+    },
+    {
+      "id": "eng-004",
+      "counterparty": {
+        "name": "Sarah Chen",
+        "title": "Managing Partner, Horizons Ventures AI Fund",
+        "profileSummary": "Sarah Chen leads the AI-focused investment arm of Horizons Ventures, managing a $1.2B portfolio spanning foundation model companies, AI infrastructure, and applied AI startups. Previously a partner at Sequoia Capital China, she has deep networks across Silicon Valley and the Asia-Pacific AI ecosystem. She sits on the boards of three AI unicorns and has been instrumental in connecting academic AI labs with commercialization pathways.",
+        "highlightTags": [
+          "Horizons Ventures",
+          "AI fund ($1.2B AUM)",
+          "Ex-Sequoia Capital",
+          "Board member"
+        ]
+      },
+      "meeting": {
+        "date": "2026-03-30",
+        "time": "11:00 AM GST",
+        "format": "in-person",
+        "location": "MBZUAI Campus, Innovation Hub"
+      }
+    },
+    {
+      "id": "eng-005",
+      "counterparty": {
+        "name": "Prof. Michael I. Jordan",
+        "title": "Pehong Chen Distinguished Professor, UC Berkeley; Department of EECS and Statistics",
+        "profileSummary": "Michael I. Jordan is widely regarded as one of the most influential figures in machine learning and statistics. His foundational contributions to variational inference, graphical models, and the intersection of statistics and computer science have shaped the modern ML landscape. He received the IEEE John von Neumann Medal and the IJCAI Research Excellence Award. His current research focuses on the economic and societal implications of AI systems, particularly market-aware machine learning.",
+        "highlightTags": [
+          "ML/statistics pioneer",
+          "UC Berkeley EECS",
+          "von Neumann Medal",
+          "Market-aware ML"
+        ]
+      },
+      "meeting": {
+        "date": "2026-04-07",
+        "time": "9:30 AM GST",
+        "format": "hybrid",
+        "location": "MBZUAI Campus + Virtual bridge"
+      }
+    }
+  ]
+}

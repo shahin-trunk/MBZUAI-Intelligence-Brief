@@ -1,0 +1,68 @@
+{
+  "projects": [
+    {
+      "id": "campus-phase1",
+      "name": "New Campus Development — Phase 1",
+      "description": "Masdar City campus expansion: new research tower, student housing, and central commons",
+      "status": "on-track",
+      "progressPercent": 35,
+      "deadline": "Due Dec 2027",
+      "owner": "Facilities / Provost Office",
+      "milestones": [
+        { "id": "m1", "text": "Site selection and land allocation", "status": "done" },
+        { "id": "m2", "text": "Architectural design contract awarded", "status": "done" },
+        { "id": "m3", "text": "Detailed design and engineering review", "status": "current", "dueDate": "Jun 2026" },
+        { "id": "m4", "text": "Construction tender and contractor selection", "status": "pending", "dueDate": "Sep 2026" },
+        { "id": "m5", "text": "Foundation and structure build", "status": "pending", "dueDate": "Jun 2027" },
+        { "id": "m6", "text": "Fitout, commissioning, and handover", "status": "pending", "dueDate": "Dec 2027" }
+      ]
+    },
+    {
+      "id": "website-redesign",
+      "name": "MBZUAI Website Redesign",
+      "description": "Launch a more presidential, research-forward, and conversion-oriented institutional website",
+      "status": "in-progress",
+      "progressPercent": 40,
+      "deadline": "Due May 2026",
+      "owner": "MarComms / Digital",
+      "milestones": [
+        { "id": "m1", "text": "Information architecture approved", "status": "done" },
+        { "id": "m2", "text": "Homepage wireframes approved", "status": "done" },
+        { "id": "m3", "text": "Faculty and research content migration", "status": "current", "dueDate": "Apr 12, 2026" },
+        { "id": "m4", "text": "Arabic content QA", "status": "pending", "dueDate": "Apr 22, 2026" },
+        { "id": "m5", "text": "Final launch readiness review", "status": "pending", "dueDate": "Apr 28, 2026" }
+      ]
+    },
+    {
+      "id": "genbio-center",
+      "name": "GenBio Research Center Launch",
+      "description": "Establish a dedicated generative biology research center with wet lab and compute cluster",
+      "status": "at-risk",
+      "progressPercent": 55,
+      "deadline": "Due Sep 2026",
+      "owner": "Research / Provost Office",
+      "milestones": [
+        { "id": "m1", "text": "Center charter and faculty leads confirmed", "status": "done" },
+        { "id": "m2", "text": "$40M funding allocation approved by board", "status": "done" },
+        { "id": "m3", "text": "Compute cluster procurement RFP issued", "status": "done" },
+        { "id": "m4", "text": "Wet lab space buildout — delayed by permitting", "status": "current", "dueDate": "Jul 2026" },
+        { "id": "m5", "text": "Inaugural research cohort onboarding", "status": "pending", "dueDate": "Sep 2026" }
+      ]
+    },
+    {
+      "id": "embodied-ai-phase2",
+      "name": "Embodied AI Lab — Phase 2",
+      "description": "Expand robotics and embodied AI research infrastructure with dedicated manipulation and sim labs",
+      "status": "planning",
+      "progressPercent": 15,
+      "deadline": "Due Q4 2026",
+      "owner": "Research / Facilities",
+      "milestones": [
+        { "id": "m1", "text": "Scope and requirements finalized", "status": "done" },
+        { "id": "m2", "text": "Equipment procurement — pushed from Q3 to Q4", "status": "current", "dueDate": "Q3 2026" },
+        { "id": "m3", "text": "Lab space buildout and installation", "status": "pending", "dueDate": "Q4 2026" },
+        { "id": "m4", "text": "Commissioning and first research cohort", "status": "pending", "dueDate": "Q1 2027" }
+      ]
+    }
+  ]
+}

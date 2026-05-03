@@ -1,0 +1,1 @@
+export { SmtRecapPage } from "./SmtRecapPage";

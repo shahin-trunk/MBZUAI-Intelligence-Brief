@@ -1,0 +1,196 @@
+name: Recover Daily Intelligence Brief
+
+# Resume a failed daily-brief run from a cached intermediate stage.
+# Mirrors daily-brief.yml in contract (draft-mode: ingest_draft runs
+# inline inside the pipeline, writing to pending_briefs / pending_items
+# in Supabase). There is no post-pipeline ingest step and no audio
+# step — audio is triggered by generate-audio.yml after analyst
+# approval, not automatically after the pipeline finishes.
+#
+# An earlier version of this workflow targeted the legacy
+# ingest_brief.py flow: it looked for a brief_*.json file on disk,
+# ran ingest_brief.py as a downstream job, and triggered audio
+# unconditionally. All three are stale for draft mode. This rewrite
+# (incident 2026-04-17, commit aafd486 / d152fab) drops them.
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: "Failed run ID to recover artifacts from"
+        required: true
+        type: string
+      from_stage:
+        description: "Pipeline stage to resume from"
+        required: true
+        type: choice
+        options:
+          - content_filter
+          - ghostwriter
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Ensure output directory exists
+        run: mkdir -p backend/output
+
+      - name: Write .env
+        # PIPELINE_DRAFT_MODE=true is the production contract.
+        # Orchestrator defaults to true if unset, but we pin it
+        # explicitly so a future default flip doesn't silently
+        # change recovery behavior.
+        run: |
+          cat <<EOF > .env
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          X_BEARER_TOKEN=${{ secrets.X_BEARER_TOKEN }}
+          SERPER_API_KEY=${{ secrets.SERPER_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PIPELINE_DRAFT_MODE=true
+          EOF
+
+      - name: Write Google credentials
+        run: |
+          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > credentials.json
+          echo '${{ secrets.GOOGLE_TOKEN_JSON }}' > token.json
+
+      - name: Download recovery artifact from source run
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.source_run_id }}
+          name: pipeline-output-${{ inputs.source_run_id }}
+          path: recovered-output
+
+      - name: Restore backend output
+        run: |
+          mkdir -p backend/output
+          artifact_output_dir=""
+          if [ -d recovered-output/output ]; then
+            artifact_output_dir="recovered-output/output"
+          elif [ -d recovered-output/backend/output ]; then
+            artifact_output_dir="recovered-output/backend/output"
+          else
+            echo "Expected recovered output directory not found"
+            find recovered-output -maxdepth 3 -type d | sort
+            exit 1
+          fi
+          cp -R "$artifact_output_dir"/. backend/output/
+          if [ -f recovered-output/pipeline.log ]; then
+            cp recovered-output/pipeline.log backend/pipeline.log
+          elif [ -f recovered-output/backend/pipeline.log ]; then
+            cp recovered-output/backend/pipeline.log backend/pipeline.log
+          fi
+
+      - name: Detect recovery brief date
+        id: detect-recovery-date
+        run: |
+          recovery_date=$(python - <<'PY'
+          import re
+          from pathlib import Path
+
+          output_dir = Path("backend/output")
+          candidates = []
+          for path in output_dir.glob("*.json"):
+              match = re.search(r"(\d{4}-\d{2}-\d{2})", path.name)
+              if match:
+                  candidates.append((path.stat().st_mtime, match.group(1)))
+
+          if not candidates:
+              raise SystemExit("No dated JSON artifacts found in backend/output")
+
+          candidates.sort(reverse=True)
+          print(candidates[0][1])
+          PY
+          )
+          echo "recovery_date=$recovery_date" >> "$GITHUB_OUTPUT"
+
+      - name: Verify same-day recovery
+        # backend/main.py resumes using today's GST date — if the cached
+        # artifact is from a prior day, the resume will still "work" but
+        # the wrong intermediates get loaded and the brief will be
+        # misdated. Fail fast.
+        env:
+          RECOVERY_DATE: ${{ steps.detect-recovery-date.outputs.recovery_date }}
+        run: |
+          today_gst=$(python - <<'PY'
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+
+          print(datetime.now(ZoneInfo("Asia/Dubai")).strftime("%Y-%m-%d"))
+          PY
+          )
+          if [ "$RECOVERY_DATE" != "$today_gst" ]; then
+            echo "Recovered artifact date ($RECOVERY_DATE) does not match today's GST date ($today_gst)."
+            echo "This workflow only supports same-day recovery because backend/main.py resumes using today's date."
+            exit 1
+          fi
+
+      - name: Validate required resume artifact
+        env:
+          RECOVERY_DATE: ${{ steps.detect-recovery-date.outputs.recovery_date }}
+          RESUME_STAGE: ${{ inputs.from_stage }}
+        run: |
+          case "$RESUME_STAGE" in
+            content_filter)
+              if [ ! -f "backend/output/scout_output_raw_${RECOVERY_DATE}.json" ] && [ ! -f "backend/output/scout_output_${RECOVERY_DATE}.json" ]; then
+                echo "Missing scout output artifact required for content_filter resume"
+                exit 1
+              fi
+              ;;
+            ghostwriter)
+              if [ ! -f "backend/output/gatekeeper_output_${RECOVERY_DATE}.json" ] && [ ! -f "backend/output/enriched_gatekeeper_output_${RECOVERY_DATE}.json" ]; then
+                echo "Missing gatekeeper output artifact required for ghostwriter resume"
+                exit 1
+              fi
+              ;;
+            *)
+              echo "Unsupported recovery stage: $RESUME_STAGE"
+              exit 1
+              ;;
+          esac
+
+      - name: Resume pipeline
+        # Draft mode: ingest_draft runs inline at the end of the pipeline
+        # and writes to pending_briefs / pending_items in Supabase. On
+        # success, the analyst can open the curation workspace immediately.
+        # No separate ingest job, no automatic audio.
+        run: cd backend && python main.py --from-stage "${{ inputs.from_stage }}"
+
+      - name: Prepare pipeline recovery payload
+        if: always()
+        run: |
+          mkdir -p recovery-payload
+          cp -R backend/output recovery-payload/output
+          if [ -f backend/pipeline.log ]; then
+            cp backend/pipeline.log recovery-payload/pipeline.log
+          fi
+
+      - name: Upload pipeline artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-output-${{ github.run_id }}
+          path: |
+            recovery-payload/output/
+            recovery-payload/pipeline.log
+          retention-days: 7

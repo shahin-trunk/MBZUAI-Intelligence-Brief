@@ -1,0 +1,1327 @@
+{
+  "date": "2026-04-06",
+  "gatekeeper_input": {
+    "selected": [
+      {
+        "id": "2026-04-06-s001",
+        "headline": "UAE air defences intercept 9 ballistic missiles, cruise missile, and 50 drones from Iran",
+        "source": "WAM",
+        "source_name": "WAM",
+        "source_url": "https://www.wam.ae/en/article/uae-air-defences-engage-9-ballistic-missles-one",
+        "source_domain": "wam.ae",
+        "date": "2026-04-06",
+        "summary": "The **UAE Ministry of Defence** confirmed that air defence systems intercepted 9 ballistic missiles, 1 cruise missile, and 50 drones launched from **Iran** on April 5, with no casualties recorded in the engagement. Since **Iran** began its retaliatory campaign on February 28 — following the joint US-Israeli strikes that killed Supreme Leader Khamenei — UAE defences have now intercepted a cumulative total of 507 ballistic missiles, 24 cruise missiles, and 2,191 drones; thirteen people have been killed and 217 wounded since the campaign began. [Source: https://www.wam.ae/en/article/uae-air-defences-engage-9-ballistic-missles-one]",
+        "raw_content": "The **UAE Ministry of Defence** confirmed that air defence systems intercepted 9 ballistic missiles, 1 cruise missile, and 50 drones launched from **Iran** on April 5, with no casualties recorded in the engagement. Since **Iran** began its retaliatory campaign on February 28 — following the joint US-Israeli strikes that killed Supreme Leader Khamenei — UAE defences have now intercepted a cumulative total of 507 ballistic missiles, 24 cruise missiles, and 2,191 drones; thirteen people have been killed and 217 wounded since the campaign began. [Source: https://www.wam.ae/en/article/uae-air-defences-engage-9-ballistic-missles-one]\n\nApril 5's single-day intercept count of 60 projectiles is the largest volume reported in one engagement since the campaign opened. The strikes began as Iranian retaliation for the February 28 US-Israeli operation that targeted Iran's military and nuclear infrastructure, and have drawn in UAE territory as a site of proxy pressure against US forward basing at Al Dhafra Air Base.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.dubaieye1038.com/news/local/uae-air-defences-intercept-10-missiles-50-drones-on-sunday/",
+            "name": "Dubai Eye 1038"
+          },
+          {
+            "url": "https://en.wikipedia.org/wiki/2026_Iranian_strikes_on_the_United_Arab_Emirates",
+            "name": "Wikipedia — 2026 Iranian strikes on the UAE"
+          }
+        ],
+        "entities": [
+          "**UAE Ministry of Defence**",
+          "**Iran**"
+        ],
+        "category": "",
+        "cluster": "Iran-UAE conflict escalation",
+        "composite_score": 9.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-06-s002",
+        "headline": "Intercept debris ignites three fires at Borouge petrochemicals plant in Ruwais",
+        "source": "WAM",
+        "source_name": "WAM",
+        "source_url": "https://www.wam.ae/en/article/three-fires-at-borouge-plant-contained-with-no",
+        "source_domain": "wam.ae",
+        "date": "2026-04-06",
+        "summary": "Three fires broke out at the **Borouge** petrochemicals plant in Ruwais, Abu Dhabi, after falling debris from the April 5 air-defence interceptions struck the facility; operations have been suspended pending a damage assessment, and no injuries were reported. Emergency teams contained all three fires. **Borouge** is a joint venture between **ADNOC** and Austria's **Borealis**, located near the UAE's western border with Saudi Arabia. [Source: https://www.wam.ae/en/article/three-fires-at-borouge-plant-contained-with-no]",
+        "raw_content": "Three fires broke out at the **Borouge** petrochemicals plant in Ruwais, Abu Dhabi, after falling debris from the April 5 air-defence interceptions struck the facility; operations have been suspended pending a damage assessment, and no injuries were reported. Emergency teams contained all three fires. **Borouge** is a joint venture between **ADNOC** and Austria's **Borealis**, located near the UAE's western border with Saudi Arabia. [Source: https://www.wam.ae/en/article/three-fires-at-borouge-plant-contained-with-no]\n\nThe incident is the direct downstream consequence of the intercept event reported above: successful air defence generates high-velocity debris that falls across populated and industrial zones. Parallel debris-related fires struck petrochemical and energy infrastructure in Bahrain and Kuwait on the same day, and Iranian drones caused power outages at two Kuwaiti desalination plants.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.dubaieye1038.com/news/local/operations-at-abu-dhabis-borouge-petrochemicals-suspended-due-to-fallen-debris/",
+            "name": "Dubai Eye 1038"
+          },
+          {
+            "url": "https://www.kurdistan24.net/en/story/905792",
+            "name": "Kurdistan 24"
+          }
+        ],
+        "entities": [
+          "**Borouge**",
+          "**ADNOC**",
+          "**Borealis**"
+        ],
+        "category": "",
+        "cluster": "Iran-UAE conflict escalation",
+        "composite_score": 8.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-06-s003",
+        "headline": "Intercept debris hits Khorfakkan Port, injuring four on UAE's east coast",
+        "source": "WAM",
+        "source_name": "WAM",
+        "source_url": "https://www.wam.ae/en/article/sharjah-authorities-respond-to-incident-at",
+        "source_domain": "wam.ae",
+        "date": "2026-04-06",
+        "summary": "Debris from an air-defence interception struck **Khorfakkan Port** in Sharjah on April 5, injuring four people — one Nepalese national seriously and three Pakistani nationals with minor to moderate injuries — and igniting a fire that emergency crews contained. The **UK Maritime Trade Operations** office separately reported unknown projectiles landing near a container ship conducting loading operations at the port. [Source: https://www.wam.ae/en/article/sharjah-authorities-respond-to-incident-at]",
+        "raw_content": "Debris from an air-defence interception struck **Khorfakkan Port** in Sharjah on April 5, injuring four people — one Nepalese national seriously and three Pakistani nationals with minor to moderate injuries — and igniting a fire that emergency crews contained. The **UK Maritime Trade Operations** office separately reported unknown projectiles landing near a container ship conducting loading operations at the port. [Source: https://www.wam.ae/en/article/sharjah-authorities-respond-to-incident-at]\n\nKhorfakkan faces the Gulf of Oman on the UAE's east coast, physically separated from the Persian Gulf theatre where prior incidents were concentrated. An active engagement reaching this coast marks a geographic expansion of Iran's strike range — or of debris dispersion — into the Oman Sea maritime corridor.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.city1016.ae/trending/news/local-news/authorities-respond-to-incident-at-khorfakkan-port/",
+            "name": "City 1016"
+          },
+          {
+            "url": "https://www.aa.com.tr/en/middle-east/uk-maritime-office-reports-unknown-projectiles-near-vessel-at-uae-port/3892870",
+            "name": "Anadolu Agency"
+          }
+        ],
+        "entities": [
+          "**Khorfakkan Port**",
+          "**UK Maritime Trade Operations**"
+        ],
+        "category": "",
+        "cluster": "Iran-UAE conflict escalation",
+        "composite_score": 8.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-06-s007",
+        "headline": "Egypt condemns attack on UAE diplomatic mission in Damascus",
+        "source": "WAM",
+        "source_name": "WAM",
+        "source_url": "https://www.wam.ae/en/article/bzkavms-egypt-condemns-attack-uae-diplomatic-mission",
+        "source_domain": "wam.ae",
+        "date": "2026-04-06",
+        "summary": "**Egypt**'s Ministry of Foreign Affairs strongly condemned acts of unrest and attempted sabotage targeting the **UAE** diplomatic mission premises and the residence of the Head of Mission in Damascus. Perpetrators and damage extent remain unconfirmed in available sources. [Source: https://www.wam.ae/en/article/bzkavms-egypt-condemns-attack-uae-diplomatic-mission]",
+        "raw_content": "**Egypt**'s Ministry of Foreign Affairs strongly condemned acts of unrest and attempted sabotage targeting the **UAE** diplomatic mission premises and the residence of the Head of Mission in Damascus. Perpetrators and damage extent remain unconfirmed in available sources. [Source: https://www.wam.ae/en/article/bzkavms-egypt-condemns-attack-uae-diplomatic-mission]\n\nThe attack extends the Iran-linked conflict's reach into Syrian territory, opening a new geographic dimension beyond the Gulf and Israeli theatres that have dominated reporting since February 28.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**Egypt**",
+          "**UAE**"
+        ],
+        "category": "",
+        "cluster": "Iran-UAE conflict escalation",
+        "composite_score": 7.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-06-s010",
+        "headline": "UAE enters global top-10 goods exporters for the first time, ranking ninth",
+        "source": "WAM",
+        "source_name": "WAM",
+        "source_url": "https://www.wam.ae/en/article/bzkavsg-uae-becomes-top-global-exporter-latest-wto-figures",
+        "source_domain": "wam.ae",
+        "date": "2026-04-06",
+        "summary": "The **UAE** ranked ninth globally in merchandise exports in 2025, entering the **WTO**'s top-10 for the first time and rising from 17th place in five years, according to the WTO's World Trade Outlook and Statistics report. Total external trade reached Dh6.014 trillion ($1.637 trillion) in 2025 — up 15% year-on-year — with non-oil goods trade surging 27% to Dh3.8 trillion and services trade surpassing Dh1 trillion for the first time. [Source: https://www.wam.ae/en/article/bzkavsg-uae-becomes-top-global-exporter-latest-wto-figures]",
+        "raw_content": "The **UAE** ranked ninth globally in merchandise exports in 2025, entering the **WTO**'s top-10 for the first time and rising from 17th place in five years, according to the WTO's World Trade Outlook and Statistics report. Total external trade reached Dh6.014 trillion ($1.637 trillion) in 2025 — up 15% year-on-year — with non-oil goods trade surging 27% to Dh3.8 trillion and services trade surpassing Dh1 trillion for the first time. [Source: https://www.wam.ae/en/article/bzkavsg-uae-becomes-top-global-exporter-latest-wto-figures]\n\nThe WTO simultaneously cautioned that global merchandise trade growth is forecast to slow to 1.9% in 2026 from 4.6% in 2025, citing Middle East geopolitical tensions and elevated energy prices — the very conditions now disrupting UAE port operations and Hormuz shipping lanes.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://gulfnews.com/uae/uae-enters-worlds-top-10-goods-exporters-trade-reaches-dh6-trillion-1.500497026",
+            "name": "Gulf News"
+          },
+          {
+            "url": "https://www.thenationalnews.com/business/economy/2026/04/05/uae-ranks-among-global-top-10-exporters-for-first-time-wto-says/",
+            "name": "The National"
+          }
+        ],
+        "entities": [
+          "**UAE**",
+          "**WTO**"
+        ],
+        "category": "",
+        "cluster": null,
+        "composite_score": 7.0,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-06-s011",
+        "headline": "OPEC+ eight members raise output by 206,000 bpd beginning May",
+        "source": "WAM",
+        "source_name": "WAM",
+        "source_url": "https://www.wam.ae/en/article/bzkavsh-opec+-adjusts-output-206000-bpd-from-may",
+        "source_domain": "wam.ae",
+        "date": "2026-04-06",
+        "summary": "Eight **OPEC+** members — including the **UAE**, **Saudi Arabia**, and **Russia** — agreed on April 5 to raise production by 206,000 barrels per day beginning May, resuming the gradual unwinding of the 1.65 million bpd voluntary cuts originally announced in April 2023. The group retains full flexibility to pause or reverse the phase-out depending on market conditions. [Source: https://www.wam.ae/en/article/bzkavsh-opec+-adjusts-output-206000-bpd-from-may]",
+        "raw_content": "Eight **OPEC+** members — including the **UAE**, **Saudi Arabia**, and **Russia** — agreed on April 5 to raise production by 206,000 barrels per day beginning May, resuming the gradual unwinding of the 1.65 million bpd voluntary cuts originally announced in April 2023. The group retains full flexibility to pause or reverse the phase-out depending on market conditions. [Source: https://www.wam.ae/en/article/bzkavsh-opec+-adjusts-output-206000-bpd-from-may]\n\nThe increase follows a three-month pause in output hikes (January–March) and comes as war-related Hormuz disruption has driven energy prices sharply higher — creating an unusual market configuration where supply additions are occurring into an already-elevated price environment.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.opec.org/pr-detail/593-1-march-2026.html",
+            "name": "OPEC"
+          },
+          {
+            "url": "https://www.aa.com.tr/en/energy/oil/opec-eight-members-to-raise-output-by-206-000-bpd-in-april/55046",
+            "name": "Anadolu Agency"
+          }
+        ],
+        "entities": [
+          "**OPEC+**",
+          "**UAE**",
+          "**Saudi Arabia**",
+          "**Russia**"
+        ],
+        "category": "",
+        "cluster": "Iran conflict — economic spillovers",
+        "composite_score": 7.0,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "UAE",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-06-s005",
+        "headline": "Iran continues launching missile strikes despite sustained US-Israeli bombardment",
+        "source": "FT Briefing",
+        "source_name": "FT Briefing",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-06",
+        "summary": "**Iran** continues to launch retaliatory ballistic missile and drone strikes against Israel and Gulf states hosting US bases despite ongoing US-Israeli bombardment that has, as of early April, killed an estimated 3,530 people inside Iran — including 1,606 civilians — and destroyed significant military and nuclear infrastructure, according to BBC and Wikipedia's 2026 Iran war article. A US F-15E was shot down over western Iran on April 3; both crew members have since been recovered. [Source: FT Briefing]",
+        "raw_content": "**Iran** continues to launch retaliatory ballistic missile and drone strikes against Israel and Gulf states hosting US bases despite ongoing US-Israeli bombardment that has, as of early April, killed an estimated 3,530 people inside Iran — including 1,606 civilians — and destroyed significant military and nuclear infrastructure, according to BBC and Wikipedia's 2026 Iran war article. A US F-15E was shot down over western Iran on April 3; both crew members have since been recovered. [Source: FT Briefing]\n\nThe campaign began February 28 when the US and Israel launched coordinated strikes killing Supreme Leader Khamenei and decapitating the IRGC command structure. Iran's new leadership under Mojtaba Khamenei has sustained the retaliatory posture for five weeks despite mounting internal losses and international pressure from Egypt, Turkey, and Pakistan to de-escalate.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.bbc.com/news/articles/cx2dyz6p3weo",
+            "name": "BBC"
+          },
+          {
+            "url": "https://en.wikipedia.org/wiki/2026_Iran_war",
+            "name": "Wikipedia — 2026 Iran war"
+          }
+        ],
+        "entities": [
+          "**Iran**"
+        ],
+        "category": "",
+        "cluster": "Iran-UAE conflict escalation",
+        "composite_score": 8.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-06-s006",
+        "headline": "Over 2,000 ships and 20,000 seafarers stranded in the Persian Gulf",
+        "source": "WSJ Briefing",
+        "source_name": "WSJ Briefing",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-06",
+        "summary": "The **International Maritime Organization** has confirmed 18 incidents of damage to commercial vessels in the Strait of Hormuz, Persian Gulf, and Gulf of Oman since March 1, with at least 7 seafarers killed. Approximately 20,000 sailors across hundreds of ships remain stranded — some for over a month — with fresh water and food supplies failing, forcing crews to fish and collect condensate from air-conditioning units to survive, according to NBC News. [Source: WSJ Briefing]",
+        "raw_content": "The **International Maritime Organization** has confirmed 18 incidents of damage to commercial vessels in the Strait of Hormuz, Persian Gulf, and Gulf of Oman since March 1, with at least 7 seafarers killed. Approximately 20,000 sailors across hundreds of ships remain stranded — some for over a month — with fresh water and food supplies failing, forcing crews to fish and collect condensate from air-conditioning units to survive, according to NBC News. [Source: WSJ Briefing]\n\nIran's effective closure of the Strait of Hormuz since late February has cut normal daily transits from roughly 130 ships to near zero. The **ITF** reports 2025 already held the record for ship abandonments at 409 vessels globally; the current crisis has generated dozens of daily distress calls, with some owners cutting communication entirely and leaving crews without pay or a path to disembark.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.nbcnews.com/world/iran/sailors-stranded-iran-war-strait-of-hormuz-rcna265052",
+            "name": "NBC News"
+          },
+          {
+            "url": "https://www.wired.com/story/legal-loopholes-leave-shipping-crews-stranded-in-the-strait-of-hormuz/",
+            "name": "Wired"
+          }
+        ],
+        "entities": [
+          "**International Maritime Organization**",
+          "**ITF**"
+        ],
+        "category": "",
+        "cluster": "Iran-UAE conflict escalation",
+        "composite_score": 8.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-06-s009",
+        "headline": "Five EU finance ministers call for windfall tax on energy firms",
+        "source": "WAM",
+        "source_name": "WAM",
+        "source_url": "https://www.wam.ae/en/article/bzjpfy2-five-finance-ministers-call-for-tax-energy",
+        "source_domain": "wam.ae",
+        "date": "2026-04-06",
+        "summary": "The finance ministers of **Germany**, **Italy**, **Spain**, **Portugal**, and a fifth EU state wrote to the **EU Commission** calling for a windfall-profits tax on energy companies, citing fuel-price surges driven by the Iran war. [Source: https://www.wam.ae/en/article/bzjpfy2-five-finance-ministers-call-for-tax-energy]",
+        "raw_content": "The finance ministers of **Germany**, **Italy**, **Spain**, **Portugal**, and a fifth EU state wrote to the **EU Commission** calling for a windfall-profits tax on energy companies, citing fuel-price surges driven by the Iran war. [Source: https://www.wam.ae/en/article/bzjpfy2-five-finance-ministers-call-for-tax-energy]\n\nThe coordinated letter is the first concrete multilateral fiscal policy response from within the EU to the Iran war's energy-price shock, moving the debate from national commentary to a formal Commission submission.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**Germany**",
+          "**Italy**",
+          "**Spain**",
+          "**Portugal**",
+          "**EU Commission**"
+        ],
+        "category": "",
+        "cluster": "Iran conflict — economic spillovers",
+        "composite_score": 7.0,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-06-s016",
+        "headline": "Trump administration proposes expanding restrictions on Chinese technology equipment",
+        "source": "Reuters",
+        "source_name": "Reuters",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-06",
+        "summary": "The **Trump administration** has proposed measures to expand restrictions on Chinese technology equipment, according to Reuters. Specific equipment categories, agency leads, and implementation timeline are not confirmed in available sources. [Source: Reuters]",
+        "raw_content": "The **Trump administration** has proposed measures to expand restrictions on Chinese technology equipment, according to Reuters. Specific equipment categories, agency leads, and implementation timeline are not confirmed in available sources. [Source: Reuters]\n\nThe proposal follows a broader US-China tech-controls escalation that has already restricted Chinese access to advanced semiconductors and chipmaking tools including **ASML** lithography equipment.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**Trump administration**",
+          "**ASML**"
+        ],
+        "category": "",
+        "cluster": "US-China tech controls",
+        "composite_score": 8.0,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-06-s017",
+        "headline": "US proposes export restrictions on ASML tools targeting Chinese chipmaking",
+        "source": "Reuters",
+        "source_name": "Reuters",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-06",
+        "summary": "The **US** is proposing export restrictions targeting Chinese chipmaking capacity, with **ASML** and other companies cited as subjects of the proposed controls, according to Reuters. Specific tool categories, implementation timeline, and named agency leads are not confirmed in available sources. [Source: Reuters]",
+        "raw_content": "The **US** is proposing export restrictions targeting Chinese chipmaking capacity, with **ASML** and other companies cited as subjects of the proposed controls, according to Reuters. Specific tool categories, implementation timeline, and named agency leads are not confirmed in available sources. [Source: Reuters]\n\nASML holds a near-monopoly on extreme ultraviolet lithography equipment essential for advanced chip fabrication; restricting its exports to China would constrain Chinese foundries' ability to manufacture chips below approximately 7nm, the threshold relevant to AI accelerator production.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**US**",
+          "**ASML**",
+          "**DeepSeek**"
+        ],
+        "category": "",
+        "cluster": "US-China tech controls",
+        "composite_score": 8.0,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "International Politics & Policy",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-06-s014",
+        "headline": "Anthropic acquires biotech AI startup Coefficient Bio for $400 million",
+        "source": "TechCrunch",
+        "source_name": "TechCrunch",
+        "source_url": "https://techcrunch.com/2026/04/03/anthropic-buys-biotech-startup-coefficient-bio-in-400m-deal-reports/",
+        "source_domain": "techcrunch.com",
+        "date": "2026-04-06",
+        "summary": "**Anthropic** acquired **Coefficient Bio**, an eight-month-old stealth biotech AI startup, in an all-stock deal valued at just over $400 million. Coefficient Bio's co-founders — **Samuel Stanton** and **Nathan Frey**, both veterans of **Genentech**'s Prescient Design computational drug-discovery unit — built the company around biology-native AI for drug R&D planning, clinical regulatory strategy, and target identification. The team of approximately 10 will join Anthropic's Health and Life Sciences division. [Source: https://techcrunch.com/2026/04/03/anthropic-buys-biotech-startup-coefficient-bio-in-400m-deal-reports/]",
+        "raw_content": "**Anthropic** acquired **Coefficient Bio**, an eight-month-old stealth biotech AI startup, in an all-stock deal valued at just over $400 million. Coefficient Bio's co-founders — **Samuel Stanton** and **Nathan Frey**, both veterans of **Genentech**'s Prescient Design computational drug-discovery unit — built the company around biology-native AI for drug R&D planning, clinical regulatory strategy, and target identification. The team of approximately 10 will join Anthropic's Health and Life Sciences division. [Source: https://techcrunch.com/2026/04/03/anthropic-buys-biotech-startup-coefficient-bio-in-400m-deal-reports/]\n\nThe acquisition marks a deliberate shift in Anthropic's life-sciences strategy — from adapting general-purpose Claude models for scientific workflows to owning biology-specific model architecture from the ground up. At Anthropic's $380 billion post-money Series G valuation, the deal represents approximately 0.1% dilution.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://oncodaily.com/techology/anthropic479262",
+            "name": "Oncodaily"
+          }
+        ],
+        "entities": [
+          "**Anthropic**",
+          "**Coefficient Bio**",
+          "**Samuel Stanton**",
+          "**Nathan Frey**",
+          "**Genentech**"
+        ],
+        "category": "",
+        "cluster": null,
+        "composite_score": 8.0,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "International Business & Technology",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-06-s015",
+        "headline": "UK courts Anthropic for London expansion after reported US defence friction",
+        "source": "FT Briefing",
+        "source_name": "FT Briefing",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-06",
+        "summary": "Prime Minister **Keir Starmer**'s government is actively recruiting **Anthropic** to expand its presence in London, according to the Financial Times, framing the approach as an opportunity arising from Anthropic's reported friction with US defence clients. Details of UK incentives offered, the nature of the US defence dispute, and Anthropic's response are not confirmed in available sources. [Source: FT Briefing]",
+        "raw_content": "Prime Minister **Keir Starmer**'s government is actively recruiting **Anthropic** to expand its presence in London, according to the Financial Times, framing the approach as an opportunity arising from Anthropic's reported friction with US defence clients. Details of UK incentives offered, the nature of the US defence dispute, and Anthropic's response are not confirmed in available sources. [Source: FT Briefing]\n\nMajor economies are competing to attract frontier AI lab footprints as a proxy for AI talent, investment, and influence. The UK's approach coincides with Anthropic's $380 billion Series G valuation and rapid international expansion.",
+        "additional_context": "",
+        "additional_sources": [],
+        "entities": [
+          "**Keir Starmer**",
+          "**Anthropic**"
+        ],
+        "category": "",
+        "cluster": null,
+        "composite_score": 7.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "International Business & Technology",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-06-s012",
+        "headline": "Google DeepMind releases Gemma 4 under Apache 2.0",
+        "source": "AINews (Latent Space)",
+        "source_name": "AINews (Latent Space)",
+        "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/gemma-4/",
+        "source_domain": "blog.google",
+        "date": "2026-04-06",
+        "summary": "**Google DeepMind** launched **Gemma 4**, a four-variant open-weight model family (E2B, E4B, 26B MoE, 31B Dense) under a commercially permissive Apache 2.0 licence — the first Gemma generation to carry OSI-approved terms. The 31B Dense ranks #3 among all open models on Arena AI; the 26B MoE activates only 3.8B parameters at inference, yielding 162 tok/s on an RTX 4090. All variants support multimodal input (vision and audio), context windows up to 256K tokens, function-calling, and structured JSON output for agentic workflows, with day-0 integration across vLLM, llama.cpp, and Ollama. [Sources: https://blog.google/innovation-and-ai/technology/developers-tools/gemma-4/, https://www.latent.space/p/ainews-gemma-4-the-best-small-multimodal]",
+        "raw_content": "**Google DeepMind** launched **Gemma 4**, a four-variant open-weight model family (E2B, E4B, 26B MoE, 31B Dense) under a commercially permissive Apache 2.0 licence — the first Gemma generation to carry OSI-approved terms. The 31B Dense ranks #3 among all open models on Arena AI; the 26B MoE activates only 3.8B parameters at inference, yielding 162 tok/s on an RTX 4090. All variants support multimodal input (vision and audio), context windows up to 256K tokens, function-calling, and structured JSON output for agentic workflows, with day-0 integration across vLLM, llama.cpp, and Ollama. [Sources: https://blog.google/innovation-and-ai/technology/developers-tools/gemma-4/, https://www.latent.space/p/ainews-gemma-4-the-best-small-multimodal]\n\nPrior Gemma releases carried a custom, restrictive licence that blocked many commercial and derivative uses — a consistent friction point cited by the open-source community. The Apache 2.0 shift arrives as Allen Institute leadership departures and uncertainty around Meta's GPT-OSS roadmap leave the American open-model landscape thinner than at any point in the past two years, amplifying the strategic significance of Google sustaining its release cadence.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.latent.space/p/ainews-gemma-4-the-best-small-multimodal",
+            "name": "AINews / Latent Space"
+          },
+          {
+            "url": "https://opensource.googleblog.com/2026/03/gemma-4-expanding-the-gemmaverse-with-apache-20.html",
+            "name": "Google Open Source Blog"
+          },
+          {
+            "url": "https://arstechnica.com/ai/2026/04/google-announces-gemma-4-open-ai-models-switches-to-apache-2-0-license/",
+            "name": "Ars Technica"
+          },
+          {
+            "url": "https://cloud.google.com/blog/products/ai-machine-learning/gemma-4-available-on-google-cloud",
+            "name": "Google Cloud Blog"
+          }
+        ],
+        "entities": [
+          "**Google DeepMind**",
+          "**Gemma 4**"
+        ],
+        "category": "",
+        "cluster": "Open-weight model releases",
+        "composite_score": 8.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "Model Releases & Technical Developments",
+        "is_model_release": true,
+        "model_release_data": {
+          "specs": null,
+          "training": "Built from the same research and technology stack as Gemini 3. Natively trained on 140+ languages. Performance gains in the 31B Dense attributed primarily to improved training recipe and data rather than architectural changes.",
+          "developer": "Google DeepMind",
+          "benchmarks": {
+            "rows": [
+              {
+                "scores": [
+                  "85.7%",
+                  "—",
+                  "—"
+                ],
+                "benchmark": "GPQA Diamond"
+              },
+              {
+                "scores": [
+                  "#3",
+                  "#1 (tied)",
+                  "#1 (tied)"
+                ],
+                "benchmark": "Arena AI Open Rank"
+              }
+            ],
+            "models": [
+              "Gemma 4 31B",
+              "Kimi K2.5 (744B-A40B)",
+              "GLM-5 (1T-A32B)"
+            ],
+            "summary": "Gemma 4 31B scores 85.7% on GPQA Diamond and ranks #3 among open models on Arena AI, matching or tying models 20-30x its total parameter count.",
+            "highlighted_model_index": 0,
+            "highlighted_model_indexes": [
+              0
+            ]
+          },
+          "model_name": "Gemma 4",
+          "commercials": null,
+          "key_numbers": [
+            {
+              "label": "Parameters",
+              "value": "31B / 26B MoE",
+              "qualifier": "3.8B active (MoE)"
+            },
+            {
+              "label": "Context",
+              "value": "256K",
+              "qualifier": "tokens (large models); 128K edge"
+            },
+            {
+              "label": "Throughput",
+              "value": "162",
+              "qualifier": "tok/s on RTX 4090 (26B MoE Q8)"
+            },
+            {
+              "label": "License",
+              "value": "Apache 2.0",
+              "qualifier": "OSI-approved, commercially permissive"
+            }
+          ],
+          "performance": null,
+          "architecture": "Hybrid local/global attention (5:1 ratio) for 31B Dense, largely consistent with Gemma 3 architecture; 26B variant uses Mixture-of-Experts with 3.8B active parameters at inference. Small edge variants (E2B, E4B) employ per-layer embeddings, QK/V norm, aggressive KV-cache sharing, partial-dimension RoPE with distinct theta for local and global layers, and sliding window sizes of 512 and 1024. All variants natively process variable-resolution images and video; E2B and E4B add native audio input.",
+          "availability": "Hugging Face · vLLM · llama.cpp · Ollama · LM Studio · Google Vertex AI (Model Garden) · Google Cloud Run · GKE · Google Cloud TPUs",
+          "summary_pitch": "Four-variant open-weight family (E2B, E4B, 26B MoE, 31B Dense) purpose-built for reasoning and agentic workflows. First Gemma generation under Apache 2.0. The 26B MoE activates only 3.8B parameters at inference; the 31B Dense ranks #3 open model globally on Arena AI."
+        },
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-06-s013",
+        "headline": "AI offensive cybersecurity capability doubling every 5.7 months, researchers find",
+        "source": "AINews (Latent Space)",
+        "source_name": "AINews (Latent Space)",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-06",
+        "summary": "**Lyptus Research** applied **METR**'s time-horizon methodology to offensive cybersecurity across 291 tasks and 10 professional security experts, finding that AI offensive capability doubled every 9.8 months since 2019, accelerating to every 5.7 months since 2024. The most capable models in the study — **Opus 4.6** and **GPT-5.3 Codex** — achieve 50% success on tasks requiring approximately 3 hours of expert human time at a 2M-token budget; raising GPT-5.3 Codex to a 10M-token budget raises its effective time horizon from 3.1 hours to 10.5 hours, meaning current estimates are lower bounds. [Source: AINews (Latent Space)]",
+        "raw_content": "**Lyptus Research** applied **METR**'s time-horizon methodology to offensive cybersecurity across 291 tasks and 10 professional security experts, finding that AI offensive capability doubled every 9.8 months since 2019, accelerating to every 5.7 months since 2024. The most capable models in the study — **Opus 4.6** and **GPT-5.3 Codex** — achieve 50% success on tasks requiring approximately 3 hours of expert human time at a 2M-token budget; raising GPT-5.3 Codex to a 10M-token budget raises its effective time horizon from 3.1 hours to 10.5 hours, meaning current estimates are lower bounds. [Source: AINews (Latent Space)]\n\nThe 2026 International AI Safety Report identifies cybersecurity as the domain with the strongest evidence of real-world AI harm. The study's open-weight lag finding is particularly notable: the current best open-weight model (**GLM-5**) trails the closed-source frontier by exactly 5.7 months, suggesting frontier offensive capability diffuses into openly accessible form on a predictable short timeline.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://lyptusresearch.org/research/offensive-cyber-time-horizons",
+            "name": "Lyptus Research"
+          },
+          {
+            "url": "https://the-decoder.com/ai-offensive-cyber-capabilities-are-doubling-every-six-months-safety-researchers-find/",
+            "name": "The Decoder"
+          }
+        ],
+        "entities": [
+          "**Lyptus Research**",
+          "**METR**",
+          "**Opus 4.6**",
+          "**GPT-5.3 Codex**",
+          "**GLM-5**"
+        ],
+        "category": "",
+        "cluster": null,
+        "composite_score": 8.0,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "Model Releases & Technical Developments",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "full"
+      },
+      {
+        "id": "2026-04-06-s018",
+        "headline": "DeepSeek V4 reportedly optimised to run on Huawei chips, bypassing NVIDIA",
+        "source": "Reuters",
+        "source_name": "Reuters",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-06",
+        "summary": "**DeepSeek** has reportedly denied early hardware access to **NVIDIA** and **AMD** for its upcoming V4 model, instead working closely with **Huawei** and **Cambricon Technologies** to rewrite core model components for domestic chips, according to The Information as cited by Reuters. Chinese tech firms including **Alibaba**, **ByteDance**, and **Tencent** have placed bulk orders totalling hundreds of thousands of Huawei AI chips in anticipation of V4's release. [Source: Reuters]",
+        "raw_content": "**DeepSeek** has reportedly denied early hardware access to **NVIDIA** and **AMD** for its upcoming V4 model, instead working closely with **Huawei** and **Cambricon Technologies** to rewrite core model components for domestic chips, according to The Information as cited by Reuters. Chinese tech firms including **Alibaba**, **ByteDance**, and **Tencent** have placed bulk orders totalling hundreds of thousands of Huawei AI chips in anticipation of V4's release. [Source: Reuters]\n\nUS export controls have cut Chinese AI labs off from NVIDIA's Blackwell-generation accelerators. DeepSeek V4's Huawei-native development — breaking the industry norm of multi-vendor hardware optimisation — is an explicit future-proofing strategy against further restrictions.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://m.economictimes.com/news/international/us/deepseek-v4-model-to-use-huawei-chips-but-can-huawei-truly-match-nvidia-in-power-and-scale/articleshow/130004905.cms",
+            "name": "Economic Times"
+          }
+        ],
+        "entities": [
+          "**DeepSeek**",
+          "**NVIDIA**",
+          "**AMD**",
+          "**Huawei**",
+          "**Cambricon Technologies**",
+          "**Alibaba**",
+          "**ByteDance**",
+          "**Tencent**"
+        ],
+        "category": "",
+        "cluster": "US-China tech controls",
+        "composite_score": 7.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "Model Releases & Technical Developments",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "standard"
+      },
+      {
+        "id": "2026-04-06-s019",
+        "headline": "Egypt targets 30,000 AI professionals by 2030 under national strategy",
+        "source": "Middle East AI News",
+        "source_name": "Middle East AI News",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-06",
+        "summary": "**Egypt**'s Ministry of Communications and Information Technology (**MCIT**) is scaling its national AI skills pipeline under the 2025–2035 National AI Strategy, which targets 30,000 trained AI professionals and 250+ AI startups by 2030. Operational flagship applications include **KARNAK** — the highest-ranking Arabic LLM in the 30–80 billion parameter range — alongside SIA (an Arabic education tutor), Torgoman (automated translation), and healthcare AI tools for diabetic retinopathy and breast cancer screening. [Source: Middle East AI News]",
+        "raw_content": "**Egypt**'s Ministry of Communications and Information Technology (**MCIT**) is scaling its national AI skills pipeline under the 2025–2035 National AI Strategy, which targets 30,000 trained AI professionals and 250+ AI startups by 2030. Operational flagship applications include **KARNAK** — the highest-ranking Arabic LLM in the 30–80 billion parameter range — alongside SIA (an Arabic education tutor), Torgoman (automated translation), and healthcare AI tools for diabetic retinopathy and breast cancer screening. [Source: Middle East AI News]\n\nEgypt graduates approximately 750,000 university students annually, including 50,000 in engineering and computer science — one of the largest technical talent pools in the EMEA region — giving the pipeline expansion a significant labour-market foundation distinct from smaller Gulf programmes.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://www.linkedin.com/pulse/can-egypt-emerge-regional-ai-hub-what-take-scale-fast-company-me-skfdc",
+            "name": "LinkedIn / Fast Company ME"
+          }
+        ],
+        "entities": [
+          "**Egypt**",
+          "**MCIT**",
+          "**KARNAK**"
+        ],
+        "category": "",
+        "cluster": "MENA AI policy",
+        "composite_score": 6.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "Regional Research & Academic Events",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "brief"
+      },
+      {
+        "id": "2026-04-06-s020",
+        "headline": "UAE framework launches to accelerate AI adoption among SMEs",
+        "source": "Middle East AI News",
+        "source_name": "Middle East AI News",
+        "source_url": "",
+        "source_domain": "newsletter",
+        "date": "2026-04-06",
+        "summary": "**AGN IT Services** launched an AI Readiness Framework in the UAE — a structured training and governance programme titled \"Confusion to Clarity\" — designed to guide SMEs from AI experimentation to scalable implementation through readiness assessments, SOP documentation, and phased deployment roadmaps. [Source: Middle East AI News]",
+        "raw_content": "**AGN IT Services** launched an AI Readiness Framework in the UAE — a structured training and governance programme titled \"Confusion to Clarity\" — designed to guide SMEs from AI experimentation to scalable implementation through readiness assessments, SOP documentation, and phased deployment roadmaps. [Source: Middle East AI News]\n\nMcKinsey estimates that while 88% of GCC organisations use AI in at least one function, fewer than one-third have moved beyond pilot projects to full-scale deployment — the gap the framework targets.",
+        "additional_context": "",
+        "additional_sources": [
+          {
+            "url": "https://mea-biz.com/agn-it-services-launches-ai-framework-to-support-sme-digital-transformation-in-uae/",
+            "name": "MEA-Biz"
+          }
+        ],
+        "entities": [
+          "**AGN IT Services**"
+        ],
+        "category": "",
+        "cluster": "MENA AI policy",
+        "composite_score": 6.6,
+        "selection_rationale": "Reconstructed from production brief 2026-04-06 for eval-fixture.",
+        "brief_section": "Regional Research & Academic Events",
+        "is_model_release": false,
+        "model_release_data": null,
+        "primary_entity": null,
+        "depth": "brief"
+      }
+    ],
+    "allowed_ids": [
+      "2026-04-06-s001",
+      "2026-04-06-s002",
+      "2026-04-06-s003",
+      "2026-04-06-s007",
+      "2026-04-06-s010",
+      "2026-04-06-s011",
+      "2026-04-06-s005",
+      "2026-04-06-s006",
+      "2026-04-06-s009",
+      "2026-04-06-s016",
+      "2026-04-06-s017",
+      "2026-04-06-s014",
+      "2026-04-06-s015",
+      "2026-04-06-s012",
+      "2026-04-06-s013",
+      "2026-04-06-s018",
+      "2026-04-06-s019",
+      "2026-04-06-s020"
+    ]
+  },
+  "old_output": {
+    "items": [
+      {
+        "id": "2026-04-06-s001",
+        "rank": 1,
+        "depth": "full",
+        "cluster": "Iran-UAE conflict escalation",
+        "context": "April 5's single-day intercept count of 60 projectiles is the largest volume reported in one engagement since the campaign opened. The strikes began as Iranian retaliation for the February 28 US-Israeli operation that targeted Iran's military and nuclear infrastructure, and have drawn in UAE territory as a site of proxy pressure against US forward basing at Al Dhafra Air Base.",
+        "section": "UAE",
+        "entities": [
+          "**UAE Ministry of Defence**",
+          "**Iran**"
+        ],
+        "headline": "UAE air defences intercept 9 ballistic missiles, cruise missile, and 50 drones from Iran",
+        "continuity": null,
+        "source_url": "https://www.wam.ae/en/article/uae-air-defences-engage-9-ballistic-missles-one",
+        "implication": "At 507 ballistic missiles intercepted over five weeks, the UAE air-defence system is operating at a sustained tempo with no postwar precedent in the Gulf. The system's performance under load is holding, but each intercept generates debris — as the Borouge and Khorfakkan incidents below illustrate — meaning the civilian and industrial risk surface grows with every engagement cycle.",
+        "main_bullet": "The **UAE Ministry of Defence** confirmed that air defence systems intercepted 9 ballistic missiles, 1 cruise missile, and 50 drones launched from **Iran** on April 5, with no casualties recorded in the engagement. Since **Iran** began its retaliatory campaign on February 28 — following the joint US-Israeli strikes that killed Supreme Leader Khamenei — UAE defences have now intercepted a cumulative total of 507 ballistic missiles, 24 cruise missiles, and 2,191 drones; thirteen people have been killed and 217 wounded since the campaign began. [Source: https://www.wam.ae/en/article/uae-air-defences-engage-9-ballistic-missles-one]",
+        "source_name": "WAM",
+        "source_domain": "wam.ae",
+        "source_origin": "canonical",
+        "composite_score": 9.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.dubaieye1038.com/news/local/uae-air-defences-intercept-10-missiles-50-drones-on-sunday/",
+            "name": "Dubai Eye 1038"
+          },
+          {
+            "url": "https://en.wikipedia.org/wiki/2026_Iranian_strikes_on_the_United_Arab_Emirates",
+            "name": "Wikipedia — 2026 Iranian strikes on the UAE"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-06-s002",
+        "rank": 2,
+        "depth": "full",
+        "cluster": "Iran-UAE conflict escalation",
+        "context": "The incident is the direct downstream consequence of the intercept event reported above: successful air defence generates high-velocity debris that falls across populated and industrial zones. Parallel debris-related fires struck petrochemical and energy infrastructure in Bahrain and Kuwait on the same day, and Iranian drones caused power outages at two Kuwaiti desalination plants.",
+        "section": "UAE",
+        "entities": [
+          "**Borouge**",
+          "**ADNOC**",
+          "**Borealis**"
+        ],
+        "headline": "Intercept debris ignites three fires at Borouge petrochemicals plant in Ruwais",
+        "continuity": null,
+        "source_url": "https://www.wam.ae/en/article/three-fires-at-borouge-plant-contained-with-no",
+        "implication": "A pattern is forming across Gulf states: even successful interceptions carry material industrial risk when defence engagements occur over or near critical energy infrastructure. For an economy whose AI and data-centre ambitions depend on stable power and petrochemical supply chains, this debris-damage dynamic is a structural vulnerability distinct from the intercept-failure risk.",
+        "main_bullet": "Three fires broke out at the **Borouge** petrochemicals plant in Ruwais, Abu Dhabi, after falling debris from the April 5 air-defence interceptions struck the facility; operations have been suspended pending a damage assessment, and no injuries were reported. Emergency teams contained all three fires. **Borouge** is a joint venture between **ADNOC** and Austria's **Borealis**, located near the UAE's western border with Saudi Arabia. [Source: https://www.wam.ae/en/article/three-fires-at-borouge-plant-contained-with-no]",
+        "source_name": "WAM",
+        "source_domain": "wam.ae",
+        "source_origin": "canonical",
+        "composite_score": 8.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.dubaieye1038.com/news/local/operations-at-abu-dhabis-borouge-petrochemicals-suspended-due-to-fallen-debris/",
+            "name": "Dubai Eye 1038"
+          },
+          {
+            "url": "https://www.kurdistan24.net/en/story/905792",
+            "name": "Kurdistan 24"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-06-s003",
+        "rank": 3,
+        "depth": "full",
+        "cluster": "Iran-UAE conflict escalation",
+        "context": "Khorfakkan faces the Gulf of Oman on the UAE's east coast, physically separated from the Persian Gulf theatre where prior incidents were concentrated. An active engagement reaching this coast marks a geographic expansion of Iran's strike range — or of debris dispersion — into the Oman Sea maritime corridor.",
+        "section": "UAE",
+        "entities": [
+          "**Khorfakkan Port**",
+          "**UK Maritime Trade Operations**"
+        ],
+        "headline": "Intercept debris hits Khorfakkan Port, injuring four on UAE's east coast",
+        "continuity": null,
+        "source_url": "https://www.wam.ae/en/article/sharjah-authorities-respond-to-incident-at",
+        "implication": "With strikes or debris now documented in Abu Dhabi, Dubai, and Sharjah's east coast, no UAE emirate is operationally outside the conflict's physical footprint. The UKMTO advisory adds a commercial maritime risk dimension that directly affects cargo flows through Khorfakkan, one of the region's primary transshipment hubs.",
+        "main_bullet": "Debris from an air-defence interception struck **Khorfakkan Port** in Sharjah on April 5, injuring four people — one Nepalese national seriously and three Pakistani nationals with minor to moderate injuries — and igniting a fire that emergency crews contained. The **UK Maritime Trade Operations** office separately reported unknown projectiles landing near a container ship conducting loading operations at the port. [Source: https://www.wam.ae/en/article/sharjah-authorities-respond-to-incident-at]",
+        "source_name": "WAM",
+        "source_domain": "wam.ae",
+        "source_origin": "canonical",
+        "composite_score": 8.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.city1016.ae/trending/news/local-news/authorities-respond-to-incident-at-khorfakkan-port/",
+            "name": "City 1016"
+          },
+          {
+            "url": "https://www.aa.com.tr/en/middle-east/uk-maritime-office-reports-unknown-projectiles-near-vessel-at-uae-port/3892870",
+            "name": "Anadolu Agency"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-06-s007",
+        "rank": 4,
+        "depth": "standard",
+        "cluster": "Iran-UAE conflict escalation",
+        "context": "The attack extends the Iran-linked conflict's reach into Syrian territory, opening a new geographic dimension beyond the Gulf and Israeli theatres that have dominated reporting since February 28.",
+        "section": "UAE",
+        "entities": [
+          "**Egypt**",
+          "**UAE**"
+        ],
+        "headline": "Egypt condemns attack on UAE diplomatic mission in Damascus",
+        "continuity": null,
+        "source_url": "https://www.wam.ae/en/article/bzkavms-egypt-condemns-attack-uae-diplomatic-mission",
+        "implication": "Attacks on UAE diplomatic premises signal that the conflict's proxy dimensions are expanding; as a Gulf state with significant diplomatic and economic exposure across the Arab world, the UAE faces elevated risk to its foreign missions and personnel beyond its own borders. [Limited source access — perpetrator identity and damage extent unconfirmed]",
+        "main_bullet": "**Egypt**'s Ministry of Foreign Affairs strongly condemned acts of unrest and attempted sabotage targeting the **UAE** diplomatic mission premises and the residence of the Head of Mission in Damascus. Perpetrators and damage extent remain unconfirmed in available sources. [Source: https://www.wam.ae/en/article/bzkavms-egypt-condemns-attack-uae-diplomatic-mission]",
+        "source_name": "WAM",
+        "source_domain": "wam.ae",
+        "source_origin": "canonical",
+        "composite_score": 7.6,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-06-s010",
+        "rank": 5,
+        "depth": "standard",
+        "cluster": null,
+        "context": "The WTO simultaneously cautioned that global merchandise trade growth is forecast to slow to 1.9% in 2026 from 4.6% in 2025, citing Middle East geopolitical tensions and elevated energy prices — the very conditions now disrupting UAE port operations and Hormuz shipping lanes.",
+        "section": "UAE",
+        "entities": [
+          "**UAE**",
+          "**WTO**"
+        ],
+        "headline": "UAE enters global top-10 goods exporters for the first time, ranking ninth",
+        "continuity": null,
+        "source_url": "https://www.wam.ae/en/article/bzkavsg-uae-becomes-top-global-exporter-latest-wto-figures",
+        "implication": "The UAE's trade milestone, achieved before the current conflict began, provides institutional credibility for economic resilience claims; but the WTO's simultaneous downgrade of 2026 forecasts signals that sustaining the ninth-place ranking through the Hormuz disruption will be the real test of that credibility.",
+        "main_bullet": "The **UAE** ranked ninth globally in merchandise exports in 2025, entering the **WTO**'s top-10 for the first time and rising from 17th place in five years, according to the WTO's World Trade Outlook and Statistics report. Total external trade reached Dh6.014 trillion ($1.637 trillion) in 2025 — up 15% year-on-year — with non-oil goods trade surging 27% to Dh3.8 trillion and services trade surpassing Dh1 trillion for the first time. [Source: https://www.wam.ae/en/article/bzkavsg-uae-becomes-top-global-exporter-latest-wto-figures]",
+        "source_name": "WAM",
+        "source_domain": "wam.ae",
+        "source_origin": "canonical",
+        "composite_score": 7.0,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://gulfnews.com/uae/uae-enters-worlds-top-10-goods-exporters-trade-reaches-dh6-trillion-1.500497026",
+            "name": "Gulf News"
+          },
+          {
+            "url": "https://www.thenationalnews.com/business/economy/2026/04/05/uae-ranks-among-global-top-10-exporters-for-first-time-wto-says/",
+            "name": "The National"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-06-s011",
+        "rank": 6,
+        "depth": "standard",
+        "cluster": "Iran conflict — economic spillovers",
+        "context": "The increase follows a three-month pause in output hikes (January–March) and comes as war-related Hormuz disruption has driven energy prices sharply higher — creating an unusual market configuration where supply additions are occurring into an already-elevated price environment.",
+        "section": "UAE",
+        "entities": [
+          "**OPEC+**",
+          "**UAE**",
+          "**Saudi Arabia**",
+          "**Russia**"
+        ],
+        "headline": "OPEC+ eight members raise output by 206,000 bpd beginning May",
+        "continuity": null,
+        "source_url": "https://www.wam.ae/en/article/bzkavsh-opec+-adjusts-output-206000-bpd-from-may",
+        "implication": "The incremental 206,000 bpd addition is modest against a backdrop of Hormuz-constrained global flows; the more consequential signal is that Gulf producers are choosing gradual supply normalization over a price-maximizing hold — a positioning that could temper the EU windfall-tax pressure and signal confidence that the conflict will not permanently close the strait.",
+        "main_bullet": "Eight **OPEC+** members — including the **UAE**, **Saudi Arabia**, and **Russia** — agreed on April 5 to raise production by 206,000 barrels per day beginning May, resuming the gradual unwinding of the 1.65 million bpd voluntary cuts originally announced in April 2023. The group retains full flexibility to pause or reverse the phase-out depending on market conditions. [Source: https://www.wam.ae/en/article/bzkavsh-opec+-adjusts-output-206000-bpd-from-may]",
+        "source_name": "WAM",
+        "source_domain": "wam.ae",
+        "source_origin": "canonical",
+        "composite_score": 7.0,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.opec.org/pr-detail/593-1-march-2026.html",
+            "name": "OPEC"
+          },
+          {
+            "url": "https://www.aa.com.tr/en/energy/oil/opec-eight-members-to-raise-output-by-206-000-bpd-in-april/55046",
+            "name": "Anadolu Agency"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-06-s005",
+        "rank": 7,
+        "depth": "full",
+        "cluster": "Iran-UAE conflict escalation",
+        "context": "The campaign began February 28 when the US and Israel launched coordinated strikes killing Supreme Leader Khamenei and decapitating the IRGC command structure. Iran's new leadership under Mojtaba Khamenei has sustained the retaliatory posture for five weeks despite mounting internal losses and international pressure from Egypt, Turkey, and Pakistan to de-escalate.",
+        "section": "International Politics & Policy",
+        "entities": [
+          "**Iran**"
+        ],
+        "headline": "Iran continues launching missile strikes despite sustained US-Israeli bombardment",
+        "continuity": null,
+        "source_url": null,
+        "implication": "Iran's demonstrated ability to sustain a high-tempo missile campaign while absorbing severe leadership and infrastructure losses suggests the conflict will not resolve quickly through attrition alone. The Strait of Hormuz closure, now in its fifth week, is compounding economic damage across the Gulf in ways that affect energy pricing, supply chains, and institutional operating costs region-wide.",
+        "main_bullet": "**Iran** continues to launch retaliatory ballistic missile and drone strikes against Israel and Gulf states hosting US bases despite ongoing US-Israeli bombardment that has, as of early April, killed an estimated 3,530 people inside Iran — including 1,606 civilians — and destroyed significant military and nuclear infrastructure, according to BBC and Wikipedia's 2026 Iran war article. A US F-15E was shot down over western Iran on April 3; both crew members have since been recovered. [Source: FT Briefing]",
+        "source_name": "FT Briefing",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 8.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.bbc.com/news/articles/cx2dyz6p3weo",
+            "name": "BBC"
+          },
+          {
+            "url": "https://en.wikipedia.org/wiki/2026_Iran_war",
+            "name": "Wikipedia — 2026 Iran war"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-06-s006",
+        "rank": 8,
+        "depth": "full",
+        "cluster": "Iran-UAE conflict escalation",
+        "context": "Iran's effective closure of the Strait of Hormuz since late February has cut normal daily transits from roughly 130 ships to near zero. The **ITF** reports 2025 already held the record for ship abandonments at 409 vessels globally; the current crisis has generated dozens of daily distress calls, with some owners cutting communication entirely and leaving crews without pay or a path to disembark.",
+        "section": "International Politics & Policy",
+        "entities": [
+          "**International Maritime Organization**",
+          "**ITF**"
+        ],
+        "headline": "Over 2,000 ships and 20,000 seafarers stranded in the Persian Gulf",
+        "continuity": null,
+        "source_url": null,
+        "implication": "The humanitarian and logistical scale of the Hormuz blockade — 2,000 stranded vessels, collapsing crew welfare, documented attacks on commercial shipping — is generating durable supply-chain and insurance-cost shocks that will outlast any ceasefire and reshape Gulf trade routing for years.",
+        "main_bullet": "The **International Maritime Organization** has confirmed 18 incidents of damage to commercial vessels in the Strait of Hormuz, Persian Gulf, and Gulf of Oman since March 1, with at least 7 seafarers killed. Approximately 20,000 sailors across hundreds of ships remain stranded — some for over a month — with fresh water and food supplies failing, forcing crews to fish and collect condensate from air-conditioning units to survive, according to NBC News. [Source: WSJ Briefing]",
+        "source_name": "WSJ Briefing",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 8.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.nbcnews.com/world/iran/sailors-stranded-iran-war-strait-of-hormuz-rcna265052",
+            "name": "NBC News"
+          },
+          {
+            "url": "https://www.wired.com/story/legal-loopholes-leave-shipping-crews-stranded-in-the-strait-of-hormuz/",
+            "name": "Wired"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-06-s009",
+        "rank": 9,
+        "depth": "standard",
+        "cluster": "Iran conflict — economic spillovers",
+        "context": "The coordinated letter is the first concrete multilateral fiscal policy response from within the EU to the Iran war's energy-price shock, moving the debate from national commentary to a formal Commission submission.",
+        "section": "International Politics & Policy",
+        "entities": [
+          "**Germany**",
+          "**Italy**",
+          "**Spain**",
+          "**Portugal**",
+          "**EU Commission**"
+        ],
+        "headline": "Five EU finance ministers call for windfall tax on energy firms",
+        "continuity": null,
+        "source_url": "https://www.wam.ae/en/article/bzjpfy2-five-finance-ministers-call-for-tax-energy",
+        "implication": "A European windfall tax, if adopted, would reshape energy-company investment calculus at precisely the moment Gulf producers — including UAE members of OPEC+ — are expanding output; it also signals that Europe is beginning to institutionalise wartime energy governance in ways that will affect long-term trade relationships.",
+        "main_bullet": "The finance ministers of **Germany**, **Italy**, **Spain**, **Portugal**, and a fifth EU state wrote to the **EU Commission** calling for a windfall-profits tax on energy companies, citing fuel-price surges driven by the Iran war. [Source: https://www.wam.ae/en/article/bzjpfy2-five-finance-ministers-call-for-tax-energy]",
+        "source_name": "WAM",
+        "source_domain": "wam.ae",
+        "source_origin": "canonical",
+        "composite_score": 7.0,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-06-s016",
+        "rank": 10,
+        "depth": "full",
+        "cluster": "US-China tech controls",
+        "context": "The proposal follows a broader US-China tech-controls escalation that has already restricted Chinese access to advanced semiconductors and chipmaking tools including **ASML** lithography equipment.",
+        "section": "International Politics & Policy",
+        "entities": [
+          "**Trump administration**",
+          "**ASML**"
+        ],
+        "headline": "Trump administration proposes expanding restrictions on Chinese technology equipment",
+        "continuity": null,
+        "source_url": null,
+        "implication": "Expanding equipment restrictions further narrows China's semiconductor production pathway and accelerates the bifurcation of global AI hardware supply chains — a dynamic with direct implications for any institution sourcing compute infrastructure in a US-allied but China-adjacent geopolitical position. [Limited source access — specific equipment categories unconfirmed]",
+        "main_bullet": "The **Trump administration** has proposed measures to expand restrictions on Chinese technology equipment, according to Reuters. Specific equipment categories, agency leads, and implementation timeline are not confirmed in available sources. [Source: Reuters]",
+        "source_name": "Reuters",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 8.0,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-06-s017",
+        "rank": 11,
+        "depth": "full",
+        "cluster": "US-China tech controls",
+        "context": "ASML holds a near-monopoly on extreme ultraviolet lithography equipment essential for advanced chip fabrication; restricting its exports to China would constrain Chinese foundries' ability to manufacture chips below approximately 7nm, the threshold relevant to AI accelerator production.",
+        "section": "International Politics & Policy",
+        "entities": [
+          "**US**",
+          "**ASML**",
+          "**DeepSeek**"
+        ],
+        "headline": "US proposes export restrictions on ASML tools targeting Chinese chipmaking",
+        "continuity": null,
+        "source_url": null,
+        "implication": "If enacted, ASML restrictions would significantly slow China's domestic AI chip roadmap — but would simultaneously intensify the pressure driving **DeepSeek**'s pivot to Huawei hardware, accelerating the formation of a parallel, US-independent Chinese AI compute stack. [Limited source access — specific control categories unconfirmed]",
+        "main_bullet": "The **US** is proposing export restrictions targeting Chinese chipmaking capacity, with **ASML** and other companies cited as subjects of the proposed controls, according to Reuters. Specific tool categories, implementation timeline, and named agency leads are not confirmed in available sources. [Source: Reuters]",
+        "source_name": "Reuters",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 8.0,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-06-s014",
+        "rank": 12,
+        "depth": "full",
+        "cluster": null,
+        "context": "The acquisition marks a deliberate shift in Anthropic's life-sciences strategy — from adapting general-purpose Claude models for scientific workflows to owning biology-specific model architecture from the ground up. At Anthropic's $380 billion post-money Series G valuation, the deal represents approximately 0.1% dilution.",
+        "section": "International Business & Technology",
+        "entities": [
+          "**Anthropic**",
+          "**Coefficient Bio**",
+          "**Samuel Stanton**",
+          "**Nathan Frey**",
+          "**Genentech**"
+        ],
+        "headline": "Anthropic acquires biotech AI startup Coefficient Bio for $400 million",
+        "continuity": null,
+        "source_url": "https://techcrunch.com/2026/04/03/anthropic-buys-biotech-startup-coefficient-bio-in-400m-deal-reports/",
+        "implication": "Frontier AI labs are moving from API-layer science partnerships toward owning the biological modelling layer itself — compressing years of domain-specific R&D into acquisition timelines. This race, now joined by both Anthropic and OpenAI (which disclosed plans for a fully automated researcher), elevates the strategic value of AI-in-science research programmes at institutions positioned between the labs and the scientific community.",
+        "main_bullet": "**Anthropic** acquired **Coefficient Bio**, an eight-month-old stealth biotech AI startup, in an all-stock deal valued at just over $400 million. Coefficient Bio's co-founders — **Samuel Stanton** and **Nathan Frey**, both veterans of **Genentech**'s Prescient Design computational drug-discovery unit — built the company around biology-native AI for drug R&D planning, clinical regulatory strategy, and target identification. The team of approximately 10 will join Anthropic's Health and Life Sciences division. [Source: https://techcrunch.com/2026/04/03/anthropic-buys-biotech-startup-coefficient-bio-in-400m-deal-reports/]",
+        "source_name": "TechCrunch",
+        "source_domain": "techcrunch.com",
+        "source_origin": "newsletter",
+        "composite_score": 8.0,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://oncodaily.com/techology/anthropic479262",
+            "name": "Oncodaily"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-06-s015",
+        "rank": 13,
+        "depth": "standard",
+        "cluster": null,
+        "context": "Major economies are competing to attract frontier AI lab footprints as a proxy for AI talent, investment, and influence. The UK's approach coincides with Anthropic's $380 billion Series G valuation and rapid international expansion.",
+        "section": "International Business & Technology",
+        "entities": [
+          "**Keir Starmer**",
+          "**Anthropic**"
+        ],
+        "headline": "UK courts Anthropic for London expansion after reported US defence friction",
+        "continuity": null,
+        "source_url": null,
+        "implication": "Nations actively recruiting specific AI labs signals that AI headquarters and regional hub decisions are now treated as strategic economic policy — a dynamic directly relevant to the Gulf states, including the UAE, which are competing for the same lab presence and research talent. [Limited source access — specific incentives and dispute details unconfirmed]",
+        "main_bullet": "Prime Minister **Keir Starmer**'s government is actively recruiting **Anthropic** to expand its presence in London, according to the Financial Times, framing the approach as an opportunity arising from Anthropic's reported friction with US defence clients. Details of UK incentives offered, the nature of the US defence dispute, and Anthropic's response are not confirmed in available sources. [Source: FT Briefing]",
+        "source_name": "FT Briefing",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 7.6,
+        "is_model_release": false,
+        "additional_sources": [],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-06-s012",
+        "rank": 14,
+        "depth": "full",
+        "cluster": "Open-weight model releases",
+        "context": "Prior Gemma releases carried a custom, restrictive licence that blocked many commercial and derivative uses — a consistent friction point cited by the open-source community. The Apache 2.0 shift arrives as Allen Institute leadership departures and uncertainty around Meta's GPT-OSS roadmap leave the American open-model landscape thinner than at any point in the past two years, amplifying the strategic significance of Google sustaining its release cadence.",
+        "section": "Model Releases & Technical Developments",
+        "entities": [
+          "**Google DeepMind**",
+          "**Gemma 4**"
+        ],
+        "headline": "Google DeepMind releases Gemma 4 under Apache 2.0",
+        "continuity": null,
+        "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/gemma-4/",
+        "implication": "A 31B model matching Arena-ranked competitors while running on a single H100 — and scoring 85.7% on GPQA Diamond — resets the efficiency frontier for open-weight reasoning models. Apache 2.0 removes the last institutional barrier to fine-tuning and sovereign deployment, making Gemma 4 an immediate candidate base for Arabic-language adaptation and on-premise research infrastructure across the Gulf.",
+        "main_bullet": "**Google DeepMind** launched **Gemma 4**, a four-variant open-weight model family (E2B, E4B, 26B MoE, 31B Dense) under a commercially permissive Apache 2.0 licence — the first Gemma generation to carry OSI-approved terms. The 31B Dense ranks #3 among all open models on Arena AI; the 26B MoE activates only 3.8B parameters at inference, yielding 162 tok/s on an RTX 4090. All variants support multimodal input (vision and audio), context windows up to 256K tokens, function-calling, and structured JSON output for agentic workflows, with day-0 integration across vLLM, llama.cpp, and Ollama. [Sources: https://blog.google/innovation-and-ai/technology/developers-tools/gemma-4/, https://www.latent.space/p/ainews-gemma-4-the-best-small-multimodal]",
+        "source_name": "AINews (Latent Space)",
+        "source_domain": "blog.google",
+        "source_origin": "newsletter",
+        "composite_score": 8.6,
+        "is_model_release": true,
+        "additional_sources": [
+          {
+            "url": "https://www.latent.space/p/ainews-gemma-4-the-best-small-multimodal",
+            "name": "AINews / Latent Space"
+          },
+          {
+            "url": "https://opensource.googleblog.com/2026/03/gemma-4-expanding-the-gemmaverse-with-apache-20.html",
+            "name": "Google Open Source Blog"
+          },
+          {
+            "url": "https://arstechnica.com/ai/2026/04/google-announces-gemma-4-open-ai-models-switches-to-apache-2-0-license/",
+            "name": "Ars Technica"
+          },
+          {
+            "url": "https://cloud.google.com/blog/products/ai-machine-learning/gemma-4-available-on-google-cloud",
+            "name": "Google Cloud Blog"
+          }
+        ],
+        "model_release_data": {
+          "specs": null,
+          "training": "Built from the same research and technology stack as Gemini 3. Natively trained on 140+ languages. Performance gains in the 31B Dense attributed primarily to improved training recipe and data rather than architectural changes.",
+          "developer": "Google DeepMind",
+          "benchmarks": {
+            "rows": [
+              {
+                "scores": [
+                  "85.7%",
+                  "—",
+                  "—"
+                ],
+                "benchmark": "GPQA Diamond"
+              },
+              {
+                "scores": [
+                  "#3",
+                  "#1 (tied)",
+                  "#1 (tied)"
+                ],
+                "benchmark": "Arena AI Open Rank"
+              }
+            ],
+            "models": [
+              "Gemma 4 31B",
+              "Kimi K2.5 (744B-A40B)",
+              "GLM-5 (1T-A32B)"
+            ],
+            "summary": "Gemma 4 31B scores 85.7% on GPQA Diamond and ranks #3 among open models on Arena AI, matching or tying models 20-30x its total parameter count.",
+            "highlighted_model_index": 0,
+            "highlighted_model_indexes": [
+              0
+            ]
+          },
+          "model_name": "Gemma 4",
+          "commercials": null,
+          "key_numbers": [
+            {
+              "label": "Parameters",
+              "value": "31B / 26B MoE",
+              "qualifier": "3.8B active (MoE)"
+            },
+            {
+              "label": "Context",
+              "value": "256K",
+              "qualifier": "tokens (large models); 128K edge"
+            },
+            {
+              "label": "Throughput",
+              "value": "162",
+              "qualifier": "tok/s on RTX 4090 (26B MoE Q8)"
+            },
+            {
+              "label": "License",
+              "value": "Apache 2.0",
+              "qualifier": "OSI-approved, commercially permissive"
+            }
+          ],
+          "performance": null,
+          "architecture": "Hybrid local/global attention (5:1 ratio) for 31B Dense, largely consistent with Gemma 3 architecture; 26B variant uses Mixture-of-Experts with 3.8B active parameters at inference. Small edge variants (E2B, E4B) employ per-layer embeddings, QK/V norm, aggressive KV-cache sharing, partial-dimension RoPE with distinct theta for local and global layers, and sliding window sizes of 512 and 1024. All variants natively process variable-resolution images and video; E2B and E4B add native audio input.",
+          "availability": "Hugging Face · vLLM · llama.cpp · Ollama · LM Studio · Google Vertex AI (Model Garden) · Google Cloud Run · GKE · Google Cloud TPUs",
+          "summary_pitch": "Four-variant open-weight family (E2B, E4B, 26B MoE, 31B Dense) purpose-built for reasoning and agentic workflows. First Gemma generation under Apache 2.0. The 26B MoE activates only 3.8B parameters at inference; the 31B Dense ranks #3 open model globally on Arena AI."
+        },
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-06-s013",
+        "rank": 15,
+        "depth": "full",
+        "cluster": null,
+        "context": "The 2026 International AI Safety Report identifies cybersecurity as the domain with the strongest evidence of real-world AI harm. The study's open-weight lag finding is particularly notable: the current best open-weight model (**GLM-5**) trails the closed-source frontier by exactly 5.7 months, suggesting frontier offensive capability diffuses into openly accessible form on a predictable short timeline.",
+        "section": "Model Releases & Technical Developments",
+        "entities": [
+          "**Lyptus Research**",
+          "**METR**",
+          "**Opus 4.6**",
+          "**GPT-5.3 Codex**",
+          "**GLM-5**"
+        ],
+        "headline": "AI offensive cybersecurity capability doubling every 5.7 months, researchers find",
+        "continuity": null,
+        "source_url": null,
+        "implication": "A 5.7-month capability doubling in offensive cyber — matching METR's domain-agnostic estimate — means that defensive strategies updated annually are structurally obsolete, and that nation-state-level offensive tools will be available to non-state actors within one to two doubling cycles. For AI governance curricula and institutional cybersecurity posture, this is a concrete planning horizon, not a theoretical warning.",
+        "main_bullet": "**Lyptus Research** applied **METR**'s time-horizon methodology to offensive cybersecurity across 291 tasks and 10 professional security experts, finding that AI offensive capability doubled every 9.8 months since 2019, accelerating to every 5.7 months since 2024. The most capable models in the study — **Opus 4.6** and **GPT-5.3 Codex** — achieve 50% success on tasks requiring approximately 3 hours of expert human time at a 2M-token budget; raising GPT-5.3 Codex to a 10M-token budget raises its effective time horizon from 3.1 hours to 10.5 hours, meaning current estimates are lower bounds. [Source: AINews (Latent Space)]",
+        "source_name": "AINews (Latent Space)",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 8.0,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://lyptusresearch.org/research/offensive-cyber-time-horizons",
+            "name": "Lyptus Research"
+          },
+          {
+            "url": "https://the-decoder.com/ai-offensive-cyber-capabilities-are-doubling-every-six-months-safety-researchers-find/",
+            "name": "The Decoder"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "high"
+      },
+      {
+        "id": "2026-04-06-s018",
+        "rank": 16,
+        "depth": "standard",
+        "cluster": "US-China tech controls",
+        "context": "US export controls have cut Chinese AI labs off from NVIDIA's Blackwell-generation accelerators. DeepSeek V4's Huawei-native development — breaking the industry norm of multi-vendor hardware optimisation — is an explicit future-proofing strategy against further restrictions.",
+        "section": "Model Releases & Technical Developments",
+        "entities": [
+          "**DeepSeek**",
+          "**NVIDIA**",
+          "**AMD**",
+          "**Huawei**",
+          "**Cambricon Technologies**",
+          "**Alibaba**",
+          "**ByteDance**",
+          "**Tencent**"
+        ],
+        "headline": "DeepSeek V4 reportedly optimised to run on Huawei chips, bypassing NVIDIA",
+        "continuity": null,
+        "source_url": null,
+        "implication": "If V4 delivers competitive performance on Huawei hardware, it would demonstrate that frontier Chinese AI development has achieved functional CUDA-stack independence — the single most consequential outcome US export controls were designed to prevent and a signal that hardware bifurcation is now a structural feature of the global AI landscape rather than a transitional friction.",
+        "main_bullet": "**DeepSeek** has reportedly denied early hardware access to **NVIDIA** and **AMD** for its upcoming V4 model, instead working closely with **Huawei** and **Cambricon Technologies** to rewrite core model components for domestic chips, according to The Information as cited by Reuters. Chinese tech firms including **Alibaba**, **ByteDance**, and **Tencent** have placed bulk orders totalling hundreds of thousands of Huawei AI chips in anticipation of V4's release. [Source: Reuters]",
+        "source_name": "Reuters",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 7.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://m.economictimes.com/news/international/us/deepseek-v4-model-to-use-huawei-chips-but-can-huawei-truly-match-nvidia-in-power-and-scale/articleshow/130004905.cms",
+            "name": "Economic Times"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-06-s019",
+        "rank": 17,
+        "depth": "brief",
+        "cluster": "MENA AI policy",
+        "context": "Egypt graduates approximately 750,000 university students annually, including 50,000 in engineering and computer science — one of the largest technical talent pools in the EMEA region — giving the pipeline expansion a significant labour-market foundation distinct from smaller Gulf programmes.",
+        "section": "Regional Research & Academic Events",
+        "entities": [
+          "**Egypt**",
+          "**MCIT**",
+          "**KARNAK**"
+        ],
+        "headline": "Egypt targets 30,000 AI professionals by 2030 under national strategy",
+        "continuity": null,
+        "source_url": null,
+        "implication": "Egypt's combination of scaled talent supply, a sovereign Arabic LLM, and stated ambitions to export AI capabilities across Arabic-speaking markets and African corridors positions it as the MENA region's most credible volume competitor for AI human capital — a landscape dynamic that shapes the regional context in which MBZUAI recruits faculty and students.",
+        "main_bullet": "**Egypt**'s Ministry of Communications and Information Technology (**MCIT**) is scaling its national AI skills pipeline under the 2025–2035 National AI Strategy, which targets 30,000 trained AI professionals and 250+ AI startups by 2030. Operational flagship applications include **KARNAK** — the highest-ranking Arabic LLM in the 30–80 billion parameter range — alongside SIA (an Arabic education tutor), Torgoman (automated translation), and healthcare AI tools for diabetic retinopathy and breast cancer screening. [Source: Middle East AI News]",
+        "source_name": "Middle East AI News",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 6.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://www.linkedin.com/pulse/can-egypt-emerge-regional-ai-hub-what-take-scale-fast-company-me-skfdc",
+            "name": "LinkedIn / Fast Company ME"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      },
+      {
+        "id": "2026-04-06-s020",
+        "rank": 18,
+        "depth": "brief",
+        "cluster": "MENA AI policy",
+        "context": "McKinsey estimates that while 88% of GCC organisations use AI in at least one function, fewer than one-third have moved beyond pilot projects to full-scale deployment — the gap the framework targets.",
+        "section": "Regional Research & Academic Events",
+        "entities": [
+          "**AGN IT Services**"
+        ],
+        "headline": "UAE framework launches to accelerate AI adoption among SMEs",
+        "continuity": null,
+        "source_url": null,
+        "implication": "Private-sector AI readiness frameworks filling the implementation gap signal that UAE SME AI adoption is entering an operationalisation phase, expanding the ecosystem in which AI research and talent translate into economic activity. [Limited source access — official government framework details unconfirmed; available evidence describes a private vendor initiative]",
+        "main_bullet": "**AGN IT Services** launched an AI Readiness Framework in the UAE — a structured training and governance programme titled \"Confusion to Clarity\" — designed to guide SMEs from AI experimentation to scalable implementation through readiness assessments, SOP documentation, and phased deployment roadmaps. [Source: Middle East AI News]",
+        "source_name": "Middle East AI News",
+        "source_domain": "newsletter",
+        "source_origin": "newsletter",
+        "composite_score": 6.6,
+        "is_model_release": false,
+        "additional_sources": [
+          {
+            "url": "https://mea-biz.com/agn-it-services-launches-ai-framework-to-support-sme-digital-transformation-in-uae/",
+            "name": "MEA-Biz"
+          }
+        ],
+        "model_release_data": null,
+        "significance_level": "medium"
+      }
+    ]
+  }
+}

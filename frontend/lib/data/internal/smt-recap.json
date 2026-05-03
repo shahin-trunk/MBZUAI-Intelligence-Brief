@@ -1,0 +1,132 @@
+{
+  "month": "2026-03",
+  "lastUpdated": "2026-03-11T10:00:00Z",
+
+  "meetings": [
+    {
+      "id": "smt-003",
+      "type": "Integrated SMT",
+      "number": null,
+      "date": "2026-03-09",
+      "time": "10:00 – 11:30",
+      "location": "Board Room, KC",
+      "summary": "The President directed a deliberate slowdown in university growth to focus on stabilization and quality. Faculty hiring capped at 140. Comprehensive reviews ordered for policies, space utilization, centers, and partnerships. Crisis response protocols and HR benefits rollout discussed.",
+      "chair": "Prof. Eric Xing",
+      "attendees": [
+        "Prof. Eric Xing, President",
+        "Prof. Timothy Baldwin, Provost",
+        "Prof. Thamar Solorio, Vice Provost of Faculty Excellence and Advancement",
+        "Prof. Dezhen Song, VP Graduate Education",
+        "Prof. Xiaosong Ma, Acting Director Research Infrastructure",
+        "Prof. Ian Reid, Acting Director Research Administration",
+        "Prof. Eric Moulines, Dean of Computing and Mathematical Sciences",
+        "Prof. Eran Segal, Dean of Biological and Life Sciences",
+        "Prof. Hao Li, Dean of UG Division",
+        "Dekyi Liang, Chief of Staff & VP",
+        "Susan Wei, Associate Provost & Acting VP Operations",
+        "Richard Morton, Senior Advisor & Director IFM",
+        "Joni Cholwich, Senior Advisor & Acting VP NEO",
+        "Aamna Al Mansoori, ED Human Resources",
+        "Alan Chen, Assistant Provost",
+        "Shimer Diao, Director Executive Engagement",
+        "Nicholas Demille, Senior Advisor"
+      ],
+      "apologies": ["Jon Carvill, VP Marketing & Communications"],
+      "keyDecisions": [
+        { "text": "Faculty hiring capped at maximum 140 total — at most 12 new hires this year. Five-score evaluation framework to be developed targeting Top 30 US universities.", "lensTag": "faculty-excellence" },
+        { "text": "University will deliberately slow growth this year to focus on internal stabilization and quality improvement. No new initiatives without thorough review and clear communication plans.", "lensTag": null },
+        { "text": "All policies older than three years to be revisited for relevance and updated.", "lensTag": "operations" },
+        { "text": "Space utilization review to be conducted — academic space (faculty and students) prioritized over administrative use.", "lensTag": "operations" },
+        { "text": "Center proposals to be consolidated and reviewed by committee. Industrial and university partnerships to be formalized with clear ownership.", "lensTag": "research-impact" },
+        { "text": "Faculty must continue all teaching, research, and advising duties without compromise during ongoing crisis. Disciplinary actions will follow performance drops.", "lensTag": null },
+        { "text": "HR benefits package (enhanced educational allowances and college tuition support) approved for announcement this week.", "lensTag": "operations" },
+        { "text": "New centralized email identity for campus-wide communications to be established.", "lensTag": "visibility" }
+      ],
+      "actionItems": [
+        { "action": "Develop five-score faculty evaluation framework", "owner": "VP Faculty Excellence / Provost Office", "deadline": null, "lensTag": "faculty-excellence" },
+        { "action": "Conduct full space occupancy and needs review", "owner": "Operations", "deadline": null, "lensTag": "operations" },
+        { "action": "Consolidate center proposals for committee review", "owner": "Provost Office", "deadline": null, "lensTag": "research-impact" },
+        { "action": "Formalize partnership management with clear ownership", "owner": "Carlos (full-time April 1)", "deadline": null, "lensTag": "research-impact" },
+        { "action": "Collect data on faculty-student communications for accountability", "owner": "Department Chairs", "deadline": null },
+        { "action": "Plan university-wide town hall including faculty families", "owner": "Communications", "deadline": null, "lensTag": "visibility" }
+      ]
+    },
+    {
+      "id": "smt-002",
+      "type": "Academic-Research SMT",
+      "number": "No. 8",
+      "date": "2026-02-23",
+      "time": "13:30 – 15:00",
+      "location": "MR-FF1-KC",
+      "summary": "Discussion focused on undergraduate bridging program design for UAE nationals, research services integration, and graduate student funding policy. UG Cohort 2 diversity targets reviewed — business track and UAE nationals below goal. Alsakhar call shortlisted 8 from 28 proposals.",
+      "chair": "Prof. Eric Xing",
+      "attendees": [
+        "Prof. Eric Xing, President",
+        "Prof. Timothy Baldwin, Provost",
+        "Dekyi Liang, Chief of Staff & VP",
+        "Prof. Thamar Solorio, Vice Provost of Faculty Excellence and Advancement",
+        "Prof. Dezhen Song, VP Graduate Education",
+        "Prof. Xiaosong Ma, Acting Director Research Infrastructure",
+        "Susan Wei, Associate Provost & Acting VP Operations",
+        "Hao Li, Dean of UG Division",
+        "Sana Ahmad, Head of Grants Management"
+      ],
+      "apologies": [],
+      "keyDecisions": [
+        { "text": "Research services to be integrated into provost division. Ian and Sana lead pre- and post-award functions. Carlos joins full-time April 1 for industry engagement.", "lensTag": "research-impact" },
+        { "text": "New 12-month pre-undergraduate bridging program to be designed for underprepared local students. Non-residential, fee-paying, with competitive and non-guaranteed entry.", "lensTag": "student-experience" },
+        { "text": "Starting with 2025 cohort, second-year master's students become the financial responsibility of their matched faculty advisor.", "lensTag": "student-experience" },
+        { "text": "Alsakhar call shortlisted 8 proposals from 28 expressions of interest — moving to full proposal stage with external reviews.", "lensTag": "research-impact" },
+        { "text": "Faculty to contact research admin only for budget or institutional questions — streamlining proposal preparation.", "lensTag": null }
+      ],
+      "actionItems": [
+        { "action": "Update faculty offer letters with revised startup packages and student cost details", "owner": "Provost Office", "deadline": "March 2026", "lensTag": "faculty-excellence" },
+        { "action": "Formulate clear policies on student funding, matching, and performance expectations", "owner": "Provost Office", "deadline": null, "lensTag": "student-experience" },
+        { "action": "Align research admin workflows with ERP financial reporting", "owner": "Research Administration", "deadline": "March 2026", "lensTag": "research-impact" },
+        { "action": "Publish research office templates, workflows, and public-facing site", "owner": "Research Administration", "deadline": null, "lensTag": "research-impact" }
+      ]
+    },
+    {
+      "id": "smt-001",
+      "type": "Admin SMT",
+      "number": "No. 7",
+      "date": "2026-02-17",
+      "time": "10:05 – 11:55",
+      "location": "MR-FF1-KC",
+      "summary": "Operations presented IT application landscape benchmarking revealing 83 applications with no formal governance. MarComms outlined 5-year anniversary campaign planning and media highlights including NHK visit. HR delivered V1 induction program and set goal-setting deadline for Feb 27.",
+      "chair": "Prof. Timothy Baldwin (President sent apologies)",
+      "attendees": [
+        "Prof. Timothy Baldwin, Provost",
+        "Dekyi Liang, Chief of Staff & VP",
+        "Joni Cholwich, Senior Advisor & Acting VP NEO",
+        "Susan Wei, Associate Provost & Acting VP Operations",
+        "Prof. Thamar Solorio, Vice Provost of Faculty Excellence and Advancement",
+        "Prof. Dezhen Song, VP Graduate Education",
+        "Aamna Al Mansoori, ED Human Resources",
+        "Spring Fu, MD The Academy",
+        "Shimer Diao, Director Executive Engagement",
+        "Vinita Bharadwaj, Director Communications (rep. JCA)"
+      ],
+      "apologies": ["Prof. Eric Xing, President", "Jon Carvill, VP MarComms", "Richard Morton, Senior Advisor & Acting Director IFM", "Rawdha Almeraikhi, AVP National Engagement"],
+      "keyDecisions": [
+        { "text": "IT application landscape audit reveals 83 applications, 40+ vendors, no formal governance. Standardized approval process and enterprise-wide rationalization to be implemented with 15-25% portfolio reduction target for 2026.", "lensTag": "operations" },
+        { "text": "5-year anniversary video campaign approved — 15-20 videos throughout 2026.", "lensTag": "visibility" },
+        { "text": "UG AIR campaign and updated recruitment campaign assets in development.", "lensTag": "visibility" },
+        { "text": "MBZUAI website Phase 1 on track for May delivery.", "lensTag": "visibility" },
+        { "text": "NHK Japan campus visit completed Feb 16. Upcoming media: The National, Fast Company ME, Wired ME, CNN (date TBC).", "lensTag": "visibility" },
+        { "text": "Top 20-calibrated tenure and promotion framework completed — alignment underway prior to presidential review.", "lensTag": "faculty-excellence" },
+        { "text": "Emirati Pipeline (RAIS program) advertising underway.", "lensTag": "student-pipeline" },
+        { "text": "Staff induction V1 delivered with strong feedback (4.5+ ratings). V2 planned for April.", "lensTag": "operations" },
+        { "text": "2026 goal setting submissions due Feb 27. All SMT to reinforce with teams.", "lensTag": "operations" },
+        { "text": "Workforce planning: org charts and hiring plans due March 9.", "lensTag": "operations" },
+        { "text": "HR compensation and benefits package (Sahab framework) ready for rollout.", "lensTag": "operations" }
+      ],
+      "actionItems": [
+        { "action": "Confirm website infrastructure platform selection", "owner": "IT / SMT", "deadline": "ASAP", "lensTag": "visibility" },
+        { "action": "Reinforce 2026 goal setting submission deadline", "owner": "All SMT", "deadline": "2026-02-27", "lensTag": "operations" },
+        { "action": "Submit 2026/27 org charts and hiring plans", "owner": "Division Leads", "deadline": "2026-03-09", "lensTag": "operations" },
+        { "action": "Implement IT application approval framework", "owner": "Operations / IT", "deadline": "2026 target", "lensTag": "operations" }
+      ]
+    }
+  ]
+}

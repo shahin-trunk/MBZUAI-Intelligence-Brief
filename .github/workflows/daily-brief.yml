@@ -1,0 +1,67 @@
+name: Daily Intelligence Brief
+
+on:
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+concurrency:
+  group: daily-brief
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Ensure output directory exists
+        run: mkdir -p backend/output
+
+      - name: Write .env
+        run: |
+          cat <<EOF > .env
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          X_BEARER_TOKEN=${{ secrets.X_BEARER_TOKEN }}
+          SERPER_API_KEY=${{ secrets.SERPER_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PIPELINE_DRAFT_MODE=true
+          EOF
+
+      - name: Write Google credentials
+        run: |
+          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > credentials.json
+          echo '${{ secrets.GOOGLE_TOKEN_JSON }}' > token.json
+
+      - name: Run pipeline
+        run: cd backend && python main.py
+
+      - name: Prepare pipeline recovery payload
+        if: always()
+        run: |
+          mkdir -p recovery-payload
+          cp -R backend/output recovery-payload/output
+          if [ -f backend/pipeline.log ]; then
+            cp backend/pipeline.log recovery-payload/pipeline.log
+          fi
+
+      - name: Upload pipeline artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-output-${{ github.run_id }}
+          path: |
+            recovery-payload/output/
+            recovery-payload/pipeline.log
+          retention-days: 7
