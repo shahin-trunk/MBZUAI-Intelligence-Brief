@@ -9,19 +9,17 @@ name: Deploy to EC2
 # and restarts services via Docker Compose.
 #
 # Required GitHub Secrets:
-#   SSH_PRIVATE_KEY          — PEM private key for ubuntu@<server>
-#   SSH_HOST                 — Server IP/hostname (e.g. 43.218.228.128)
-#   SSH_USER                 — SSH username (default: ubuntu)
+#   SSH_PRIVATE_KEY              — PEM private key for ubuntu@<server>
+#   SSH_HOST                     — Server IP/hostname (e.g. 43.218.228.128)
+#   SSH_USER                     — SSH username (default: ubuntu)
 #
-# Required GitHub Secrets (written to deploy.env on server):
-#   NEXT_PUBLIC_SUPABASE_URL
+# Required for frontend build:
+#   NEXT_PUBLIC_SUPABASE_URL     — Supabase project URL
 #   NEXT_PUBLIC_SUPABASE_ANON_KEY
 #   SUPABASE_SERVICE_ROLE_KEY
 #
-# Optional GitHub Secrets:
-#   REVALIDATION_SECRET
-#   RESEND_API_KEY
-#   GITHUB_TOKEN             — For dispatcher service
+# Optional:
+#   REVALIDATION_SECRET, RESEND_API_KEY, GITHUB_PAT, GITHUB_TOKEN
 #
 # =============================================================================
 
@@ -57,9 +55,9 @@ jobs:
           username: ${{ secrets.SSH_USER || 'ubuntu' }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
-          script_timeout: 15m
+          command_timeout: 15m
           script: |
-            set -e
+            set -eo pipefail
 
             REPO="shahin-trunk/MBZUAI-Intelligence-Brief"
             APP_DIR="/home/ubuntu/intelligence-brief"
@@ -72,11 +70,13 @@ jobs:
               curl -fsSL https://get.docker.com | sh
               sudo usermod -aG docker ubuntu
               sudo systemctl enable docker
-              sudo systemctl start docker
               echo "✓ Docker installed"
             else
-              echo "✓ Docker already installed"
+              echo "✓ Docker available"
             fi
+
+            # Ensure Docker daemon is running
+            sudo systemctl start docker 2>/dev/null || true
 
             # ------------------------------------------------------------------
             # 2. Clone or pull the repository
@@ -96,7 +96,7 @@ jobs:
             cd "$APP_DIR"
 
             # ------------------------------------------------------------------
-            # 3. Write deploy.env from GitHub secrets (passed via script)
+            # 3. Write deploy.env from GitHub secrets
             # ------------------------------------------------------------------
             echo "→ Writing deploy.env..."
             cat > deploy.env << 'DEPLOYEOF'
@@ -127,11 +127,18 @@ jobs:
             echo "✓ deploy.env written"
 
             # ------------------------------------------------------------------
-            # 4. Deploy with Docker Compose
+            # 4. Build and deploy all services
             # ------------------------------------------------------------------
-            echo "→ Deploying services..."
-            chmod +x deploy.sh
-            ./deploy.sh deploy 2>&1 | tail -30
+            echo "→ Building images..."
+            sudo docker compose build --pull
+
+            echo "→ Starting services..."
+            sudo docker compose up -d
+
+            # Wait for services to be healthy
+            echo "→ Waiting for services to stabilize..."
+            sleep 5
+            sudo docker compose ps
 
             echo ""
             echo "══════════════════════════════════════════════"
