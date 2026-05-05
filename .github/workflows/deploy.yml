@@ -127,13 +127,20 @@ jobs:
             echo "✓ deploy.env written"
 
             # ------------------------------------------------------------------
-            # 4. Build and deploy all services
+            # 4. Load env and deploy with Docker Compose
             # ------------------------------------------------------------------
+            # Docker Compose resolves ${VAR} from the shell environment.
+            # Source deploy.env so build args (NEXT_PUBLIC_*) are available.
+            echo "→ Loading environment..."
+            set -a
+            source deploy.env
+            set +a
+
             echo "→ Building images..."
-            sudo docker compose build --pull
+            sudo -E docker compose build --pull
 
             echo "→ Starting services..."
-            sudo docker compose up -d
+            sudo -E docker compose up -d
 
             # Wait for services to be healthy
             echo "→ Waiting for services to stabilize..."
