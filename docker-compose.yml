@@ -1,0 +1,164 @@
+# =============================================================================
+# MBZUAI Intelligence Brief - Docker Compose
+# =============================================================================
+#
+# Services:
+#   traefik    - Reverse proxy with automatic HTTPS (Let's Encrypt)
+#   frontend   - Next.js 16 web application
+#   dispatcher - Flask service for triggering GitHub Actions workflows
+#
+# Usage:
+#   docker compose up -d                  # start all services
+#   docker compose up -d --build          # rebuild and start
+#   docker compose logs -f frontend       # follow frontend logs
+#   docker compose down                   # stop all services
+#
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Traefik — Reverse Proxy with Automatic HTTPS
+  # ---------------------------------------------------------------------------
+  traefik:
+    image: traefik:v3.6.7
+    container_name: brief-traefik
+    restart: unless-stopped
+    command:
+      # API and Dashboard
+      - "--api=true"
+      - "--api.dashboard=true"
+      - "--log.level=${TRAEFIK_LOG_LEVEL:-INFO}"
+      - "--accesslog=true"
+      - "--ping=true"
+      # Docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # HTTP → HTTPS redirect
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entryPoint.permanent=true"
+      # ACME Certificate Resolver (Let's Encrypt)
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL:-admin@example.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.caServer=${TRAEFIK_CA_SERVER:-https://acme-v02.api.letsencrypt.org/directory}"
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - deploy.env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt-data:/letsencrypt
+      - ./traefik/users:/traefik-users:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DOMAIN_PREFIX:-traefik}.${BASE_DOMAIN:-localhost}`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=traefik-auth"
+      - "traefik.http.middlewares.traefik-auth.basicauth.usersfile=/traefik-users/.cache"
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - proxy
+
+  # ---------------------------------------------------------------------------
+  # Frontend — Next.js 16 Web Application
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        SITE_URL: ${SITE_URL}
+    image: mbzuai-brief:latest
+    container_name: brief-frontend
+    restart: unless-stopped
+    env_file:
+      - deploy.env
+    environment:
+      # Server-side env (can override at runtime)
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - REVALIDATION_SECRET=${REVALIDATION_SECRET:-}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - ENABLE_AUDIO_BRIEF=${ENABLE_AUDIO_BRIEF:-false}
+      - ENABLE_FRENCH_AUDIO=${ENABLE_FRENCH_AUDIO:-false}
+      - GITHUB_PAT=${GITHUB_PAT:-}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${FRONTEND_DOMAIN_PREFIX:-brief}.${BASE_DOMAIN:-localhost}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - proxy
+
+  # ---------------------------------------------------------------------------
+  # Dispatcher — Flask service that triggers GitHub Actions workflows
+  # ---------------------------------------------------------------------------
+  dispatcher:
+    build:
+      context: ./ops/cloud-run-dispatcher
+    image: mbzuai-brief-dispatcher:latest
+    container_name: brief-dispatcher
+    restart: unless-stopped
+    env_file:
+      - deploy.env
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_OWNER=${GITHUB_OWNER:-shahin-trunk}
+      - GITHUB_REPO=${GITHUB_REPO:-MBZUAI-Intelligence-Brief}
+      - GITHUB_WORKFLOW_FILE=${GITHUB_WORKFLOW_FILE:-daily-brief.yml}
+      - GITHUB_REF=${GITHUB_REF:-main}
+      - PREVENT_DUPLICATE_SAME_DAY=${PREVENT_DUPLICATE_SAME_DAY:-1}
+      - PORT=8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dispatcher.rule=Host(`${DISPATCHER_DOMAIN_PREFIX:-dispatch}.${BASE_DOMAIN:-localhost}`)"
+      - "traefik.http.routers.dispatcher.entrypoints=websecure"
+      - "traefik.http.routers.dispatcher.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dispatcher.loadbalancer.server.port=8080"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - proxy
+
+volumes:
+  letsencrypt-data:
+    name: brief-letsencrypt-data
+
+networks:
+  proxy:
+    name: brief-proxy
+    driver: bridge

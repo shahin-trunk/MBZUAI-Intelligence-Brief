@@ -1,0 +1,142 @@
+name: Deploy to EC2
+
+# =============================================================================
+# MBZUAI Intelligence Brief — Auto Deploy to EC2 via SSH
+# =============================================================================
+#
+# Triggers on push to main when frontend, Docker, or deployment config changes.
+# SSHs into the EC2 server, pulls latest code, rebuilds Docker images,
+# and restarts services via Docker Compose.
+#
+# Required GitHub Secrets:
+#   SSH_PRIVATE_KEY          — PEM private key for ubuntu@<server>
+#   SSH_HOST                 — Server IP/hostname (e.g. 43.218.228.128)
+#   SSH_USER                 — SSH username (default: ubuntu)
+#
+# Required GitHub Secrets (written to deploy.env on server):
+#   NEXT_PUBLIC_SUPABASE_URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   SUPABASE_SERVICE_ROLE_KEY
+#
+# Optional GitHub Secrets:
+#   REVALIDATION_SECRET
+#   RESEND_API_KEY
+#   GITHUB_TOKEN             — For dispatcher service
+#
+# =============================================================================
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+      - "ops/**"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - "deploy.sh"
+      - "deploy.env.example"
+      - "traefik/**"
+      - "!**.md"
+  workflow_dispatch: # Manual trigger
+
+concurrency:
+  group: ec2-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER || 'ubuntu' }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script_timeout: 15m
+          script: |
+            set -e
+
+            REPO="shahin-trunk/MBZUAI-Intelligence-Brief"
+            APP_DIR="/home/ubuntu/intelligence-brief"
+
+            # ------------------------------------------------------------------
+            # 1. Install Docker if missing
+            # ------------------------------------------------------------------
+            if ! command -v docker &>/dev/null; then
+              echo "→ Installing Docker..."
+              curl -fsSL https://get.docker.com | sh
+              sudo usermod -aG docker ubuntu
+              sudo systemctl enable docker
+              sudo systemctl start docker
+              echo "✓ Docker installed"
+            else
+              echo "✓ Docker already installed"
+            fi
+
+            # ------------------------------------------------------------------
+            # 2. Clone or pull the repository
+            # ------------------------------------------------------------------
+            if [ ! -d "$APP_DIR" ]; then
+              echo "→ Cloning repository..."
+              git clone "https://github.com/${REPO}.git" "$APP_DIR"
+              echo "✓ Repository cloned"
+            else
+              echo "→ Pulling latest changes..."
+              cd "$APP_DIR"
+              git fetch origin main
+              git reset --hard origin/main
+              echo "✓ Repository updated to $(git rev-parse --short HEAD)"
+            fi
+
+            cd "$APP_DIR"
+
+            # ------------------------------------------------------------------
+            # 3. Write deploy.env from GitHub secrets (passed via script)
+            # ------------------------------------------------------------------
+            echo "→ Writing deploy.env..."
+            cat > deploy.env << 'DEPLOYEOF'
+            BASE_DOMAIN=audarai.com
+            FRONTEND_DOMAIN_PREFIX=brief
+            DISPATCHER_DOMAIN_PREFIX=dispatch
+            TRAEFIK_DOMAIN_PREFIX=traefik3
+            LETSENCRYPT_EMAIL=admin@audarai.com
+            TRAEFIK_LOG_LEVEL=INFO
+            TRAEFIK_CA_SERVER=https://acme-v02.api.letsencrypt.org/directory
+            NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+            SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+            NEXT_PUBLIC_SITE_URL=https://brief.audarai.com
+            SITE_URL=https://brief.audarai.com
+            REVALIDATION_SECRET=${{ secrets.REVALIDATION_SECRET }}
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+            ENABLE_AUDIO_BRIEF=false
+            ENABLE_FRENCH_AUDIO=false
+            GITHUB_PAT=${{ secrets.GITHUB_PAT }}
+            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+            GITHUB_OWNER=shahin-trunk
+            GITHUB_REPO=MBZUAI-Intelligence-Brief
+            GITHUB_WORKFLOW_FILE=daily-brief.yml
+            GITHUB_REF=main
+            PREVENT_DUPLICATE_SAME_DAY=1
+            DEPLOYEOF
+            echo "✓ deploy.env written"
+
+            # ------------------------------------------------------------------
+            # 4. Deploy with Docker Compose
+            # ------------------------------------------------------------------
+            echo "→ Deploying services..."
+            chmod +x deploy.sh
+            ./deploy.sh deploy 2>&1 | tail -30
+
+            echo ""
+            echo "══════════════════════════════════════════════"
+            echo "  Deployment complete!"
+            echo "  Frontend:   https://brief.audarai.com"
+            echo "  Dispatcher: https://dispatch.audarai.com"
+            echo "  Traefik:    https://traefik3.audarai.com"
+            echo "══════════════════════════════════════════════"

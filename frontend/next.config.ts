@@ -2,6 +2,7 @@ import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   serverExternalPackages: ["pdfjs-dist", "pdf-parse"],
   outputFileTracingRoot: path.join(__dirname, ".."),
   devIndicators: false,
