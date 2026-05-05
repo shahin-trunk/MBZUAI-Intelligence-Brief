@@ -29,14 +29,17 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY frontend/ .
 
-# Build-time env vars for NEXT_PUBLIC_* vars
+# Build-time env vars — must be available during `next build` for page
+# pre-rendering (static generation) and client-side inlining.
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG SUPABASE_SERVICE_ROLE_KEY
 ARG NEXT_PUBLIC_SITE_URL
 ARG SITE_URL
 
 ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL} \
     NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY} \
+    SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY} \
     NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL} \
     SITE_URL=${SITE_URL} \
     NEXT_TELEMETRY_DISABLED=1
