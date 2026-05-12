@@ -44,7 +44,7 @@ jobs:
           NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
           ENABLE_AUDIO_BRIEF=${{ vars.ENABLE_AUDIO_BRIEF || 'true' }}
           ENABLE_FRENCH_AUDIO=${{ vars.ENABLE_FRENCH_AUDIO || 'false' }}
-          VOICE_BASE_URL=${{ vars.VOICE_BASE_URL || 'https://txt2sph.audarai.com/elevenlabs' }}
+          VOICE_BASE_URL=${{ vars.VOICE_BASE_URL || 'https://txt2sph.audarai.com' }}
           ENABLE_SSML_BREAK_MARKERS=${{ vars.ENABLE_SSML_BREAK_MARKERS || 'false' }}
           EOF
 

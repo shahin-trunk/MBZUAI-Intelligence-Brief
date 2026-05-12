@@ -61,7 +61,7 @@ BREAK_TAG_PATTERN = r'<break\s+time="[^"]+"\s*/>'
 # TTS base URL — defaults to Argent custom TTS; override for ElevenLabs
 # compatibility endpoint (e.g. VOICE_BASE_URL=https://api.elevenlabs.io)
 VOICE_BASE_URL = (
-    os.getenv("VOICE_BASE_URL", "https://txt2sph.audarai.com/elevenlabs").rstrip("/")
+    os.getenv("VOICE_BASE_URL", "https://txt2sph.audarai.com").rstrip("/")
 )
 # Whether to insert SSML `<break>` markers into the spoken script.
 # Default is OFF (Argent does not support SSML). Set to "true"/"yes"/"on"/"1"
@@ -73,7 +73,7 @@ ENABLE_SSML_BREAK_MARKERS = (
 
 # TTS voice config
 VOICE_MODEL_ID = "eleven_multilingual_v2"
-EN_VOICE_ID = "Fahco4VZzobUeiPqni1S"
+EN_VOICE_ID = "Daniel"
 FR_VOICE_ID_DEFAULT = "c365oriviHmAhyLhpuN6"
 VOICE_SETTINGS = {
     "stability": 0.3,
@@ -914,14 +914,16 @@ def _split_script_into_chunks(script: str) -> list[str]:
 def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") -> bytes:
     """Send script to TTS API, return MP3 bytes.
 
-    Uses VOICE_BASE_URL (defaults to api.elevenlabs.io) so the same
-    code can target an Argent TTS compatibility endpoint.
+    Supports both ElevenLabs API format and the Argent TTS native API
+    (auto-detected from VOICE_BASE_URL containing "txt2sph.audarai.com").
 
     If the script exceeds the API character limit, it is split into
-    chunks at paragraph boundaries and the resulting MP3 segments
+    chunks at paragraph boundaries and the resulting audio segments
     are concatenated.
     """
+    import base64
     import httpx
+    import json as _json
 
     api_key = os.getenv("VOICE_API_KEY")
     if not api_key:
@@ -931,32 +933,38 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
     if voice_id is None:
         voice_id = _get_voice_config()["en"]["voice_id"]
 
+    using_argent = "txt2sph.audarai.com" in VOICE_BASE_URL
+
     chunks = _split_script_into_chunks(script)
     log.info(
-        "Script is %d characters — split into %d chunk(s)",
-        len(script),
-        len(chunks),
+        "Script is %d characters — split into %d chunk(s) (provider=%s)",
+        len(script), len(chunks),
+        "Argent" if using_argent else "ElevenLabs",
     )
-
-    url = f"{VOICE_BASE_URL}/v1/text-to-speech/{voice_id}"
-    headers = {
-        "Accept": "audio/mpeg",
-        "Content-Type": "application/json",
-        "xi-api-key": api_key,
-    }
 
     all_audio: list[bytes] = []
 
     for i, chunk in enumerate(chunks):
-        payload = {
-            "text": chunk,
-            "model_id": VOICE_MODEL_ID,
-            "voice_settings": VOICE_SETTINGS,
-        }
-        if lang == "fr":
-            payload["speed"] = VOICE_SPEED_FR
-        elif lang == "en":
-            payload["speed"] = VOICE_SPEED_EN
+        if using_argent:
+            url = f"{VOICE_BASE_URL}/v1/synthesize"
+            payload = {"text": chunk, "speaker_id": voice_id}
+            headers = {"Content-Type": "application/json"}
+        else:
+            url = f"{VOICE_BASE_URL}/v1/text-to-speech/{voice_id}"
+            payload = {
+                "text": chunk,
+                "model_id": VOICE_MODEL_ID,
+                "voice_settings": VOICE_SETTINGS,
+            }
+            if lang == "fr":
+                payload["speed"] = VOICE_SPEED_FR
+            elif lang == "en":
+                payload["speed"] = VOICE_SPEED_EN
+            headers = {
+                "Accept": "audio/mpeg",
+                "Content-Type": "application/json",
+                "xi-api-key": api_key,
+            }
 
         log.info("Calling TTS chunk %d/%d (%d chars)...", i + 1, len(chunks), len(chunk))
 
@@ -966,13 +974,26 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
             log.error("TTS API error %d: %s", response.status_code, response.text[:500])
             response.raise_for_status()
 
-        all_audio.append(response.content)
-        log.info("Chunk %d/%d: %.0f KB", i + 1, len(chunks), len(response.content) / 1024)
+        if using_argent:
+            result = _json.loads(response.text)
+            audio_b64 = result.get("audio", "")
+            if not audio_b64:
+                log.error("No audio in TTS response")
+                raise RuntimeError("Empty audio response from TTS API")
+            chunk_audio = base64.b64decode(audio_b64)
+            log.info("Chunk %d/%d: %.0f KB (Opus, %.1fs)",
+                     i + 1, len(chunks),
+                     len(chunk_audio) / 1024,
+                     result.get("duration", 0))
+        else:
+            chunk_audio = response.content
+            log.info("Chunk %d/%d: %.0f KB", i + 1, len(chunks), len(chunk_audio) / 1024)
 
-    # Merge chunks properly so the final MP3 has correct duration metadata.
-    # Raw byte concatenation leaves the header from the first chunk only,
-    # causing players to report the wrong total duration.
-    if len(all_audio) == 1:
+        all_audio.append(chunk_audio)
+
+    # Merge chunks into a single MP3
+    if len(all_audio) == 1 and not using_argent:
+        # Single chunk from ElevenLabs — already MP3
         audio_bytes = all_audio[0]
     else:
         from io import BytesIO
@@ -980,7 +1001,11 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
 
         combined = AudioSegment.empty()
         for i, raw in enumerate(all_audio):
-            segment = AudioSegment.from_mp3(BytesIO(raw))
+            buf = BytesIO(raw)
+            if using_argent:
+                segment = AudioSegment.from_file(buf, format="opus")
+            else:
+                segment = AudioSegment.from_mp3(buf)
             combined += segment
             log.info("Merged chunk %d/%d (%.1fs)", i + 1, len(all_audio), len(segment) / 1000)
 
