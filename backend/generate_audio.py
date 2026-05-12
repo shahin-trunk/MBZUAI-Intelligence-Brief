@@ -968,9 +968,26 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
                 "xi-api-key": api_key,
             }
 
+        # Add a short delay between chunks for Argent (server cooldown)
+        if i > 0 and using_argent:
+            import time as _time
+            _time.sleep(3)
+
         log.info("Calling TTS chunk %d/%d (%d chars)...", i + 1, len(chunks), len(chunk))
 
-        response = httpx.post(url, json=payload, headers=headers, timeout=180.0)
+        # Retry up to 3 times for transient errors (429, 502, 503, 504)
+        import time as _time2
+        response = None
+        for attempt in range(3):
+            response = httpx.post(url, json=payload, headers=headers, timeout=180.0)
+            if response.status_code == 200:
+                break
+            if response.status_code in (429, 502, 503, 504) and attempt < 2:
+                log.warning("TTS transient error %d (attempt %d/3), retrying in %ds...",
+                            response.status_code, attempt + 1, (attempt + 1) * 3)
+                _time2.sleep((attempt + 1) * 3)
+                continue
+            break
 
         if response.status_code != 200:
             log.error("TTS API error %d: %s", response.status_code, response.text[:500])
