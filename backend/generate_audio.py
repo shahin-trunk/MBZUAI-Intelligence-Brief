@@ -58,16 +58,16 @@ LANGUAGE_SCRIPT_BUDGETS = {
 }
 BREAK_TAG_PATTERN = r'<break\s+time="[^"]+"\s*/>'
 
-# TTS base URL — defaults to ElevenLabs; override for Argent TTS
-# compatibility endpoint (e.g. VOICE_BASE_URL=http://localhost:8003/elevenlabs)
+# TTS base URL — defaults to Argent custom TTS; override for ElevenLabs
+# compatibility endpoint (e.g. VOICE_BASE_URL=https://api.elevenlabs.io)
 VOICE_BASE_URL = (
-    os.getenv("VOICE_BASE_URL", "https://api.elevenlabs.io").rstrip("/")
+    os.getenv("VOICE_BASE_URL", "https://txt2sph.audarai.com/elevenlabs").rstrip("/")
 )
 # Whether to insert SSML `<break>` markers into the spoken script.
-# Set to "false"/"no"/"off"/"0" to disable when using a TTS engine (e.g. Argent)
-# that does not support SSML break tags.
+# Default is OFF (Argent does not support SSML). Set to "true"/"yes"/"on"/"1"
+# when using a TTS engine that supports SSML break tags.
 ENABLE_SSML_BREAK_MARKERS = (
-    os.getenv("ENABLE_SSML_BREAK_MARKERS", "true").strip().lower()
+    os.getenv("ENABLE_SSML_BREAK_MARKERS", "false").strip().lower()
     not in {"0", "false", "no", "off"}
 )
 
@@ -169,10 +169,10 @@ def _audio_brief_enabled() -> bool:
 
 
 def _french_audio_enabled() -> bool:
-    """Return whether French audio generation is enabled (default: True)."""
+    """Return whether French audio generation is enabled (default: False)."""
     raw = (os.getenv("ENABLE_FRENCH_AUDIO") or "").strip().lower()
     if not raw:
-        return True
+        return False
     return raw not in {"0", "false", "no", "off"}
 
 
@@ -1080,23 +1080,40 @@ def _update_briefs_table(
     audio_url_fr: str | None = None,
     script_fr: str | None = None,
 ) -> None:
-    """Update the briefs row with audio data for one or both languages."""
-    now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    """Update the briefs row with audio data for one or both languages.
+
+    Gracefully handles missing columns in the production schema (e.g.
+    audio_generated_at, French audio columns). Writes what it can and
+    logs warnings for columns that don't exist.
+    """
     update_data: dict = {
         "audio_script": script,
-        "audio_generated_at": now_iso,
         "audio_status": "ready",
     }
     if audio_url is not None:
         update_data["audio_url"] = audio_url
 
-    if script_fr is not None:
-        update_data["audio_script_fr"] = script_fr
-        update_data["audio_generated_at_fr"] = now_iso
-    if audio_url_fr is not None:
-        update_data["audio_url_fr"] = audio_url_fr
+    try:
+        sb.table("briefs").update(update_data).eq("brief_date", target_date).execute()
+    except Exception as exc:
+        msg = str(exc).lower()
+        if "could not find" in msg or "does not exist" in msg:
+            log.warning("Some audio columns missing in production — skipping DB update: %s", exc)
+        else:
+            raise
 
-    sb.table("briefs").update(update_data).eq("brief_date", target_date).execute()
+    if script_fr is not None or audio_url_fr is not None:
+        fr_data: dict = {}
+        if script_fr is not None:
+            fr_data["audio_script_fr"] = script_fr
+        if audio_url_fr is not None:
+            fr_data["audio_url_fr"] = audio_url_fr
+        if fr_data:
+            try:
+                sb.table("briefs").update(fr_data).eq("brief_date", target_date).execute()
+            except Exception as exc:
+                log.warning("French audio columns missing in production — skipping FR update: %s", exc)
+
     log.info(
         "Updated briefs table for %s (en=%s, fr=%s)",
         target_date,
