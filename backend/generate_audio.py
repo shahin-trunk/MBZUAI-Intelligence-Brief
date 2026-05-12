@@ -866,10 +866,11 @@ def _apply_break_markers(script: str) -> str:
 # Audio generation (TTS)
 # ---------------------------------------------------------------------------
 
-VOICE_MAX_CHARS = 9500  # Stay under 10,000 char API limit with margin
+VOICE_MAX_CHARS = 9500  # Stay under 10,000 char API limit with margin (ElevenLabs)
+VOICE_MAX_CHARS_ARGENT = 4800  # Stay under 5,000 char API limit with margin (Argent native API)
 
 
-def _split_script_into_chunks(script: str) -> list[str]:
+def _split_script_into_chunks(script: str, max_chars: int = VOICE_MAX_CHARS) -> list[str]:
     """Split script into chunks that fit within the TTS character limit.
 
     Splits on paragraph boundaries (double newlines) to preserve natural pauses.
@@ -882,7 +883,7 @@ def _split_script_into_chunks(script: str) -> list[str]:
     for para in paragraphs:
         candidate = (current_chunk + "\n\n" + para).strip() if current_chunk else para.strip()
 
-        if len(candidate) <= VOICE_MAX_CHARS:
+        if len(candidate) <= max_chars:
             current_chunk = candidate
         else:
             # Current chunk is full — save it and start a new one
@@ -890,12 +891,12 @@ def _split_script_into_chunks(script: str) -> list[str]:
                 chunks.append(current_chunk)
 
             # If this single paragraph exceeds the limit, split by sentences
-            if len(para.strip()) > VOICE_MAX_CHARS:
+            if len(para.strip()) > max_chars:
                 sentences = re.split(r"(?<=[.!?])\s+", para.strip())
                 sub_chunk = ""
                 for sentence in sentences:
                     sub_candidate = (sub_chunk + " " + sentence).strip() if sub_chunk else sentence.strip()
-                    if len(sub_candidate) <= VOICE_MAX_CHARS:
+                    if len(sub_candidate) <= max_chars:
                         sub_chunk = sub_candidate
                     else:
                         if sub_chunk:
@@ -935,7 +936,8 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
 
     using_argent = "txt2sph.audarai.com" in VOICE_BASE_URL
 
-    chunks = _split_script_into_chunks(script)
+    chunk_limit = VOICE_MAX_CHARS_ARGENT if using_argent else VOICE_MAX_CHARS
+    chunks = _split_script_into_chunks(script, max_chars=chunk_limit)
     log.info(
         "Script is %d characters — split into %d chunk(s) (provider=%s)",
         len(script), len(chunks),
