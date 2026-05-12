@@ -1005,7 +1005,8 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
         for i, raw in enumerate(all_audio):
             buf = BytesIO(raw)
             if using_argent:
-                segment = AudioSegment.from_file(buf, format="opus")
+                # Argent returns Ogg Opus audio — let ffmpeg auto-detect format
+                segment = AudioSegment.from_file(buf)
             else:
                 segment = AudioSegment.from_mp3(buf)
             combined += segment
