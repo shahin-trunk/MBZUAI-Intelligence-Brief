@@ -1508,6 +1508,19 @@ def generate_audio_brief(
             log.info("Scripts saved to DB despite TTS failure")
         except Exception as db_exc:
             log.warning("Failed to update DB with scripts: %s", db_exc)
+
+        # Narrative TTS failure is non-fatal when per-item audio was generated
+        if en_item_audio_count > 0:
+            log.warning(
+                "Narrative audio failed but per-item audio succeeded (%d items) — "
+                "marking brief as ready with per-item audio only",
+                en_item_audio_count,
+            )
+            _revalidate_frontend(target_date)
+            log.info("Audio brief complete for %s (narrative=null, per-item=%d items)",
+                     target_date, en_item_audio_count)
+            return True
+
         return False
 
     # Save MP3s locally
