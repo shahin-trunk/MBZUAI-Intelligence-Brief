@@ -1015,7 +1015,7 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
             response = httpx.post(url, json=payload, headers=headers, timeout=180.0)
             if response.status_code == 200:
                 break
-            if response.status_code in (429, 502, 503, 504) and attempt < 2:
+            if response.status_code in (404, 429, 502, 503, 504) and attempt < 2:
                 log.warning("TTS transient error %d (attempt %d/3), retrying in %ds...",
                             response.status_code, attempt + 1, (attempt + 1) * 3)
                 _time2.sleep((attempt + 1) * 3)
