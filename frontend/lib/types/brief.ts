@@ -102,6 +102,9 @@ export interface BriefItem {
   badge_subject_category?: EntityCategory;
   exhibits?: ExhibitData[];
   audio_url?: string;
+  // Language learning content (per-item)
+  learning_fr?: ItemLearningContent;
+  learning_ar?: ItemLearningContent;
 }
 
 export type EntityCategory =
@@ -115,6 +118,23 @@ export type EntityCategory =
   | "model"
   | "country"
   | "other";
+
+// ─── Language Learning Types ─────────────────────────────────────────────────
+
+export interface LearningVocabulary {
+  term: string;
+  translation: string;
+  definition: string;
+  example_sentence: string;
+  part_of_speech: string;
+}
+
+export interface ItemLearningContent {
+  script: string;
+  vocabulary: LearningVocabulary[];
+  difficulty: "beginner" | "intermediate" | "advanced";
+  audio_url?: string;
+}
 
 export interface AudioSegment {
   item_id: string;
@@ -226,6 +246,9 @@ export interface RawPipelineItem {
   exhibits?: ExhibitData[] | null;
   audio_url?: string | null;
   is_placeholder?: boolean;
+  // Language learning content (per-item)
+  learning_fr?: ItemLearningContent | null;
+  learning_ar?: ItemLearningContent | null;
 }
 
 // ─── Sprint 3 shapes (defined now for forward-compatibility) ────────────────

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type { Brief } from "@/lib/types/brief";
 import { useAudioPlayer } from "@/lib/presidential-brief/hooks/useAudioPlayer";
 import { buildFeed } from "@/lib/presidential-brief/buildFeed";
@@ -16,6 +17,8 @@ interface BriefViewRouterProps {
   prevDate: string | null;
   nextDate: string | null;
   availableDates: string[];
+  /** Initial slide index from URL (restores position when returning from learning page). */
+  slideIndex?: number;
 }
 
 export default function BriefViewRouter({
@@ -23,7 +26,9 @@ export default function BriefViewRouter({
   prevDate,
   nextDate,
   availableDates,
+  slideIndex,
 }: BriefViewRouterProps) {
+  const router = useRouter();
   const [audioExpanded, setAudioExpanded] = useState(false);
   const [openStoryDetailFromAudioId, setOpenStoryDetailFromAudioId] = useState<
     string | null
@@ -71,6 +76,16 @@ export default function BriefViewRouter({
     return buildFeed(brief, null, []);
   }, [brief]);
 
+  // Navigate to language learning page for a specific slide item
+  const handleNavigateToLearn = useCallback(
+    (itemId: string, activeIndex: number) => {
+      router.push(
+        `/brief/${brief.brief_date}/learn/${itemId}?slideIndex=${activeIndex}`
+      );
+    },
+    [router, brief.brief_date]
+  );
+
   return (
     <>
       <CardSwipeView
@@ -90,6 +105,8 @@ export default function BriefViewRouter({
         openStoryDetailItemId={openStoryDetailFromAudioId}
         onOpenStoryDetailRequestHandled={clearOpenStoryDetailFromAudio}
         onStoryDetailDismissResumeAudio={resumeAudioAfterStoryDetail}
+        onNavigateToLearn={handleNavigateToLearn}
+        initialSlideIndex={slideIndex}
       />
 
       {hasAudio && (

@@ -1,382 +1,624 @@
-# Intelligence Dashboard
+# MBZUAI Intelligence Brief
 
-This repository powers MBZUAI's current intelligence workflow:
+An AI-powered presidential daily intelligence briefing system for **MBZUAI** (Mohamed bin Zayed University of Artificial Intelligence). The system automatically collects intelligence from 9+ institutional sources, applies a 16-stage AI pipeline for filtering, scoring, and narrative generation, and delivers a curated daily brief through a swipe-based reader experience — with human analyst curation as a mandatory gate before publication.
 
-- a Python pipeline that collects, filters, scores, enriches, and writes draft brief items
-- a human curation app where analysts select, edit, order, and approve the brief
-- a published reader experience built around a swipe/card interface
-- an admin surface for pipeline oversight, research queues, logos, drops, users, and manual entry
-- a Capacitor mobile shell for native packaging and push notifications
+> **For**: Prof. Eric Xing, President of MBZUAI  
+> **Schedule**: Daily (Monday–Friday) by 6:00 AM GST  
+> **Target**: 8–25 items across 5 sections  
+> **Format**: Card/swipe reader (mobile) + portal sidebar (desktop) + audio briefing
 
-The product is no longer a fully automated AI-published brief. The pipeline now produces a draft slate, and publication happens only after human approval.
+---
 
-## Repository Layout
+## Architecture Overview
 
-```text
-backend/
-  main.py                 Pipeline entry point
-  ingest_draft.py         Writes draft slates into pending_* tables
-  ingest_brief.py         Legacy/fallback direct brief ingestion
-  generate_audio.py       Generates audio scripts and uploads audio assets
-  config.py               Runtime config, dates, env loading
-  models/                 Pydantic contracts
-  pipeline/               Collection, filtering, selection, enrichment, writing
-  output/                 Generated artifacts and recovery files
-
-frontend/
-  app/                    Next.js App Router pages and API routes
-  components/             Reader, curation, admin, and portal UI
-  lib/                    Auth, Supabase, transforms, hooks, server helpers
-  public/                 Static assets
-  supabase/migrations/    Schema migrations
-  ios/ android/           Capacitor native wrappers
-
-ops/cloud-run-dispatcher/ Cloud Run service that safely triggers GitHub Actions
-.github/workflows/        Daily pipeline, audio, recovery, and revalidation workflows
+```
+┌───────────────────────────────────────────────────────────────────────┐
+│                        PRODUCTION FLOW                                │
+│                                                                       │
+│  Cloud Scheduler      ┌──────────────────┐                            │
+│  (7am GST weekdays)──▶│ Cloud Run        │──▶ GitHub Actions          │
+│                        │ Dispatcher        │    (workflow_dispatch)    │
+│                        └──────────────────┘                            │
+│                                                                       │
+│  GitHub Actions ───▶ Python Pipeline ───▶ pending_briefs ───▶ Analyst │
+│  (daily-brief.yml)   (16 stages)          pending_items     Curation  │
+│                                                                       │
+│  Analyst ───▶ Approve ───▶ briefs ───▶ Frontend Reader ───▶ Executive │
+│  Curation                                (Next.js 16)       Consumer  │
+│                                                                       │
+│                                      └──▶ Audio Briefing              │
+│                                           (ElevenLabs TTS)            │
+│                                                                       │
+│  Docker Compose ───▶ EC2                     Vercel                   │
+│  (Traefik + Frontend                        (Vercel serverless)       │
+│   + Dispatcher)                                                        │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
-## Current Product Shape
+### Core Principles
 
-### 1. Hybrid brief workflow
+- **Hybrid AI-Human**: Pipeline writes a draft slate — analysts select, edit, and approve. No direct AI publication.
+- **Deterministic Collection**: Hard-coded institutional sources, not dynamic feed crawling.
+- **Fail-Open Design**: One stage failure doesn't kill the pipeline; downstream reconciliation catches omissions.
+- **Resumable Pipeline**: `--from-stage` flag enables checkpoint-based recovery.
+- **Audit Trail**: Every pipeline stage, drop decision, and curation action is logged.
 
-The default production flow is:
+---
 
-1. Run the backend pipeline.
-2. Write a draft slate into `pending_briefs` and `pending_items`.
-3. Open `/curation`.
-4. Claim the brief (the curation client also auto-attempts a claim when a pending brief loads).
-5. Select, edit, and order items.
-6. Approve and publish.
-7. Optionally dispatch audio generation.
-8. Serve the published brief from `briefs.raw_json` (source of truth) plus the narrow `brief_items` index table.
+## Repository Structure
 
-Important note:
+```
+├── backend/                          # Python pipeline
+│   ├── main.py                        # Entry point (--from-stage support)
+│   ├── config.py                      # Runtime config, dates, constants
+│   ├── env_loader.py                  # Environment variable multi-source loader
+│   ├── ingest_draft.py                # Writes draft slates to pending tables
+│   ├── ingest_brief.py                # Legacy direct brief ingestion
+│   ├── generate_audio.py              # Audio script generation + TTS upload
+│   ├── models/
+│   │   └── schemas.py                 # Pydantic data contracts (20+ models)
+│   ├── pipeline/                      # 25+ pipeline modules
+│   │   ├── orchestrator.py            # Main stage orchestration (async)
+│   │   ├── collector.py               # Collection from 9 sources
+│   │   ├── content_filter.py          # NEWS/NOT_NEWS classification
+│   │   ├── dedup.py                   # 3-stage dedup (URL/fuzzy/semantic)
+│   │   ├── synthesis.py               # Event clustering + continuity
+│   │   ├── history_dedup.py           # Cross-day repeat detection
+│   │   ├── gatekeeper.py              # Selection + scoring (Sonnet)
+│   │   ├── ghostwriter.py             # Narrative generation (Sonnet)
+│   │   ├── entity_classifier.py       # Entity category tagging (Haiku)
+│   │   ├── enricher.py                # URL content enhancement
+│   │   ├── date_verify.py             # Publish date from meta tags
+│   │   ├── web_search_verify.py       # Fallback date via Serper
+│   │   ├── event_tuples.py            # Structured event extraction
+│   │   ├── section_classifier.py      # Section assignment (Haiku)
+│   │   ├── entity_identity.py         # Entity linking
+│   │   ├── entity_category.py         # Entity categorization
+│   │   ├── exhibit_formatter.py       # Exhibit formatting
+│   │   ├── manual_entries.py          # Analyst queued item injection
+│   │   ├── model_release.py           # Model release metadata extraction
+│   │   ├── card_batch.py              # Parallel ghostwriter per section
+│   │   ├── gk_rekeyer.py              # Gatekeeper output stabilization
+│   │   └── seen_cache.py              # URL cache across runs
+│   ├── prompts/                       # Podcast script prompt templates
+│   ├── evals/                         # Evaluation scripts (content filter, gatekeeper, ghostwriter)
+│   ├── tests/                         # 38 test files + fixtures
+│   └── output/                        # Generated artifacts + recovery files
+│
+├── frontend/                          # Next.js 16 web application
+│   ├── app/                           # App Router pages + API routes
+│   │   ├── (portal)/                  # Auth-gated portal (brief, curation, lenses)
+│   │   ├── admin/                     # 11 admin pages (pipeline, drops, logos, users, etc.)
+│   │   ├── api/                       # 40+ server API routes
+│   │   ├── login/                     # OAuth login page
+│   │   └── auth/callback/             # OAuth callback handler
+│   ├── components/                    # 100+ React components
+│   │   ├── presidential-brief/        # Brief reader card/swipe UI (35+ files)
+│   │   ├── card-reader/               # Swipeable card interaction
+│   │   ├── curation/                  # Analyst workspace (select, edit, order)
+│   │   ├── admin/                     # Dashboard panels (charts, logos, drops)
+│   │   ├── brief/                     # Brief display components
+│   │   ├── internal/                  # Intelligence lenses components
+│   │   └── ui/                        # Shadcn/Radix UI primitives
+│   ├── lib/                           # Utilities, hooks, transforms
+│   │   ├── api/                       # API helpers + queries + mutations
+│   │   ├── auth/                      # Auth provider + session management
+│   │   ├── transforms/                # Brief JSON → TypeScript interfaces
+│   │   ├── hooks/                     # Custom React hooks
+│   │   ├── types/                     # TypeScript type definitions
+│   │   ├── supabase/                  # Supabase client initialization
+│   │   └── config/                    # App configuration + lens definitions
+│   ├── supabase/
+│   │   ├── migrations/                # 20 sequential database migrations
+│   │   └── functions/                 # Supabase Edge Functions
+│   ├── ios/                           # Capacitor iOS native wrapper
+│   └── android/                       # Capacitor Android native wrapper
+│
+├── prompts/                           # 16 LLM system prompt templates
+│   ├── gatekeeper_prompt.md            # Selection + scoring (314 lines)
+│   ├── ghostwriter_prompt.md           # Narrative generation (424 lines)
+│   ├── synthesis_prompt.md             # Event clustering (189 lines)
+│   ├── history_dedup_prompt.md         # Cross-day dedup (232 lines)
+│   ├── content_filter_prompt.md        # NEWS/NOT_NEWS (166 lines)
+│   ├── event_extraction_prompt.md      # Event tuples (207 lines)
+│   └── ... (10 more prompt files)
+│
+├── ops/cloud-run-dispatcher/          # Cloud Run → GitHub Actions bridge
+│   └── app.py                          # Flask service (184 lines)
+│
+├── .github/workflows/                 # 5 CI/CD workflows
+│   ├── daily-brief.yml                 # Main pipeline (workflow_dispatch)
+│   ├── deploy.yml                      # Auto-deploy to EC2 (push to main)
+│   ├── generate-audio.yml              # Audio generation (workflow_dispatch)
+│   ├── recover-daily-brief.yml         # Pipeline recovery
+│   └── revalidate-brief.yml            # ISR cache revalidation
+│
+├── .qoder/skills/                     # Qoder AI coding assistant skill
+├── scripts/                           # Dev scripts
+│   ├── run-pipeline.sh
+│   ├── run-frontend.sh
+│   └── check-code.sh
+│
+├── Dockerfile                          # Docker build (Next.js standalone)
+├── docker-compose.yml                  # Traefik + Frontend + Dispatcher
+├── deploy.sh                           # Deployment management script
+├── deploy.env.example                  # Deployment env template
+├── requirements.txt                    # Python dependencies
+└── .gitignore
+```
 
-- `PIPELINE_DRAFT_MODE` now defaults to `true` in the orchestrator.
-- In normal production, the pipeline stops after Ghostwriter plus optional entity classification and ingests a draft slate. The `Editor` path only runs when `PIPELINE_DRAFT_MODE=false`.
-- Audio dispatch happens from the curation approval route when `GITHUB_PAT` is configured; it is not part of `daily-brief.yml`.
+---
 
-### 2. Reader experience
+## Backend Pipeline
 
-The live brief is served from `/brief/today` and `/brief/[date]`.
+### Data Flow (16 Stages)
 
-Current reader behavior:
+| # | Stage | Model | Time | Purpose |
+|---|-------|-------|------|---------|
+| 1 | **Scout** | Deterministic | — | Collect from 9 sources (WAM, ADMO, TII, G42, Presight, Khazna, Gmail newsletters, X, regional research) |
+| 2 | **Newsletter Splitter** | Haiku 4.5 | 2m | Split multi-story emails into individual articles |
+| 3 | **Regional Research Scout** | Sonnet 4.6 + Serper | 5m | Web search for regional academic/research news |
+| 4 | **Pre-Triage Enrichment** | — | 2m | Fetch full article bodies for thin sources |
+| 5 | **Triage** | Haiku 4.5 | 2m | Drop obviously irrelevant items (inverted-default: editorial wires auto-keep) |
+| 6 | **Date Verify** | — | ∥ | Extract publish dates via HTTP meta tags / JSON-LD |
+| 7 | **Dedup** (3-stage) | Haiku 4.5 | 2m | URL canonicalization → fuzzy headline → semantic/tuple comparison |
+| 8 | **Web Search Date Verify** | Serper | 2m | Check newsletter/no-URL items for stale resurfaced stories |
+| 9 | **Content Filter** | Haiku 4.5 | 2m | NEWS/NOT_NEWS binary classification (batch size: 22) |
+| 10 | **History Dedup**\* | Sonnet 4.6 | 5m | Drop items matching published briefs + pending slates (14-day window) |
+| 11 | **Synthesis**\* | Sonnet 4.6 | 10m | Event clustering + continuity annotation (new/continuation/restatement) |
+| 12 | **Section Classifier** | Haiku 4.5 | 2m | Assign to 5 canonical sections |
+| 13 | **Gatekeeper** | Sonnet 4.6 | 10m | Score + select top items per section (cluster-aware tier caps) |
+| 14 | **Manual-Entry Injection** | — | — | Merge analyst-queued items |
+| 15 | **Ghostwriter** | Sonnet 4.6 | 10m | Generate key_bullets, analysis, context, implication (~110 words/card) |
+| 16 | **Draft Ingest** | — | — | Write to `pending_briefs` + `pending_items` (analyst review) |
 
-- mobile/tablet: card/swipe-first brief experience
-- desktop: portal sidebar plus desktop-capable reading/review experience
-- published order comes from human curation
-- flags, annotations, saved items, research requests, and audio are wired to live backend data
+> \* Optional — controlled by feature flags: `HISTORY_DEDUP_ENABLED`, `SYNTHESIS_ENABLED`, `ENTITY_CLASSIFIER_ENABLED`
 
-The portal sidebar is desktop-only. On smaller screens the portal chrome is not rendered.
+**Legacy**: Stage **Editor** (final QA + assembly) runs only when `PIPELINE_DRAFT_MODE=false`.
 
-### 3. Analyst curation
+### Collection Sources
 
-The curation app is served from:
+| Source | Type | Scout Mapping |
+|--------|------|--------------|
+| WAM (UAE News Agency) | Sitemap XML | UAE |
+| ADMO (Abu Dhabi Media Office) | HTML scraper | UAE |
+| TII (Technology Innovation Institute) | HTML scraper | Model releases |
+| G42 | HTML scraper | International business |
+| Presight AI | HTML scraper | International business |
+| Khazna Data Centers | WordPress REST API | International business |
+| Gmail Newsletters (22 whitelisted) | Gmail API OAuth | Cross-section |
+| X / @hhtbzayed | X API v2 | UAE |
+| Regional Research (Serper) | Web search API | Regional academic |
 
-- `/curation`
-- `/curation/history`
-- `/curation/calibration`
+### Model Routing
 
-Current curation behavior:
+| Model | Cost | Used For |
+|-------|------|----------|
+| **Sonnet 4.6** | $3/M input, $15/M output | Gatekeeper, Ghostwriter, Regional Scout, History Dedup, Synthesis, Editor |
+| **Haiku 4.5** | $0.80/M input, $4/M output | Content Filter, Newsletter Splitter, Dedup, Section Classifier, Entity Classifier, Triage |
 
-- analysts/admins can claim a pending brief
-- items are selected from a flat candidate list
-- item edits persist server-side
-- ordering is a dedicated step
-- manual items can be created and attached to the brief
-- approval publishes back into the same `briefs` / `brief_items` tables used by the reader
-- if today's brief is already published, `/curation` switches into a published-brief editing view instead of falling back to an older pending brief
+- **Typical run cost**: ~560K tokens → ~$2-3 USD
+- **Typical wall time**: 30–45 minutes
 
-### 4. Active portal/admin surfaces
+### Running the Pipeline
 
-Main portal routes currently in use:
+```bash
+# Full pipeline
+cd backend && python3.11 main.py
 
-- `/brief/today`
-- `/brief/[date]`
-- `/curation`
-- `/executive-engagement`
-- `/executive-engagement/[id]`
-- `/manual-entry` (portal alias for the admin manual-entry page)
-- `/research-requests` (portal alias for the admin research page)
-- `/faculty-excellence`
-- `/research-impact`
-- `/visibility`
-- `/flagged`
-- `/history`
+# Resume from checkpoint
+cd backend && python3.11 main.py --from-stage content_filter
+cd backend && python3.11 main.py --from-stage gatekeeper
+cd backend && python3.11 main.py --from-stage ghostwriter
 
-Primary admin routes currently in use:
+# Draft ingest (write pipeline output to pending tables)
+cd backend && python3.11 ingest_draft.py
+cd backend && python3.11 ingest_draft.py --date 2026-04-11
 
-- `/admin`
-- `/admin/pipeline`
-- `/admin/enrichment`
-- `/admin/rationalization`
-- `/admin/drops`
-- `/admin/research`
-- `/admin/scout-watchlist`
-- `/admin/scout-analytics`
-- `/admin/logos`
-- `/admin/users`
-- `/admin/manual-entry`
+# Audio generation
+cd backend && python3.11 generate_audio.py --date 2026-04-11 --from-db
+cd backend && python3.11 generate_audio.py --script-only
+```
 
-Routes/components still present in code but not currently exposed as standalone portal destinations:
+### Pipeline Design Patterns
 
-- `/student-pipeline`
-- `/student-experience`
-- `/student-outcomes`
+- **Deterministic, fail-open stages**: Each collector independently handles failures. If Haiku errors on content filter, all items pass through.
+- **Resumability**: Intermediate outputs cached as `{stage}_YYYY-MM-DD.json` in `backend/output/`. Recovery workflows support `content_filter` and `ghostwriter` resume points.
+- **Chunked parallelism**: Content filter (batches of 22), Gatekeeper (per-section chunks), Ghostwriter (per-section chunks) all run in parallel.
+- **Drop audit trail**: Every dropped item logged with reason + stage. Written to `dropped_items` table + JSON artifact.
+- **Token tracking**: Total input/output tokens tracked per stage for cost estimation.
 
-`/[lens]` currently redirects `/institutional-health` back to `/brief/today` and returns `notFound()` for the student routes above.
+---
 
-## Backend Overview
+## Frontend Application
 
-Primary entry points:
+### Technology Stack
 
-- `backend/main.py`
-- `backend/pipeline/orchestrator.py`
-- `backend/ingest_draft.py`
-- `backend/generate_audio.py`
-- `backend/config.py`
-- `backend/env_loader.py`
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 (App Router) |
+| UI Runtime | React 19 |
+| Styling | Tailwind CSS 4 |
+| UI Components | Shadcn UI + Radix UI |
+| Animation | @react-spring/web + @use-gesture/react |
+| Drag & Drop | @dnd-kit |
+| Charts | Recharts |
+| Icons | lucide-react + flag-icons |
+| Database | Supabase PostgreSQL |
+| Auth | Supabase Auth (OAuth, cookie-based) |
+| State | React Context (Auth, Toast, BriefInteraction) |
+| Mobile | Capacitor (iOS + Android) |
+| Testing | Vitest + Testing Library + jsdom |
 
-Current pipeline stages (in order, run by `backend/pipeline/orchestrator.py`):
+### Page Structure
 
-1. **Scout** — deterministic collectors (WAM, ADMO, TII, G42 Cloud, Presight, Khazna, Newsletters via Gmail OAuth, X)
-2. **Newsletter splitting** — Haiku splits multi-story emails into individual articles
-3. **Regional research scout** — Claude + web search finds regional academic/research candidates
-4. **Pre-triage enrichment + triage** — thin WAM bodies are filled, then Haiku drops obviously irrelevant items
-5. **Date verify + date filter** — parallel HTTP fetch of meta tags / JSON-LD, source-specific bypasses, and cutoff filtering
-6. **Dedup** — fuzzy headline match + Haiku semantic dedup
-7. **Web-search date verification** — checks newsletter/no-URL items for stale resurfaced stories
-8. **Content filter** — Haiku classifies NEWS / NOT_NEWS, with narrow trusted-source bypasses
-9. **History dedup** (optional, behind `HISTORY_DEDUP_ENABLED`) — semantic drop against recent published briefs plus recent pending slates
-10. **Synthesis** (optional, behind `SYNTHESIS_ENABLED`) — clustering + continuity annotation
-11. **Pre-Gatekeeper enrichment + section classifier** — thin items are enriched and assigned into the 5 canonical brief sections
-12. **Gatekeeper** — selection and scoring (significance, novelty, UAE relevance) with per-section caps
-13. **Manual-entry injection + selected-item enrichment** — queued manual entries are merged into the selected set and thin selected items are enriched
-14. **Ghostwriter** — narrative generation
-15. **Entity classifier** (optional, behind `ENTITY_CLASSIFIER_ENABLED`) — assigns `primary_entity_category` for badge/icon lookup
-16. **Draft ingest** — writes the Ghostwriter slate into `pending_briefs` / `pending_items`
+```
+/portal                           # Auth-gated portal shell
+  /brief/today                     # Today's published brief (ISR, 1hr revalidation)
+  /brief/[date]                    # Archived brief by date
+  /curation                        # Analyst curation workspace
+  /curation/history                # Curation audit trail
+  /curation/calibration            # Model calibration data
+  /executive-engagement            # Executive meeting tracking
+  /executive-engagement/[id]       # Individual engagement
+  /research-requests               # Follow-up research management
+  /manual-entry                    # Queue manual pipeline items
+  /flagged                         # Reader-flagged items
+  /history                         # Brief archive calendar
+  /[lens]                          # Internal intelligence lenses
 
-Legacy direct-publish-only extension:
+/admin                            # Admin dashboard
+  /admin/pipeline                  # Pipeline run history + funnel visualization
+  /admin/enrichment                # Content enrichment metrics
+  /admin/rationalization           # Gatekeeper score breakdown
+  /admin/drops                     # Dropped items analysis
+  /admin/research                  # Research request management
+  /admin/scout-analytics           # Collection source metrics
+  /admin/scout-watchlist           # Entity watchlist
+  /admin/logos                     # Entity logo management (upload, categorize)
+  /admin/users                     # User roles + permissions
+  /admin/manual-entry              # Manual entry queue
+```
 
-- **Editor** — final QA and brief assembly, only when `PIPELINE_DRAFT_MODE=false`
+### Authentication Flow
 
-`--from-stage` resume points: `scout`, `content_filter`, `gatekeeper`, `ghostwriter`, `editor`. Artifacts are written into `backend/output/` for inspection and same-day recovery. The GitHub recovery workflow exposes only `content_filter` and `ghostwriter`; `gatekeeper` is kept as a local/debug resume path because it skips Synthesis annotations and falls back to legacy overlap handling.
+```
+Request → Edge Middleware (middleware.ts)
+  → Reads Supabase auth cookie
+  → Validates via Supabase REST API (no SDK, edge-compatible)
+  → Valid? → Serve page
+  → Invalid? → Redirect to /login?redirectTo=<original>
 
-Model assignments (sources of truth: `backend/config.py`, `backend/pipeline/card_batch.py`, individual stage modules):
+Post-login:
+  OAuth callback → Session stored in cookie → Redirect
+  Client: AuthProvider fetches /api/me → user profile
 
-- **Sonnet 4.6** — default `MODEL` in config, including Gatekeeper, Ghostwriter, Editor, regional scout, and higher-stakes enrichment paths
-- **Haiku 4.5** — Content filter, newsletter splitting, dedup, section classifier, entity classifier
+API Routes:
+  getAuthenticatedClient() validates session manually
+  Returns service-role Supabase client (bypasses RLS)
+  Routes must scope queries by user.id explicitly
+```
 
-## Frontend Overview
+### Key Frontend Features
 
-Frontend stack:
+**Brief Reader** — Card/swipe interface with:
+- Multiple view modes (card swipe, vertical snap deck, list view)
+- Audio briefing (English + French via ElevenLabs)
+- Annotations, flags, saves, research requests
+- Section navigation with progress tracking
+- Responsive: mobile → card swipe, desktop → portal sidebar
 
-- Next.js 16 App Router
-- React 19
-- Tailwind CSS 4
-- Supabase
-- Capacitor for iOS/Android
+**Curation Workspace** — Three-phase analyst workflow:
+1. **Select** — Choose items from Gatekeeper candidates (proposed/pool tiers)
+2. **Edit** — Modify headline, narrative, section, significance
+3. **Order** — Drag-and-drop reorder within sections
+- Manual item creation on-the-fly
+- Full audit trail in `curation_decisions`
 
-Important frontend areas:
+**Internal Intelligence Lenses** — Institutional health dashboards:
+- Faculty Excellence, Research Impact, Student Pipeline
+- Visibility & Influence, Strategic Accountability
+- Executive Engagement tracking with AI dossier generation
 
-- `frontend/app/(portal)/brief/[date]/page.tsx` — published brief route
-- `frontend/components/presidential-brief/*` — live reader/card experience
-- `frontend/components/card-reader/*` — card reader and review components
-- `frontend/components/curation/*` — analyst curation workflow
-- `frontend/app/admin/*` — admin pages
-- `frontend/app/api/curation/approve/route.ts` — publish path from pending brief to `briefs` + `brief_items`
-- `frontend/lib/api/helpers.ts` — manual session validation + service-role client handoff
-- `frontend/middleware.ts` — edge auth gate for non-API routes
-- `frontend/lib/transforms/brief.ts` — published brief normalization
-- `frontend/lib/auth/AuthProvider.tsx` — client auth context
-- `frontend/components/internal/PortalSidebar.tsx` — desktop-only portal navigation
+### API Routes (40+ endpoints)
 
-## Data Model Notes
+```
+GET    /api/me                           # Current user profile
+GET    /api/briefs                       # List published briefs
+GET    /api/briefs/[date]/items          # Brief items by date
+PATCH  /api/briefs/[date]/items/[id]     # Update item
+POST   /api/curation/pending             # Claim pending brief
+GET    /api/curation/items/[id]          # Get curation item
+PATCH  /api/curation/items/[id]          # Update curation item
+POST   /api/curation/items/reorder       # Reorder items
+POST   /api/curation/approve             # Publish brief
+POST   /api/curation/manual-item         # Add manual item
+GET    /api/admin/pipeline               # Pipeline run data
+GET    /api/admin/drops                  # Dropped items analysis
+POST   /api/admin/logos                  # Upload entity logo
+GET    /api/admin/users                  # User management
+POST   /api/revalidate                   # ISR cache purge
+POST   /api/internal/generate-dossier    # AI dossier generation
+... (40+ total endpoints)
+```
 
-Published brief data:
+---
 
-- `briefs`
-- `briefs.raw_json` is the source of truth for published reader content and archive/history pages.
-- `brief_items`
-- `brief_items` is now a narrow cross-date index used for lightweight lookups and compatibility, not the full rendered brief payload.
+## Database Schema (Supabase PostgreSQL)
 
-Draft / curation data:
+### Published Content
 
-- `pending_briefs`
-- `pending_items`
-- `manual_items`
-- `curation_decisions`
+`briefs` — One row per date. `raw_json` is the **source of truth** for the reader experience.
 
-Other important live data:
+| Column | Type | Purpose |
+|--------|------|---------|
+| `brief_date` | DATE PK | Brief date (YYYY-MM-DD) |
+| `raw_json` | JSONB | Full RawPipelineBrief (source of truth) |
+| `audio_url` | TEXT | English audio URL |
+| `audio_script` | TEXT | English TTS script |
+| `audio_url_fr` | TEXT | French audio URL |
+| `audio_script_fr` | TEXT | French TTS script |
+| `audio_status` | TEXT | pending/generating/complete/failed |
+| `generated_at` | TIMESTAMPTZ | Creation timestamp |
+| `metadata` | JSONB | item_count, sources_consulted, pipeline_cost_usd |
 
-- annotations
-- flags
-- saved items
-- research requests
-- pipeline runs
-- executive engagement records and materials
-- admin pipeline run hydration
+`brief_items` — Narrow index for lightweight lookups (NOT source of truth).
 
-## Auth Notes
+### Draft / Curation
 
-- Non-public pages are protected by `frontend/middleware.ts`, which validates the Supabase auth cookie in the Edge runtime.
-- API routes typically call `getAuthenticatedClient()` in `frontend/lib/api/helpers.ts`, which validates the session manually, then uses a service-role Supabase client for DB access.
-- Because the service-role client bypasses RLS, route handlers must explicitly scope user-owned queries by `user.id`.
+| Table | Purpose | Key Columns |
+|-------|---------|-------------|
+| `pending_briefs` | Pipeline run + claim state | brief_date, status (pending/in_review/approved/published), claimed_by, pipeline_stats |
+| `pending_items` | Gatekeeper candidates | brief_id, tier (proposed/pool), section, headline, raw_item JSONB |
+| `curation_decisions` | Audit trail | decision (keep/remove/promote/demote/edit/reorder/add), edit_fields JSONB |
+| `manual_items` | Analyst-created items | headline, section, significance_level, full card shape |
 
-## Environment
+### Reader Interactions
 
-The repo uses:
+| Table | Purpose |
+|-------|---------|
+| `annotations` | User notes on brief items |
+| `flags` | Item flagging (follow-up, important, share) |
+| `saved_items` | Bookmarked items |
+| `research_requests` | Follow-up research tasks |
+| `reader_interactions` | Page view tracking |
+| `push_tokens` | Mobile push notification tokens |
 
-- root `.env` for backend/runtime secrets
-- `frontend/.env.local` for frontend and Supabase configuration
+### Admin / Meta
 
-Common environment variables:
+| Table | Purpose |
+|-------|---------|
+| `user_profiles` | User roles (reader/analyst/editor/admin) |
+| `entity_logos` | Entity badge/image resolution |
+| `pipeline_runs` | Pipeline execution history |
+| `scout_seen_urls` | Cross-run URL dedup |
+| `engagements` | Executive meeting tracking |
+| `engagement_materials` | Meeting briefings + dossiers |
+| `engagement_followups` | Post-meeting Q&A |
 
-- `ANTHROPIC_API_KEY`
-- `SERPER_API_KEY`
-- `VOICE_API_KEY`
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `REVALIDATION_SECRET`
-- `GITHUB_PAT`
-- `RESEND_API_KEY`
-- `SITE_URL`
-- `NEXT_PUBLIC_SITE_URL`
-- `ENABLE_AUDIO_BRIEF`
-- `ENABLE_FRENCH_AUDIO`
-- `FRENCH_VOICE_ID`
-- `PIPELINE_DRAFT_MODE`
+---
 
-Collector credentials sometimes used locally:
+## CI/CD & Operations
 
-- `credentials.json`
-- `token.json`
+### GitHub Actions Workflows
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `daily-brief.yml` | workflow_dispatch (Cloud Scheduler → Cloud Run) | Run full pipeline → ingest draft |
+| `deploy.yml` | Push to main (paths: frontend/, Dockerfile, docker-compose.yml) | SSH → Docker Compose rebuild on EC2 |
+| `generate-audio.yml` | workflow_dispatch (manual or from curation approve) | Generate TTS audio → upload to Supabase Storage |
+| `recover-daily-brief.yml` | workflow_dispatch (manual) | Resume failed pipeline from content_filter or ghostwriter |
+| `revalidate-brief.yml` | repository_dispatch (from curation approve) | ISR cache purge for published brief |
+
+### Infrastructure
+
+```
+Cloud Scheduler (0 7 * * 1-5, Asia/Dubai)
+  │  POST /dispatch
+  ▼
+Cloud Run (ops/cloud-run-dispatcher/app.py)
+  │  GitHub API workflow_dispatch
+  ▼
+GitHub Actions Runner
+  │  Python 3.11 + pip + ffmpeg
+  ▼
+Docker Compose (Ubuntu EC2, brief.audarai.com)
+  ├── Traefik v3.7 (reverse proxy, Let's Encrypt TLS)
+  ├── Next.js 16 (standalone, port 3000)
+  └── Cloud Run Dispatcher (Flask, port 8080)
+```
+
+### Deployment Commands
+
+```bash
+# Full deploy
+./deploy.sh deploy
+
+# Check service status
+./deploy.sh status
+
+# View logs
+./deploy.sh logs
+
+# Local Docker development
+docker compose --env-file deploy.env up -d
+```
+
+---
+
+## Environment Variables
+
+### Required
+
+| Variable | Purpose |
+|----------|---------|
+| `ANTHROPIC_API_KEY` | Claude API access |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase admin key |
+
+### Backend
+
+| Variable | Purpose |
+|----------|---------|
+| `SERPER_API_KEY` | Web search API for date verification |
+| `VOICE_API_KEY` | ElevenLabs TTS API key |
+| `X_BEARER_TOKEN` | X API v2 token |
+| `GITHUB_PAT` | GitHub personal access token (audio dispatch) |
+| `PIPELINE_DRAFT_MODE` | `true` = draft mode (default), `false` = direct publish |
+
+### Frontend
+
+| Variable | Purpose |
+|----------|---------|
+| `REVALIDATION_SECRET` | ISR revalidation endpoint auth |
+| `RESEND_API_KEY` | Email API (research requests) |
+| `SITE_URL` | Deployment URL for auth redirects |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL |
+
+### Feature Flags
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `PIPELINE_DRAFT_MODE` | `true` | Write draft vs. publish directly |
+| `SYNTHESIS_ENABLED` | `true` | Event clustering + continuity annotation |
+| `HISTORY_DEDUP_ENABLED` | `true` | Cross-day repeat detection |
+| `ENTITY_CLASSIFIER_ENABLED` | `true` | Entity category tagging for UI badges |
+| `ENABLE_AUDIO_BRIEF` | `false` | Audio briefing generation |
+| `ENABLE_FRENCH_AUDIO` | `false` | French audio track |
+
+---
 
 ## Local Development
 
-### Install dependencies
-
-Backend:
+### Prerequisites
 
 ```bash
+# Python 3.11+
+python3.11 --version
+
+# Node.js 22+
+node --version
+
+# Docker (optional, for local compose)
+docker --version
+```
+
+### Setup
+
+```bash
+# Backend dependencies
 pip install -r requirements.txt
+
+# Frontend dependencies
+cd frontend && npm install
+
+# Environment files
+cp deploy.env.example deploy.env
+cp frontend/.env.local.example frontend/.env.local
+# Edit with your keys
 ```
 
-Frontend:
+### Run
 
 ```bash
-cd frontend
-npm install
+# Frontend dev server (http://localhost:3000)
+cd frontend && npm run dev
+
+# Backend pipeline
+cd backend && python3.11 main.py
+
+# Partial pipeline (resume from checkpoint)
+cd backend && python3.11 main.py --from-stage ghostwriter
 ```
 
-### Run the backend pipeline
-
-From `backend/`:
+### Verification
 
 ```bash
-python3.11 main.py
+# TypeScript type check (primary signal)
+cd frontend && npx tsc --noEmit
+
+# Build check
+cd frontend && npm run build
+
+# Unit tests (Vitest)
+cd frontend && npx vitest run
+
+# Python pipeline evals
+cd backend && python evals/eval_content_filter.py
+
+# Notes:
+# - npm run lint has intermittent ESLint config issues — use tsc + build instead
 ```
 
-Resume from a later stage:
+---
 
-```bash
-python3.11 main.py --from-stage content_filter
-python3.11 main.py --from-stage gatekeeper
-python3.11 main.py --from-stage ghostwriter
-python3.11 main.py --from-stage editor
-```
+## Testing Strategy
 
-### Write a draft slate
+### Backend Tests (38 files)
 
-```bash
-cd backend
-python3.11 ingest_draft.py
-python3.11 ingest_draft.py --date 2026-04-11
-```
+Test framework: Pytest + pytest-asyncio
 
-### Legacy direct-ingest path
+| Test Area | Key Files |
+|-----------|-----------|
+| Pipeline E2E | `test_pipeline_e2e.py` |
+| Dedup | `test_dedup.py`, `test_history_dedup.py` |
+| Gatekeeper | `test_gatekeeper_ab.py`, `test_gk_rekeyer.py` |
+| Ghostwriter | `test_ghostwriter_refusal.py` |
+| Content Filter | Via eval scripts |
+| Entity | `test_entity_classifier.py`, `test_entity_identity.py` |
+| Event Extraction | `test_event_tuples.py`, `test_deal_detection.py` |
+| Synthesis | `test_synthesis.py` |
+| Enrichment | `test_enricher_fetch.py` |
+| Rendering | `test_e2e_rendering.py`, `test_exhibits_comprehensive.py` |
 
-```bash
-cd backend
-python3.11 ingest_brief.py
-python3.11 ingest_brief.py --date 2026-04-11
-python3.11 ingest_brief.py --backfill
-```
+Skip markers available: `skip_no_anthropic`, `skip_no_serper` (tests gracefully skip when API keys aren't set locally).
 
-### Generate audio
+### Frontend Tests
 
-```bash
-cd backend
-python3.11 generate_audio.py
-python3.11 generate_audio.py --date 2026-04-11
-python3.11 generate_audio.py --date 2026-04-11 --from-db
-python3.11 generate_audio.py --script-only
-```
+- **Vitest** + **jsdom** environment
+- Key test files: `brief.test.ts`, `entity-category.test.ts`, `manual-entry.test.ts`
+- Run: `cd frontend && npx vitest run`
 
-### Run the frontend
+---
 
-```bash
-cd frontend
-npm run dev
-```
+## Key Design Decisions
 
-Useful checks:
+1. **Draft mode as default**: Pipeline writes pending slates; analysts must explicitly approve. Prevents hallucinated briefs from reaching the president.
 
-```bash
-cd frontend
-npm run build
-npx tsc --noEmit
-```
+2. **Inverted-default triage**: Editorial wires (Bloomberg, FT, Reuters, etc.) auto-keep unless clearly junk — avoids false-negative drops on hard news.
 
-Note:
+3. **3-stage dedup**: URL → fuzzy headline → semantic/tuple. Reduces LLM reliance while maintaining precision. Phase 3+ uses mechanical event-tuple comparison (no LLM).
 
-- `npm run lint` is currently affected by an ESLint config serialization issue in this repo, so build/typecheck are the more reliable verification signals at the moment.
+4. **Cluster-aware Gatekeeper**: Synthesis groups related items; Gatekeeper enforces per-cluster tier caps (head_of_state: uncapped, major: ≤3, standard: ≤1).
 
-### Native shell
+5. **`briefs.raw_json` as source of truth**: The reader reads from the JSONB blob. `brief_items` is a narrow index for lightweight queries only.
 
-```bash
-cd frontend
-npm run cap:sync
-npm run cap:open:ios
-npm run cap:open:android
-```
+6. **Chunked parallelism**: Content filter, Gatekeeper, and Ghostwriter all run in per-section chunks. Pipeline completes in ~30-45min despite sequential Sonnet calls.
 
-## GitHub Workflows
+7. **Edge middleware auth**: Supabase cookie validation in Next.js Edge Runtime — no SDK dependency, pure REST API calls.
 
-Current workflow files:
+---
 
-- `.github/workflows/daily-brief.yml`
-- `.github/workflows/generate-audio.yml`
-- `.github/workflows/recover-daily-brief.yml`
-- `.github/workflows/revalidate-brief.yml`
+## Entry Points for New Developers
 
-High-level usage:
+| Area | Start Here |
+|------|------------|
+| Pipeline logic | `backend/main.py`, `backend/pipeline/orchestrator.py` |
+| Pipeline schemas | `backend/models/schemas.py` |
+| Config & constants | `backend/config.py` |
+| Prompts | `prompts/gatekeeper_prompt.md`, `prompts/ghostwriter_prompt.md` |
+| Frontend routes | `frontend/app/(portal)/brief/[date]/page.tsx` |
+| Brief reader UI | `frontend/components/presidential-brief/BriefViewRouter.tsx` |
+| Curation UI | `frontend/components/curation/CurationWorkspace.tsx` |
+| Admin | `frontend/app/admin/page.tsx` |
+| Brief transforms | `frontend/lib/transforms/brief.ts` |
+| Auth flow | `frontend/middleware.ts`, `frontend/lib/auth/AuthProvider.tsx` |
+| API helpers | `frontend/lib/api/helpers.ts` |
+| Database | `frontend/supabase/migrations/` |
 
-- `daily-brief.yml` runs the pipeline and ingests a draft slate into curation tables
-- `generate-audio.yml` handles audio generation after approval/publication
-- `recover-daily-brief.yml` restores artifacts and resumes failed same-day runs back into the draft-ingest flow
-- `revalidate-brief.yml` revalidates frontend brief routes
+---
 
-All workflows use `workflow_dispatch` triggers. The daily run is initiated externally by `ops/cloud-run-dispatcher/`, a Flask service deployed to Cloud Run that bridges Cloud Scheduler → GitHub Actions (Cloud Scheduler fires `0 7 * * 1-5` = 7:00 AM GST weekdays). The dispatcher reads its GitHub token from Secret Manager and prevents duplicate same-day runs.
+## License
 
-## Good Entry Points
-
-If you are orienting yourself, start here:
-
-- `backend/main.py`
-- `backend/pipeline/orchestrator.py`
-- `backend/ingest_draft.py`
-- `backend/generate_audio.py`
-- `frontend/app/(portal)/brief/[date]/page.tsx`
-- `frontend/components/presidential-brief/BriefViewRouter.tsx`
-- `frontend/components/curation/CurationWorkspace.tsx`
-- `frontend/app/admin/page.tsx`
-- `frontend/components/internal/PortalSidebar.tsx`
-- `frontend/lib/transforms/brief.ts`
-- `frontend/supabase/migrations/`
-
-## Related Readmes
-
-- [frontend/README.md](frontend/README.md)
-- [ops/cloud-run-dispatcher/README.md](ops/cloud-run-dispatcher/README.md)
+Proprietary — MBZUAI Internal Use

@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { formatTime } from "@/lib/utils";
 
 type Speed = 1 | 1.25 | 1.5 | 2;
-type Language = "en" | "fr";
+type Language = "en" | "fr" | "ar";
 
 export interface AudioPlayerState {
   isPlaying: boolean;

@@ -1,27 +1,31 @@
 "use client";
 
-import { Telescope } from "lucide-react";
+import { Telescope, BookOpen } from "lucide-react";
 import { BRIEF_STORY_CARD_MAX_WIDTH_CLASS } from "@/lib/presidential-brief/briefCardLayout";
 
 const railBtn =
   "border border-rule bg-bg-surface-2 text-text-primary transition-[transform,opacity,background-color] duration-200 ease-out hover:bg-bg-primary disabled:pointer-events-none disabled:opacity-35 dark:border-rule dark:bg-bg-surface-2 dark:hover:bg-bg-surface";
 
 const centerPill =
-  "flex h-12 min-h-[48px] min-w-[8.5rem] shrink-0 items-center justify-center gap-2 rounded-full px-5 font-ui text-[14px] font-medium tracking-tight sm:h-[52px] sm:min-h-[52px] sm:min-w-[9.5rem] sm:px-6 sm:text-[15px]";
+  "flex h-12 min-h-[48px] shrink-0 items-center justify-center gap-2 rounded-full px-5 font-ui text-[14px] font-medium tracking-tight sm:h-[52px] sm:min-h-[52px] sm:px-6 sm:text-[15px]";
 
 interface CardSwipeActionRailProps {
   canAct: boolean;
   onRequestResearch: () => void;
+  onOpenLearn?: () => void;
+  hasLearningContent?: boolean;
   /** Inside story card footer (not deck overlay). */
   embedded?: boolean;
 }
 
 /**
- * Single action: open research request composer.
+ * Two action buttons: open language learning page, then research request.
  */
 export default function CardSwipeActionRail({
   canAct,
   onRequestResearch,
+  onOpenLearn,
+  hasLearningContent = false,
   embedded = true,
 }: CardSwipeActionRailProps) {
   const outer = embedded
@@ -31,8 +35,27 @@ export default function CardSwipeActionRail({
   return (
     <div className={outer} aria-hidden={!canAct}>
       <div
-        className={`pointer-events-auto flex w-full items-end justify-center ${BRIEF_STORY_CARD_MAX_WIDTH_CLASS}`}
+        className={`pointer-events-auto flex w-full items-end justify-center gap-3 ${BRIEF_STORY_CARD_MAX_WIDTH_CLASS}`}
       >
+        {hasLearningContent && onOpenLearn && (
+          <button
+            type="button"
+            disabled={!canAct}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenLearn();
+            }}
+            className={`${centerPill} min-w-[6.5rem] sm:min-w-[7.5rem] ${railBtn}`}
+            aria-label="Learn languages"
+          >
+            <BookOpen
+              className="h-5 w-5 shrink-0 sm:h-[22px] sm:w-[22px]"
+              strokeWidth={1.75}
+              aria-hidden
+            />
+            <span className="hidden sm:inline">Learn</span>
+          </button>
+        )}
         <button
           type="button"
           disabled={!canAct}
@@ -40,7 +63,7 @@ export default function CardSwipeActionRail({
             e.stopPropagation();
             onRequestResearch();
           }}
-          className={`${centerPill} ${railBtn}`}
+          className={`${centerPill} min-w-[6.5rem] sm:min-w-[8.5rem] ${railBtn}`}
           aria-label="Request research"
         >
           <Telescope
@@ -48,7 +71,7 @@ export default function CardSwipeActionRail({
             strokeWidth={1.75}
             aria-hidden
           />
-          Request research
+          <span className="hidden sm:inline">Request research</span>
         </button>
       </div>
     </div>

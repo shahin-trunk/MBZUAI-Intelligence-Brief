@@ -10,6 +10,7 @@ export const revalidate = 3600;
 
 interface BriefPageProps {
   params: Promise<{ date: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata({
@@ -139,8 +140,12 @@ async function fetchAvailableDates(limit: number = 90): Promise<string[]> {
   return data.map((row) => row.brief_date);
 }
 
-export default async function BriefPage({ params }: BriefPageProps) {
+export default async function BriefPage({ params, searchParams }: BriefPageProps) {
   const { date } = await params;
+  const sp = await searchParams;
+  const slideIndex = typeof sp?.slideIndex === "string"
+    ? parseInt(sp.slideIndex, 10)
+    : undefined;
   const data = await fetchBrief(date);
 
   if (!data) {
@@ -180,6 +185,7 @@ export default async function BriefPage({ params }: BriefPageProps) {
       prevDate={prevDate}
       nextDate={nextDate}
       availableDates={availableDates}
+      slideIndex={slideIndex}
     />
   );
 }

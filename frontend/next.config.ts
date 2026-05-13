@@ -1,10 +1,9 @@
-import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["pdfjs-dist", "pdf-parse"],
-  outputFileTracingRoot: path.join(__dirname, ".."),
+  // outputFileTracingRoot only needed for Docker standalone; not compatible with Vercel
   devIndicators: false,
   images: {
     remotePatterns: [

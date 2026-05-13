@@ -77,6 +77,10 @@ interface CardSwipeViewProps {
   onOpenStoryDetailRequestHandled?: (didOpenDrawer: boolean) => void;
   /** When the detail overlay was opened from full-screen audio, closing it runs this (e.g. reopen audio). */
   onStoryDetailDismissResumeAudio?: () => void;
+  /** Navigate to the language learning page for a specific item. Receives (itemId, currentActiveIndex). */
+  onNavigateToLearn?: (itemId: string, activeIndex: number) => void;
+  /** Initial slide index from URL param (restores position when returning from learning page). */
+  initialSlideIndex?: number;
 }
 
 export default function CardSwipeView({
@@ -94,6 +98,8 @@ export default function CardSwipeView({
   openStoryDetailItemId = null,
   onOpenStoryDetailRequestHandled,
   onStoryDetailDismissResumeAudio,
+  onNavigateToLearn,
+  initialSlideIndex,
 }: CardSwipeViewProps) {
   const router = useRouter();
   const [briefViewMode, setBriefViewMode] = useState<BriefChromeViewMode>("cards");
@@ -300,6 +306,20 @@ export default function CardSwipeView({
       Math.min(Math.max(0, i), Math.max(0, feed.length - 1))
     );
   }, [feed.length]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Restore slide position when returning from learning page
+  /* eslint-disable react-hooks/set-state-in-effect -- intentionally read from URL param once on mount */
+  useEffect(() => {
+    if (initialSlideIndex !== undefined && initialSlideIndex >= 0) {
+      const maxIdx = Math.max(0, feed.length - 1);
+      const clamped = Math.min(initialSlideIndex, maxIdx);
+      setActiveIndex(clamped);
+      queueMicrotask(() => {
+        deckRef.current?.scrollToSlide(clamped, "auto");
+      });
+    }
+  }, []); // Only on mount — feed.length may not be ready here, but clamping handles it
   /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
@@ -540,6 +560,15 @@ export default function CardSwipeView({
                                 canAct={isActiveStory}
                                 onRequestResearch={() =>
                                   setFeedbackDrawerOpen(true)
+                                }
+                                onOpenLearn={
+                                  onNavigateToLearn
+                                    ? () => onNavigateToLearn(card.item.id, activeIndex)
+                                    : undefined
+                                }
+                                hasLearningContent={
+                                  Boolean(card.item.learning_fr) ||
+                                  Boolean(card.item.learning_ar)
                                 }
                               />
                             ) : undefined

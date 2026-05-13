@@ -123,6 +123,9 @@ function transformItem(raw: RawPipelineItem): BriefItem {
         ? [raw.exhibits]
         : undefined,
     audio_url: raw.audio_url ?? undefined,
+    // Language learning content
+    learning_fr: raw.learning_fr ?? undefined,
+    learning_ar: raw.learning_ar ?? undefined,
   };
 }
 
