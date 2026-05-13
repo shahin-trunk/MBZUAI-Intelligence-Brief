@@ -113,13 +113,15 @@ export function useAudioPlayer(
 
     return () => {
       audio.pause();
+      audio.src = "";
+      audio.load(); // Reset the audio element's internal state
+      audioRef.current = null; // Clear the ref so no stale element persists
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("seeked", onSeeked);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("waiting", onWaiting);
       audio.removeEventListener("canplay", onCanPlay);
-      audio.src = "";
     };
   }, [currentUrl]);
 

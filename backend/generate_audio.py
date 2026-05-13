@@ -78,7 +78,7 @@ ENABLE_SSML_BREAK_MARKERS = (
 
 # TTS voice config
 VOICE_MODEL_ID = "eleven_multilingual_v2"
-EN_VOICE_ID = "Daniel"
+EN_VOICE_ID = "Isabella"
 VOICE_SETTINGS = {
     "stability": 0.3,
     "similarity_boost": 0.75,
@@ -88,7 +88,8 @@ VOICE_SETTINGS = {
 VOICE_SPEED_EN = 1.2
 VOICE_SPEED_FR = 0.9
 VOICE_SPEED_AR = 0.95
-FR_VOICE_ID_DEFAULT = "c365oriviHmAhyLhpuN6"
+FR_VOICE_ID_DEFAULT = "84fe56fcc955"  # Jean - French male, Paris
+AR_VOICE_ID_DEFAULT = "Tariq"  # Tariq - Arabic male, Modern Standard Arabic
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -150,7 +151,7 @@ def _get_voice_config() -> dict[str, dict[str, str]]:
     """Resolve per-language voice config after dotenv loading."""
     return {
         "en": {
-            "voice_id": EN_VOICE_ID,
+            "voice_id": os.getenv("ENGLISH_VOICE_ID", EN_VOICE_ID),
             "prompt_file": "podcast_script_prompt.md",
         },
         "fr": {
@@ -158,7 +159,7 @@ def _get_voice_config() -> dict[str, dict[str, str]]:
             "prompt_file": "podcast_script_prompt_fr.md",
         },
         "ar": {
-            "voice_id": os.getenv("ARABIC_VOICE_ID", ""),
+            "voice_id": os.getenv("ARABIC_VOICE_ID", AR_VOICE_ID_DEFAULT),
             "prompt_file": "podcast_script_prompt_ar.md",
         },
     }

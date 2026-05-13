@@ -79,11 +79,13 @@ export default function BriefViewRouter({
   // Navigate to language learning page for a specific slide item
   const handleNavigateToLearn = useCallback(
     (itemId: string, activeIndex: number) => {
+      // Stop any playing audio before navigation to prevent orphaned playback
+      player.audioRef.current?.pause();
       router.push(
         `/brief/${brief.brief_date}/learn/${itemId}?slideIndex=${activeIndex}`
       );
     },
-    [router, brief.brief_date]
+    [router, brief.brief_date, player]
   );
 
   return (

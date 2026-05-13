@@ -47,8 +47,9 @@ jobs:
           ENABLE_SSML_BREAK_MARKERS=${{ vars.ENABLE_SSML_BREAK_MARKERS || 'false' }}
           ENABLE_FRENCH_AUDIO=true
           ENABLE_ARABIC_AUDIO=true
-          FRENCH_VOICE_ID=${{ secrets.FRENCH_VOICE_ID || 'c365oriviHmAhyLhpuN6' }}
-          ARABIC_VOICE_ID=${{ secrets.ARABIC_VOICE_ID || '' }}
+          ENGLISH_VOICE_ID=${{ secrets.ENGLISH_VOICE_ID || 'Isabella' }}
+          FRENCH_VOICE_ID=${{ secrets.FRENCH_VOICE_ID || '84fe56fcc955' }}
+          ARABIC_VOICE_ID=${{ secrets.ARABIC_VOICE_ID || 'Tariq' }}
           ENABLE_LEARNING_CONTENT=true
           EOF
 
