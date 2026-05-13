@@ -13,7 +13,6 @@ interface CardSwipeActionRailProps {
   canAct: boolean;
   onRequestResearch: () => void;
   onOpenLearn?: () => void;
-  hasLearningContent?: boolean;
   /** Inside story card footer (not deck overlay). */
   embedded?: boolean;
 }
@@ -25,7 +24,6 @@ export default function CardSwipeActionRail({
   canAct,
   onRequestResearch,
   onOpenLearn,
-  hasLearningContent = false,
   embedded = true,
 }: CardSwipeActionRailProps) {
   const outer = embedded
@@ -37,7 +35,7 @@ export default function CardSwipeActionRail({
       <div
         className={`pointer-events-auto flex w-full items-end justify-center gap-3 ${BRIEF_STORY_CARD_MAX_WIDTH_CLASS}`}
       >
-        {hasLearningContent && onOpenLearn && (
+        {onOpenLearn && (
           <button
             type="button"
             disabled={!canAct}

@@ -566,10 +566,7 @@ export default function CardSwipeView({
                                     ? () => onNavigateToLearn(card.item.id, activeIndex)
                                     : undefined
                                 }
-                                hasLearningContent={
-                                  Boolean(card.item.learning_fr) ||
-                                  Boolean(card.item.learning_ar)
-                                }
+
                               />
                             ) : undefined
                           }
