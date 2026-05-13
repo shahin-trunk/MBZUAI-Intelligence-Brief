@@ -22,6 +22,11 @@ interface UseAudioCardSyncOptions {
    * with per-item audio source swapping.
    */
   itemAudioIds?: string[];
+  /**
+   * When true, skip auto-play on card change (used when restoring
+   * slide position from URL param on mount).
+   */
+  skipAutoPlay?: boolean;
 }
 
 /**
@@ -47,6 +52,7 @@ export function useAudioCardSync({
   storyIndexToFeedIndex,
   totalStoryCards,
   itemAudioIds,
+  skipAutoPlay,
 }: UseAudioCardSyncOptions) {
   const [syncMode, setSyncMode] = useState<SyncMode>("auto");
   const syncSourceRef = useRef<SyncSource>(null);
@@ -64,7 +70,7 @@ export function useAudioCardSync({
 
   // ── Per-item mode ──────────────────────────────────────────────────────
 
-  // Card change → play item audio (skip auto-play on initial mount only)
+  // Card change → play item audio (skip auto-play on initial mount or when skipAutoPlay is true)
   useEffect(() => {
     if (!hasPerItemAudio) return;
 
@@ -73,19 +79,22 @@ export function useAudioCardSync({
       ? itemAudioIds[storyIdx]
       : null;
 
-    if (isInitialMountRef.current) {
+    if (isInitialMountRef.current || skipAutoPlay) {
       isInitialMountRef.current = false;
-      // On mount: register the active item (sets currentUrl) but don't auto-play
+      console.log("[AudioSync] mount/restore: register item", itemId, "no autoplay");
+      // On mount/restore: register the active item (sets currentUrl) but don't auto-play
       playItemAudioRef.current(itemId, false);
       return;
     }
 
+    console.log("[AudioSync] card change: playItemAudio", itemId);
     playItemAudioRef.current(itemId);
   }, [
     activeCardIndex,
     hasPerItemAudio,
     feedIndexToStoryIndex,
     itemAudioIds,
+    skipAutoPlay,
   ]);
 
   // Audio ended naturally → advance to next story card

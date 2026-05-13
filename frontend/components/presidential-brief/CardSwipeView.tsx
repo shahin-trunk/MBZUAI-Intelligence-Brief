@@ -110,6 +110,10 @@ export default function CardSwipeView({
   const [calendarPresent, setCalendarPresent] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const deckRef = useRef<CardVerticalSnapDeckHandle>(null);
+  /** Track whether we're restoring slide position from URL param on mount */
+  const [isRestoringSlideIndex, setIsRestoringSlideIndex] = useState(
+    initialSlideIndex !== undefined && initialSlideIndex >= 0
+  );
   /** Next programmatic deck scroll from audio: "auto" once after List→Cards to avoid slide animation */
   const deckProgrammaticScrollBehaviorRef = useRef<ScrollBehavior>("smooth");
   const pendingListToCardsDeckSnapRef = useRef(false);
@@ -298,6 +302,7 @@ export default function CardSwipeView({
     storyIndexToFeedIndex: audioStoryIndexToFeedIndex,
     totalStoryCards: audioAlignedStoryCount,
     itemAudioIds,
+    skipAutoPlay: isRestoringSlideIndex,
   });
 
   /* eslint-disable react-hooks/set-state-in-effect -- clamp index when feed length changes */
@@ -315,6 +320,11 @@ export default function CardSwipeView({
       const maxIdx = Math.max(0, feed.length - 1);
       const clamped = Math.min(initialSlideIndex, maxIdx);
       setActiveIndex(clamped);
+      // Clear the flag after a tick so useAudioCardSync sees the card change
+      // with skipAutoPlay=true, then subsequent changes allow auto-play
+      queueMicrotask(() => {
+        setIsRestoringSlideIndex(false);
+      });
       queueMicrotask(() => {
         deckRef.current?.scrollToSlide(clamped, "auto");
       });

@@ -29,6 +29,8 @@ export interface AudioPlayerActions {
   audioRef: React.RefObject<HTMLAudioElement | null>;
   /** Per-item audio: register available item audio URLs */
   setItemAudioUrls: (urls: Record<string, string>) => void;
+  /** Per-item audio: set active item without playing (used on mount) */
+  setCurrentItem: (itemId: string | null) => void;
   /** Per-item audio: play audio for a specific item by ID (autoPlay=false just sets active item without playing) */
   playItemAudio: (itemId: string | null, autoPlay?: boolean) => void;
   /** ID of the currently playing item (null if playing narrative audio) */
@@ -176,6 +178,11 @@ export function useAudioPlayer(
     setItemAudioUrlsState(urls);
   }, []);
 
+  // Set active item without triggering audio element creation (used on mount from Learn page)
+  const setCurrentItem = useCallback((itemId: string | null) => {
+    setCurrentItemId(itemId);
+  }, []);
+
   // Play audio for a specific item; null stops per-item playback (falls back to narrative)
   // autoPlay=false just sets the active item without starting playback (used on mount)
   const playItemAudio = useCallback((itemId: string | null, autoPlay: boolean = true) => {
@@ -258,6 +265,7 @@ export function useAudioPlayer(
     setLanguage,
     audioRef,
     setItemAudioUrls,
+    setCurrentItem,
     playItemAudio,
     currentAudioItemId: currentItemId,
   };
