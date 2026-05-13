@@ -64,21 +64,23 @@ export function useAudioCardSync({
 
   // ── Per-item mode ──────────────────────────────────────────────────────
 
-  // Card change → play item audio (skip initial mount to prevent auto-play)
+  // Card change → play item audio (skip auto-play on initial mount only)
   useEffect(() => {
     if (!hasPerItemAudio) return;
 
+    const storyIdx = feedIndexToStoryIndex(activeCardIndex);
+    const itemId = (storyIdx >= 0 && storyIdx < itemAudioIds.length)
+      ? itemAudioIds[storyIdx]
+      : null;
+
     if (isInitialMountRef.current) {
       isInitialMountRef.current = false;
+      // On mount: register the active item (sets currentUrl) but don't auto-play
+      playItemAudioRef.current(itemId, false);
       return;
     }
 
-    const storyIdx = feedIndexToStoryIndex(activeCardIndex);
-    if (storyIdx >= 0 && storyIdx < itemAudioIds.length) {
-      playItemAudioRef.current(itemAudioIds[storyIdx]);
-    } else {
-      playItemAudioRef.current(null);
-    }
+    playItemAudioRef.current(itemId);
   }, [
     activeCardIndex,
     hasPerItemAudio,

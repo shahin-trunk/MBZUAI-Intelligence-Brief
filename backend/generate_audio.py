@@ -1262,8 +1262,9 @@ def _load_learning_prompt(item: dict, lang: str) -> str:
         log.warning("Learning prompt not found at %s — skipping learning content generation", prompt_path)
         return ""
 
-    raw_md = prompt_path.read_text(encoding="utf-8")
-    prompt_text = _extract_prompt_from_md(raw_md)
+    # Use the full markdown as the prompt (don't extract from code fences —
+    # the learning prompt IS the full file, not wrapped in a single code block)
+    prompt_text = prompt_path.read_text(encoding="utf-8").strip()
 
     # Build item summary for the prompt
     item_summary = {
