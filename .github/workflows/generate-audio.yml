@@ -7,6 +7,11 @@ on:
         description: "Brief date (YYYY-MM-DD)"
         required: true
         type: string
+      force_regenerate:
+        description: "Force regenerate all audio (overwrite existing)"
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: generate-audio-${{ inputs.brief_date }}
@@ -64,4 +69,4 @@ jobs:
           EOF
 
       - name: Generate audio briefing from published brief
-        run: cd backend && python generate_audio.py --date "${{ inputs.brief_date }}" --from-db
+        run: cd backend && python generate_audio.py --date "${{ inputs.brief_date }}" --from-db ${{ inputs.force_regenerate && '--force' || '' }}

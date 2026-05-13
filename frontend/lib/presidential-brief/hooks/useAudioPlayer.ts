@@ -178,10 +178,13 @@ export function useAudioPlayer(
 
   // Play audio for a specific item; null stops per-item playback (falls back to narrative)
   const playItemAudio = useCallback((itemId: string | null) => {
-    setCurrentItemId(itemId);
-    if (itemId !== null) {
-      pendingAutoPlayRef.current = true;
-    }
+    setCurrentItemId((prev) => {
+      if (prev === itemId) return prev; // No-op: same item already active
+      if (itemId !== null) {
+        pendingAutoPlayRef.current = true;
+      }
+      return itemId;
+    });
   }, []);
 
   const setLanguage = useCallback(

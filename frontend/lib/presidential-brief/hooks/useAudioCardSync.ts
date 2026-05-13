@@ -56,24 +56,34 @@ export function useAudioCardSync({
 
   const hasPerItemAudio = itemAudioIds !== undefined && itemAudioIds.length > 0;
 
+  // Ref to avoid auto-playing on initial mount (e.g., returning from Learn page)
+  const isInitialMountRef = useRef(true);
+  // Stable ref to player.playItemAudio to avoid unstable `player` object in deps
+  const playItemAudioRef = useRef(player.playItemAudio);
+  playItemAudioRef.current = player.playItemAudio;
+
   // ── Per-item mode ──────────────────────────────────────────────────────
 
-  // Card change → play item audio
+  // Card change → play item audio (skip initial mount to prevent auto-play)
   useEffect(() => {
     if (!hasPerItemAudio) return;
 
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
+
     const storyIdx = feedIndexToStoryIndex(activeCardIndex);
     if (storyIdx >= 0 && storyIdx < itemAudioIds.length) {
-      player.playItemAudio(itemAudioIds[storyIdx]);
+      playItemAudioRef.current(itemAudioIds[storyIdx]);
     } else {
-      player.playItemAudio(null);
+      playItemAudioRef.current(null);
     }
   }, [
     activeCardIndex,
     hasPerItemAudio,
     feedIndexToStoryIndex,
     itemAudioIds,
-    player,
   ]);
 
   // Audio ended naturally → advance to next story card

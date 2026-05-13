@@ -70,7 +70,8 @@ export default function BriefViewRouter({
   // Register per-item audio URLs with the player
   useEffect(() => {
     player.setItemAudioUrls(itemUrlMap);
-  }, [player, itemUrlMap]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemUrlMap]);
 
   const feed = useMemo(() => {
     return buildFeed(brief, null, []);

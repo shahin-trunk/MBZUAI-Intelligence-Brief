@@ -984,14 +984,15 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
     import json as _json
 
     api_key = os.getenv("VOICE_API_KEY")
-    if not api_key:
+    using_argent = "txt2sph.audarai.com" in VOICE_BASE_URL
+
+    # Argent native API doesn't require authentication; only ElevenLabs needs an API key
+    if not api_key and not using_argent:
         log.error("VOICE_API_KEY not set")
         raise RuntimeError("VOICE_API_KEY not set")
 
     if voice_id is None:
         voice_id = _get_voice_config()["en"]["voice_id"]
-
-    using_argent = "txt2sph.audarai.com" in VOICE_BASE_URL
 
     chunk_limit = VOICE_MAX_CHARS_ARGENT if using_argent else VOICE_MAX_CHARS
     chunks = _split_script_into_chunks(script, max_chars=chunk_limit)
@@ -1479,6 +1480,7 @@ def generate_audio_brief(
     target_date: str,
     script_only: bool = False,
     from_db: bool = False,
+    force: bool = False,
 ) -> bool:
     """Full pipeline: read brief -> generate transcript script -> generate per-item audio -> upload -> update DB.
 
@@ -1581,8 +1583,8 @@ def generate_audio_brief(
     pending_items: list[dict] = []
 
     for item in active_items:
-        if item.get("audio_url"):
-            log.info("Item %s already has audio_url — skipping", item["id"])
+        if item.get("audio_url") and not force:
+            log.info("Item %s already has audio_url — skipping (use --force to regenerate)", item["id"])
             en_item_audio_count += 1
             continue
         pending_items.append(item)
@@ -1698,10 +1700,11 @@ def generate_audio_brief(
                         )
 
                 # Items with learning content but missing audio_url — generate audio only
+                # (with --force, also regenerate items that already have audio_url)
                 items_needing_audio = [
                     item for item in active_items
                     if item.get(f"learning_{lang}")
-                    and not item[f"learning_{lang}"].get("audio_url")
+                    and (force or not item[f"learning_{lang}"].get("audio_url"))
                 ]
 
                 for item in items_needing_audio:
@@ -1801,6 +1804,11 @@ def main() -> None:
         action="store_true",
         help="Read brief from Supabase briefs table instead of local file.",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force regeneration of audio even for items that already have audio_url.",
+    )
     args = parser.parse_args()
 
     _load_env()
@@ -1832,7 +1840,7 @@ def main() -> None:
                 log.warning("Skipping non-date file: %s", brief_path.name)
                 continue
 
-            ok = generate_audio_brief(sb, target_date, script_only=args.script_only)
+            ok = generate_audio_brief(sb, target_date, script_only=args.script_only, force=args.force)
             if ok:
                 success_count += 1
             else:
@@ -1863,6 +1871,7 @@ def main() -> None:
             sb, target_date,
             script_only=args.script_only,
             from_db=args.from_db,
+            force=args.force,
         )
         if not ok:
             sys.exit(1)
