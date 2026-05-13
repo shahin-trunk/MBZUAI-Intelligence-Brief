@@ -74,17 +74,12 @@ ENABLE_SSML_BREAK_MARKERS = (
 # TTS voice config
 VOICE_MODEL_ID = "eleven_multilingual_v2"
 EN_VOICE_ID = "Daniel"
-FR_VOICE_ID_DEFAULT = "c365oriviHmAhyLhpuN6"
 VOICE_SETTINGS = {
     "stability": 0.3,
     "similarity_boost": 0.75,
     "style": 0.4,
     "use_speaker_boost": True,
 }
-VOICE_SPEED_FR = 0.9
-# EN speed capped at 1.2 (the `speed` ceiling on eleven_multilingual_v2).
-# A true +10% from the previous 1.1 would be 1.21, but the API rejects values
-# above 1.2 — this is the fastest the model will render.
 VOICE_SPEED_EN = 1.2
 
 # ---------------------------------------------------------------------------
@@ -150,10 +145,6 @@ def _get_voice_config() -> dict[str, dict[str, str]]:
             "voice_id": EN_VOICE_ID,
             "prompt_file": "podcast_script_prompt.md",
         },
-        "fr": {
-            "voice_id": os.getenv("FRENCH_VOICE_ID", FR_VOICE_ID_DEFAULT),
-            "prompt_file": "podcast_script_prompt_fr.md",
-        },
     }
 
 
@@ -165,14 +156,6 @@ def _audio_brief_enabled() -> bool:
     raw = (os.getenv("ENABLE_AUDIO_BRIEF") or "").strip().lower()
     if not raw:
         return True
-    return raw not in {"0", "false", "no", "off"}
-
-
-def _french_audio_enabled() -> bool:
-    """Return whether French audio generation is enabled (default: False)."""
-    raw = (os.getenv("ENABLE_FRENCH_AUDIO") or "").strip().lower()
-    if not raw:
-        return False
     return raw not in {"0", "false", "no", "off"}
 
 
@@ -991,9 +974,7 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
                 "model_id": VOICE_MODEL_ID,
                 "voice_settings": VOICE_SETTINGS,
             }
-            if lang == "fr":
-                payload["speed"] = VOICE_SPEED_FR
-            elif lang == "en":
+            if lang == "en":
                 payload["speed"] = VOICE_SPEED_EN
             headers = {
                 "Accept": "audio/mpeg",
@@ -1312,18 +1293,17 @@ def generate_audio_brief(
     script_only: bool = False,
     from_db: bool = False,
 ) -> bool:
-    """Full pipeline: read brief -> generate script -> generate per-item audio -> generate narrative audio -> upload -> update DB.
+    """Full pipeline: read brief -> generate transcript script -> generate per-item audio -> upload -> update DB.
 
-    Generates both English and French audio when French is enabled.
-    Per-item audio files are generated from structured item data and stored
-    in raw_json["items"][n].audio_url for card-level playback.
-    Narrative audio is generated from the full script for the transcript player.
+    Generates per-item audio files from structured item data, stored in
+    raw_json["items"][n].audio_url for card-level playback.
+    The Claude narrative script is generated for the transcript display only —
+    no monolithic narrative TTS is produced.
     When from_db=True, fetches the brief from the briefs table instead of a local file.
     Returns True on success, False on failure.
     """
-    from concurrent.futures import ThreadPoolExecutor, Future
-
-    do_french = _french_audio_enabled()
+    from concurrent.futures import ThreadPoolExecutor, Future, as_completed
+    import time as _retry_sleep
 
     # 1. Read brief JSON
     brief_json = None
@@ -1359,10 +1339,8 @@ def generate_audio_brief(
             log.error("Failed to read %s: %s", brief_path, exc)
             return False
 
-    # 2. Build one shared coverage outline, then generate each language natively from it.
+    # 2. Generate Claude narrative script for the transcript display
     _update_audio_status(sb, target_date, "generating_script")
-    script_en: str | None = None
-    script_fr: str | None = None
     shared_outline, outline_items = _build_shared_outline(brief_json)
 
     log.info(
@@ -1378,36 +1356,15 @@ def generate_audio_brief(
             outline_items=outline_items,
             lang="en",
         )
-        if do_french:
-            try:
-                script_fr = _generate_and_prepare_script(
-                    brief_json,
-                    shared_outline=shared_outline,
-                    outline_items=outline_items,
-                    lang="fr",
-                )
-                log.info(
-                    "French native script prepared from shared outline: %d sections, %d words, %d characters",
-                    len(_split_script_sections(script_fr)),
-                    len(script_fr.split()),
-                    len(script_fr),
-                )
-            except Exception as exc:
-                log.warning("French script generation failed (non-fatal): %s", exc)
     except Exception as exc:
         log.error("English script generation failed for %s: %s", target_date, exc)
         _update_audio_status(sb, target_date, "failed")
         return False
 
-    # Save scripts locally
+    # Save script locally
     en_script_path = OUTPUT_DIR / f"audio_script_{target_date}_en.txt"
     en_script_path.write_text(script_en, encoding="utf-8")
     log.info("EN script saved to %s", en_script_path.name)
-
-    if script_fr:
-        fr_script_path = OUTPUT_DIR / f"audio_script_{target_date}_fr.txt"
-        fr_script_path.write_text(script_fr, encoding="utf-8")
-        log.info("FR script saved to %s", fr_script_path.name)
 
     if script_only:
         log.info("Script-only mode — skipping TTS and upload")
@@ -1415,19 +1372,17 @@ def generate_audio_brief(
             _update_briefs_table(
                 sb, target_date,
                 audio_url=None, script=script_en,
-                audio_url_fr=None, script_fr=script_fr,
             )
         except Exception as exc:
             log.warning("Failed to update DB with scripts: %s", exc)
         return True
 
-    # 3. Generate per-item audio (before narrative audio)
+    # 3. Generate per-item audio concurrently with retries
     _update_audio_status(sb, target_date, "generating_item_audio")
     voice_config = _get_voice_config()
     en_voice = voice_config["en"]["voice_id"]
     items = brief_json.get("items", [])
 
-    en_item_audio_count = 0
     active_items = [item for item in items if not item.get("is_placeholder") and item.get("id")]
     log.info(
         "Generating per-item audio for %d of %d items (EN)",
@@ -1435,32 +1390,72 @@ def generate_audio_brief(
         len(items),
     )
 
+    en_item_audio_count = 0
+    pending_items: list[dict] = []
+
     for item in active_items:
-        item_id = item["id"]
-        # Skip items that already have audio from a previous run
         if item.get("audio_url"):
-            log.info("Item %s already has audio_url — skipping", item_id)
+            log.info("Item %s already has audio_url — skipping", item["id"])
             en_item_audio_count += 1
             continue
+        pending_items.append(item)
 
-        item_script = _build_item_script(item)
-        if not item_script or len(item_script) < 15:
-            log.warning("Skipping item %s: script too short (%d chars)", item_id, len(item_script))
-            continue
+    if pending_items:
+        MAX_CONCURRENT = 3
+        MAX_RETRIES = 3
 
-        try:
-            audio_bytes = _generate_audio(item_script, en_voice)
-            url = _upload_item_audio(sb, audio_bytes, target_date, item_id)
-            item["audio_url"] = url
-            en_item_audio_count += 1
-            log.info(
-                "Item audio generated for %s (%d chars): %s",
-                item_id,
-                len(item_script),
-                url,
-            )
-        except Exception as exc:
-            log.warning("Item audio failed for %s: %s", item_id, exc)
+        def _process_item(item: dict) -> tuple[str, str, int] | None:
+            """Generate and upload audio for a single item with retries."""
+            item_id = item["id"]
+            item_script = _build_item_script(item)
+            if not item_script or len(item_script) < 15:
+                log.warning("Skipping item %s: script too short (%d chars)", item_id, len(item_script))
+                return None
+
+            for attempt in range(MAX_RETRIES):
+                try:
+                    if attempt > 0:
+                        delay = (attempt + 1) * 3
+                        log.warning("Item %s: retrying in %ds (attempt %d/%d)...",
+                                    item_id, delay, attempt + 1, MAX_RETRIES)
+                        _retry_sleep.sleep(delay)
+
+                    audio_bytes = _generate_audio(item_script, en_voice)
+                    url = _upload_item_audio(sb, audio_bytes, target_date, item_id)
+                    return (item_id, url, len(item_script))
+                except Exception as exc:
+                    if attempt < MAX_RETRIES - 1:
+                        log.warning("Item %s attempt %d/%d failed: %s",
+                                    item_id, attempt + 1, MAX_RETRIES, exc)
+                    else:
+                        log.warning("Item audio failed for %s after %d attempts: %s",
+                                    item_id, MAX_RETRIES, exc)
+
+            return None
+
+        log.info(
+            "Processing %d items with concurrency=%d, retries=%d",
+            len(pending_items), MAX_CONCURRENT, MAX_RETRIES,
+        )
+
+        with ThreadPoolExecutor(max_workers=MAX_CONCURRENT) as pool:
+            futures_map: dict[Future, dict] = {}
+            for item in pending_items:
+                future = pool.submit(_process_item, item)
+                futures_map[future] = item
+
+            for future in as_completed(futures_map):
+                result = future.result()
+                if result:
+                    item_id, url, chars = result
+                    # Write audio_url back into the active_items list in brief_json
+                    for ai in active_items:
+                        if ai["id"] == item_id:
+                            ai["audio_url"] = url
+                            break
+                    en_item_audio_count += 1
+                    log.info("Item audio generated for %s (%d chars): %s",
+                             item_id, chars, url)
 
     # Save updated raw_json with per-item audio URLs to DB
     if en_item_audio_count > 0:
@@ -1475,107 +1470,20 @@ def generate_audio_brief(
         except Exception as exc:
             log.warning("Failed to update raw_json with item audio URLs: %s", exc)
 
-    # 4. Generate narrative audio concurrently
-    _update_audio_status(sb, target_date, "generating_audio")
-    audio_en: bytes | None = None
-    audio_fr: bytes | None = None
-
-    try:
-        with ThreadPoolExecutor(max_workers=2) as pool:
-            voice_config = _get_voice_config()
-            en_voice = voice_config["en"]["voice_id"]
-            fut_en_audio: Future[bytes] = pool.submit(_generate_audio, script_en, en_voice)
-            fut_fr_audio: Future[bytes] | None = None
-            if script_fr:
-                fr_voice = voice_config["fr"]["voice_id"]
-                fut_fr_audio = pool.submit(_generate_audio, script_fr, fr_voice, "fr")
-
-            audio_en = fut_en_audio.result()
-            if fut_fr_audio is not None:
-                try:
-                    audio_fr = fut_fr_audio.result()
-                except Exception as exc:
-                    log.warning("French TTS failed (non-fatal): %s", exc)
-    except Exception as exc:
-        log.error("English audio generation failed for %s: %s", target_date, exc)
-        _update_audio_status(sb, target_date, "failed")
-        try:
-            _update_briefs_table(
-                sb, target_date,
-                audio_url=None, script=script_en,
-                script_fr=script_fr,
-            )
-            log.info("Scripts saved to DB despite TTS failure")
-        except Exception as db_exc:
-            log.warning("Failed to update DB with scripts: %s", db_exc)
-
-        # Narrative TTS failure is non-fatal when per-item audio was generated
-        if en_item_audio_count > 0:
-            log.warning(
-                "Narrative audio failed but per-item audio succeeded (%d items) — "
-                "marking brief as ready with per-item audio only",
-                en_item_audio_count,
-            )
-            _revalidate_frontend(target_date)
-            log.info("Audio brief complete for %s (narrative=null, per-item=%d items)",
-                     target_date, en_item_audio_count)
-            return True
-
-        return False
-
-    # Save MP3s locally
-    en_audio_path = OUTPUT_DIR / f"brief_audio_{target_date}_en.mp3"
-    en_audio_path.write_bytes(audio_en)
-    log.info("EN audio saved locally to %s", en_audio_path.name)
-
-    if audio_fr:
-        fr_audio_path = OUTPUT_DIR / f"brief_audio_{target_date}_fr.mp3"
-        fr_audio_path.write_bytes(audio_fr)
-        log.info("FR audio saved locally to %s", fr_audio_path.name)
-
-    # 5. Upload narrative audio to Supabase Storage
-    _update_audio_status(sb, target_date, "uploading")
-    audio_url_en = None
-    audio_url_fr = None
-
-    try:
-        audio_url_en = _upload_to_supabase(sb, audio_en, target_date, lang="en")
-    except Exception as exc:
-        log.error("EN upload failed for %s: %s — retrying once...", target_date, exc)
-        try:
-            audio_url_en = _upload_to_supabase(sb, audio_en, target_date, lang="en")
-        except Exception as exc2:
-            log.error("EN retry failed: %s — audio saved locally only", exc2)
-
-    if audio_fr:
-        try:
-            audio_url_fr = _upload_to_supabase(sb, audio_fr, target_date, lang="fr")
-        except Exception as exc:
-            log.warning("FR upload failed for %s: %s — retrying once...", target_date, exc)
-            try:
-                audio_url_fr = _upload_to_supabase(sb, audio_fr, target_date, lang="fr")
-            except Exception as exc2:
-                log.warning("FR retry failed: %s — audio saved locally only", exc2)
-
-    # 6. Update database
+    # 4. Save transcript script to DB and revalidate frontend
+    _update_audio_status(sb, target_date, "ready")
     try:
         _update_briefs_table(
             sb, target_date,
-            audio_url=audio_url_en, script=script_en,
-            audio_url_fr=audio_url_fr, script_fr=script_fr,
+            audio_url=None, script=script_en,
         )
     except Exception as exc:
-        log.error("Failed to update DB for %s: %s", target_date, exc)
-        _update_audio_status(sb, target_date, "failed")
-        return False
+        log.warning("Failed to update DB with script: %s", exc)
 
-    # 7. Revalidate frontend cache so audio player appears immediately
     _revalidate_frontend(target_date)
 
-    log.info("Audio brief complete for %s (EN=%s, FR=%s)",
-             target_date,
-             "ok" if audio_url_en else "failed",
-             "ok" if audio_url_fr else ("skipped" if not do_french else "failed"))
+    log.info("Audio brief complete for %s (per-item=%d items)",
+             target_date, en_item_audio_count)
     return True
 
 
