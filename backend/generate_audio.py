@@ -863,6 +863,39 @@ def _apply_break_markers(script: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Item-level helpers
+# ---------------------------------------------------------------------------
+
+
+def _build_item_script(item: dict) -> str:
+    """Build a short spoken script for a single brief item from its structured data.
+
+    Uses a template-based composition (headline + main_bullet + context + implication).
+    No Claude call — works from pipeline item fields directly.
+    Returns a concise spoken paragraph (~150-400 chars).
+    """
+    headline = (item.get("headline") or "").strip().rstrip(".,;:!?")
+    main_bullet = (item.get("main_bullet") or "").strip().rstrip(".,;:!?")
+    context = (item.get("context") or "").strip().rstrip(".,;:!?")
+    implication = (item.get("implication") or "").strip().rstrip(".,;:!?")
+
+    parts: list[str] = []
+    if headline:
+        text = headline[0].upper() + headline[1:] if headline else headline
+        parts.append(text + ".")
+    if main_bullet:
+        parts.append(main_bullet + ".")
+    if context:
+        parts.append(context + ".")
+    if implication:
+        parts.append(implication + ".")
+
+    script = " ".join(parts)
+    script = re.sub(r"\s+", " ", script).strip()
+    return script
+
+
+# ---------------------------------------------------------------------------
 # Audio generation (TTS)
 # ---------------------------------------------------------------------------
 
@@ -1057,6 +1090,25 @@ def _upload_to_supabase(sb: Client, audio_bytes: bytes, target_date: str, lang: 
 
     public_url = sb.storage.from_("audio-briefs").get_public_url(file_path)
     log.info("Uploaded successfully: %s", public_url)
+    return public_url
+
+
+def _upload_item_audio(sb: Client, audio_bytes: bytes, target_date: str, item_id: str) -> str:
+    """Upload a single item's MP3 to Supabase Storage, return public URL.
+
+    Path: {target_date}/items/{item_id}.mp3
+    """
+    file_path = f"{target_date}/items/{item_id}.mp3"
+
+    log.info("Uploading item audio to audio-briefs/%s...", file_path)
+    sb.storage.from_("audio-briefs").upload(
+        file_path,
+        audio_bytes,
+        file_options={"content-type": "audio/mpeg", "upsert": "true"},
+    )
+
+    public_url = sb.storage.from_("audio-briefs").get_public_url(file_path)
+    log.info("Item audio uploaded: %s", public_url)
     return public_url
 
 
@@ -1260,9 +1312,12 @@ def generate_audio_brief(
     script_only: bool = False,
     from_db: bool = False,
 ) -> bool:
-    """Full pipeline: read brief -> generate script -> generate audio -> upload -> update DB.
+    """Full pipeline: read brief -> generate script -> generate per-item audio -> generate narrative audio -> upload -> update DB.
 
     Generates both English and French audio when French is enabled.
+    Per-item audio files are generated from structured item data and stored
+    in raw_json["items"][n].audio_url for card-level playback.
+    Narrative audio is generated from the full script for the transcript player.
     When from_db=True, fetches the brief from the briefs table instead of a local file.
     Returns True on success, False on failure.
     """
@@ -1366,7 +1421,61 @@ def generate_audio_brief(
             log.warning("Failed to update DB with scripts: %s", exc)
         return True
 
-    # 3. Generate audio concurrently
+    # 3. Generate per-item audio (before narrative audio)
+    _update_audio_status(sb, target_date, "generating_item_audio")
+    voice_config = _get_voice_config()
+    en_voice = voice_config["en"]["voice_id"]
+    items = brief_json.get("items", [])
+
+    en_item_audio_count = 0
+    active_items = [item for item in items if not item.get("is_placeholder") and item.get("id")]
+    log.info(
+        "Generating per-item audio for %d of %d items (EN)",
+        len(active_items),
+        len(items),
+    )
+
+    for item in active_items:
+        item_id = item["id"]
+        # Skip items that already have audio from a previous run
+        if item.get("audio_url"):
+            log.info("Item %s already has audio_url — skipping", item_id)
+            en_item_audio_count += 1
+            continue
+
+        item_script = _build_item_script(item)
+        if not item_script or len(item_script) < 15:
+            log.warning("Skipping item %s: script too short (%d chars)", item_id, len(item_script))
+            continue
+
+        try:
+            audio_bytes = _generate_audio(item_script, en_voice)
+            url = _upload_item_audio(sb, audio_bytes, target_date, item_id)
+            item["audio_url"] = url
+            en_item_audio_count += 1
+            log.info(
+                "Item audio generated for %s (%d chars): %s",
+                item_id,
+                len(item_script),
+                url,
+            )
+        except Exception as exc:
+            log.warning("Item audio failed for %s: %s", item_id, exc)
+
+    # Save updated raw_json with per-item audio URLs to DB
+    if en_item_audio_count > 0:
+        try:
+            sb.table("briefs").update({"raw_json": brief_json}).eq(
+                "brief_date", target_date
+            ).execute()
+            log.info(
+                "Updated raw_json with %d per-item audio URLs",
+                en_item_audio_count,
+            )
+        except Exception as exc:
+            log.warning("Failed to update raw_json with item audio URLs: %s", exc)
+
+    # 4. Generate narrative audio concurrently
     _update_audio_status(sb, target_date, "generating_audio")
     audio_en: bytes | None = None
     audio_fr: bytes | None = None
@@ -1411,7 +1520,7 @@ def generate_audio_brief(
         fr_audio_path.write_bytes(audio_fr)
         log.info("FR audio saved locally to %s", fr_audio_path.name)
 
-    # 4. Upload to Supabase Storage
+    # 5. Upload narrative audio to Supabase Storage
     _update_audio_status(sb, target_date, "uploading")
     audio_url_en = None
     audio_url_fr = None
@@ -1435,7 +1544,7 @@ def generate_audio_brief(
             except Exception as exc2:
                 log.warning("FR retry failed: %s — audio saved locally only", exc2)
 
-    # 5. Update database
+    # 6. Update database
     try:
         _update_briefs_table(
             sb, target_date,
@@ -1447,7 +1556,7 @@ def generate_audio_brief(
         _update_audio_status(sb, target_date, "failed")
         return False
 
-    # 6. Revalidate frontend cache so audio player appears immediately
+    # 7. Revalidate frontend cache so audio player appears immediately
     _revalidate_frontend(target_date)
 
     log.info("Audio brief complete for %s (EN=%s, FR=%s)",

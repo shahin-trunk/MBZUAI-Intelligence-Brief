@@ -27,13 +27,20 @@ export interface AudioPlayerActions {
   cycleSpeed: () => void;
   setLanguage: (lang: Language) => void;
   audioRef: React.RefObject<HTMLAudioElement | null>;
+  /** Per-item audio: register available item audio URLs */
+  setItemAudioUrls: (urls: Record<string, string>) => void;
+  /** Per-item audio: play audio for a specific item by ID */
+  playItemAudio: (itemId: string | null) => void;
+  /** ID of the currently playing item (null if playing narrative audio) */
+  currentAudioItemId: string | null;
 }
 
 const SPEED_CYCLE: Speed[] = [1, 1.25, 1.5, 2];
 
 export function useAudioPlayer(
   audioUrlEn: string | undefined,
-  audioUrlFr: string | undefined
+  audioUrlFr: string | undefined,
+  options?: { onItemEnded?: () => void }
 ): AudioPlayerState & AudioPlayerActions {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -43,15 +50,31 @@ export function useAudioPlayer(
   const [speed, setSpeed] = useState<Speed>(1);
   const [language, setLanguageState] = useState<Language>("en");
   const [isLoading, setIsLoading] = useState(false);
+  // Per-item audio state
+  const [itemAudioUrls, setItemAudioUrlsState] = useState<Record<string, string>>({});
+  const [currentItemId, setCurrentItemId] = useState<string | null>(null);
+  const pendingAutoPlayRef = useRef(false);
+
   const hasEnglishAudio = Boolean(audioUrlEn);
   const hasFrenchAudio = Boolean(audioUrlFr);
 
-  const currentUrl = language === "en" ? audioUrlEn : audioUrlFr;
+  // Derive current URL: item audio takes precedence over narrative audio
+  const narrativeUrl = language === "en" ? audioUrlEn : audioUrlFr;
+  const currentUrl = currentItemId && itemAudioUrls[currentItemId]
+    ? itemAudioUrls[currentItemId]
+    : narrativeUrl;
   const isUnavailable = !currentUrl;
 
   // Initialize audio element
   useEffect(() => {
-    if (!currentUrl) return;
+    if (!currentUrl) {
+      // No URL — reset state
+      setDuration(0);
+      setCurrentTime(0);
+      setIsPlaying(false);
+      setIsLoading(false);
+      return;
+    }
 
     const audio = new Audio(currentUrl);
     // "metadata" often leaves large gaps unbuffered; paused seeks then fail until enough data loads.
@@ -63,8 +86,21 @@ export function useAudioPlayer(
     const onLoadedMetadata = () => {
       setDuration(audio.duration);
       setIsLoading(false);
+      // Auto-play if triggered by playItemAudio (per-item mode)
+      if (pendingAutoPlayRef.current) {
+        pendingAutoPlayRef.current = false;
+        audio.play().then(() => {
+          setIsPlaying(true);
+          setIsLoading(false);
+        }).catch(() => {
+          setIsLoading(false);
+        });
+      }
     };
-    const onEnded = () => setIsPlaying(false);
+    const onEnded = () => {
+      setIsPlaying(false);
+      options?.onItemEnded?.();
+    };
     const onWaiting = () => setIsLoading(true);
     const onCanPlay = () => setIsLoading(false);
 
@@ -131,6 +167,19 @@ export function useAudioPlayer(
       const idx = SPEED_CYCLE.indexOf(prev);
       return SPEED_CYCLE[(idx + 1) % SPEED_CYCLE.length];
     });
+  }, []);
+
+  // Register per-item audio URLs
+  const setItemAudioUrls = useCallback((urls: Record<string, string>) => {
+    setItemAudioUrlsState(urls);
+  }, []);
+
+  // Play audio for a specific item; null stops per-item playback (falls back to narrative)
+  const playItemAudio = useCallback((itemId: string | null) => {
+    setCurrentItemId(itemId);
+    if (itemId !== null) {
+      pendingAutoPlayRef.current = true;
+    }
   }, []);
 
   const setLanguage = useCallback(
@@ -202,5 +251,8 @@ export function useAudioPlayer(
     cycleSpeed,
     setLanguage,
     audioRef,
+    setItemAudioUrls,
+    playItemAudio,
+    currentAudioItemId: currentItemId,
   };
 }

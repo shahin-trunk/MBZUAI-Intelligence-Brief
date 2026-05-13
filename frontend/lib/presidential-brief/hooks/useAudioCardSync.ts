@@ -16,16 +16,27 @@ interface UseAudioCardSyncOptions {
   feedIndexToStoryIndex: (feedIndex: number) => number;
   storyIndexToFeedIndex: (storyIndex: number) => number;
   totalStoryCards: number;
+  /**
+   * Per-item audio mode — item IDs in story-card order.
+   * When provided with >0 entries, replaces segment-based sync
+   * with per-item audio source swapping.
+   */
+  itemAudioIds?: string[];
 }
 
 /**
  * Bidirectional audio-visual sync hook.
  *
- * Composes with (does not wrap) useAudioPlayer.
- * Uses a syncSource ownership flag to prevent feedback loops:
- * - When audio advances a card, syncSource='audio' suppresses seek
- * - When user swipes, syncSource='user' suppresses auto-advance
- * - Reset to null after 500ms
+ * Supports two modes:
+ * 1. **Narrative** (segments-based, existing behavior):
+ *    - One long audio file with time-based segments
+ *    - Card swipe → seek to segment start
+ *    - Segment boundary crossed → auto-advance card
+ *
+ * 2. **Per-item** (itemAudioIds provided):
+ *    - Each story card has its own audio file
+ *    - Card swipe → play that item's audio via player.playItemAudio()
+ *    - Audio ends naturally → auto-advance to next story card
  */
 export function useAudioCardSync({
   player,
@@ -35,6 +46,7 @@ export function useAudioCardSync({
   feedIndexToStoryIndex,
   storyIndexToFeedIndex,
   totalStoryCards,
+  itemAudioIds,
 }: UseAudioCardSyncOptions) {
   const [syncMode, setSyncMode] = useState<SyncMode>("auto");
   const syncSourceRef = useRef<SyncSource>(null);
@@ -42,8 +54,77 @@ export function useAudioCardSync({
   const seekDebounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastCardIndexRef = useRef(activeCardIndex);
 
+  const hasPerItemAudio = itemAudioIds !== undefined && itemAudioIds.length > 0;
+
+  // ── Per-item mode ──────────────────────────────────────────────────────
+
+  // Card change → play item audio
+  useEffect(() => {
+    if (!hasPerItemAudio) return;
+
+    const storyIdx = feedIndexToStoryIndex(activeCardIndex);
+    if (storyIdx >= 0 && storyIdx < itemAudioIds.length) {
+      player.playItemAudio(itemAudioIds[storyIdx]);
+    } else {
+      player.playItemAudio(null);
+    }
+  }, [
+    activeCardIndex,
+    hasPerItemAudio,
+    feedIndexToStoryIndex,
+    itemAudioIds,
+    player,
+  ]);
+
+  // Audio ended naturally → advance to next story card
+  const wasPlayingRef = useRef(player.isPlaying);
+  useEffect(() => {
+    if (!hasPerItemAudio || syncMode !== "auto") return;
+
+    const wasPlaying = wasPlayingRef.current;
+    wasPlayingRef.current = player.isPlaying;
+
+    // Audio was playing and now stopped near the end → it ended naturally
+    if (
+      wasPlaying &&
+      !player.isPlaying &&
+      player.currentAudioItemId !== null &&
+      player.duration > 0 &&
+      player.currentTime >= player.duration - 0.3
+    ) {
+      const currentStoryIdx = feedIndexToStoryIndex(activeCardIndex);
+      if (currentStoryIdx >= 0) {
+        const nextStoryIdx = currentStoryIdx + 1;
+        if (nextStoryIdx < totalStoryCards) {
+          const nextFeedIdx = storyIndexToFeedIndex(nextStoryIdx);
+          if (nextFeedIdx >= 0) {
+            setActiveCardIndex(nextFeedIdx);
+          }
+        }
+      }
+    }
+  }, [
+    player.isPlaying,
+    player.currentAudioItemId,
+    player.currentTime,
+    player.duration,
+    hasPerItemAudio,
+    syncMode,
+    activeCardIndex,
+    feedIndexToStoryIndex,
+    storyIndexToFeedIndex,
+    setActiveCardIndex,
+    totalStoryCards,
+  ]);
+
+  // ── Narrative mode (segment-based, existing behavior) ──────────────────
+
   // Derive effective segments (fallback to equal duration if missing)
-  const effectiveSegments = useEffectiveSegments(segments, player.duration, totalStoryCards);
+  const effectiveSegments = useEffectiveSegments(
+    hasPerItemAudio ? null : segments,
+    player.duration,
+    totalStoryCards,
+  );
 
   const setSyncSource = useCallback((source: SyncSource) => {
     syncSourceRef.current = source;
@@ -57,6 +138,7 @@ export function useAudioCardSync({
 
   // User swipes card → seek audio (with debounce)
   useEffect(() => {
+    if (hasPerItemAudio) return;
     if (activeCardIndex === lastCardIndexRef.current) return;
     lastCardIndexRef.current = activeCardIndex;
 
@@ -76,10 +158,18 @@ export function useAudioCardSync({
         player.seek(segment.start);
       }
     }, 300);
-  }, [activeCardIndex, effectiveSegments, feedIndexToStoryIndex, player, setSyncSource]);
+  }, [
+    activeCardIndex,
+    effectiveSegments,
+    feedIndexToStoryIndex,
+    player,
+    setSyncSource,
+    hasPerItemAudio,
+  ]);
 
   // Audio time crosses segment boundary → advance card
   useEffect(() => {
+    if (hasPerItemAudio) return;
     if (!player.isPlaying || syncMode !== "auto") return;
     if (syncSourceRef.current === "user") return;
     if (!effectiveSegments || effectiveSegments.length === 0) return;
@@ -111,6 +201,7 @@ export function useAudioCardSync({
     storyIndexToFeedIndex,
     setActiveCardIndex,
     setSyncSource,
+    hasPerItemAudio,
   ]);
 
   // Cleanup timers
@@ -130,12 +221,14 @@ export function useAudioCardSync({
 
 /**
  * Derive effective segments: use provided segments or fall back to equal-duration.
+ * Returns null when segments is explicitly null (per-item mode).
  */
 function useEffectiveSegments(
-  segments: AudioSegment[] | undefined,
+  segments: AudioSegment[] | null | undefined,
   duration: number,
-  totalItems: number
+  totalItems: number,
 ): AudioSegment[] | null {
+  if (segments === null) return null; // per-item mode
   if (segments && segments.length > 0) return segments;
   if (duration <= 0 || totalItems <= 0) return null;
 

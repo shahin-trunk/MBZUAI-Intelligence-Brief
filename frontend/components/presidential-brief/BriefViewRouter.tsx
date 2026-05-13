@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import type { Brief } from "@/lib/types/brief";
 import { useAudioPlayer } from "@/lib/presidential-brief/hooks/useAudioPlayer";
 import { buildFeed } from "@/lib/presidential-brief/buildFeed";
@@ -44,8 +44,28 @@ export default function BriefViewRouter({
     setAudioBehindStoryDetail(false);
   }, []);
 
-  const hasAudio = Boolean(brief.audio_url || brief.audio_url_fr);
+  const hasAudio = Boolean(
+    brief.audio_url ||
+    brief.audio_url_fr ||
+    brief.items.some((item) => item.audio_url)
+  );
   const player = useAudioPlayer(brief.audio_url, brief.audio_url_fr);
+
+  // Build per-item audio URL map from brief items
+  const itemUrlMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const item of brief.items) {
+      if (item.audio_url) {
+        map[item.id] = item.audio_url;
+      }
+    }
+    return map;
+  }, [brief.items]);
+
+  // Register per-item audio URLs with the player
+  useEffect(() => {
+    player.setItemAudioUrls(itemUrlMap);
+  }, [player, itemUrlMap]);
 
   const feed = useMemo(() => {
     return buildFeed(brief, null, []);

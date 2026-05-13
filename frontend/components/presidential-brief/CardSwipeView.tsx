@@ -120,6 +120,17 @@ export default function CardSwipeView({
       feed.filter((c) => c.type === "story" && !c.followUp).length,
     [feed]
   );
+  /** Per-item audio: item IDs in story-card order for cards that have audio_url. */
+  const itemAudioIds = useMemo(
+    () =>
+      feed
+        .filter(
+          (c): c is Extract<FeedCard, { type: "story" }> =>
+            c.type === "story" && !c.followUp && Boolean(c.item.audio_url),
+        )
+        .map((c) => c.item.id),
+    [feed],
+  );
   const [feedbackDrawerOpen, setFeedbackDrawerOpen] = useState(false);
   const [followUpToast, setFollowUpToast] = useState<{
     tone: "success" | "error";
@@ -280,6 +291,7 @@ export default function CardSwipeView({
     feedIndexToStoryIndex: audioFeedIndexToStoryIndex,
     storyIndexToFeedIndex: audioStoryIndexToFeedIndex,
     totalStoryCards: audioAlignedStoryCount,
+    itemAudioIds,
   });
 
   /* eslint-disable react-hooks/set-state-in-effect -- clamp index when feed length changes */
