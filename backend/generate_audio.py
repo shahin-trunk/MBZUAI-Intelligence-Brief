@@ -55,6 +55,11 @@ LANGUAGE_SCRIPT_BUDGETS = {
         "hard_max_words": 1250,
         "hard_max_chars": 9500,
     },
+    "ar": {
+        "target_words": 900,
+        "hard_max_words": 1200,
+        "hard_max_chars": 9500,
+    },
 }
 BREAK_TAG_PATTERN = r'<break\s+time="[^"]+"\s*/>'
 
@@ -81,6 +86,9 @@ VOICE_SETTINGS = {
     "use_speaker_boost": True,
 }
 VOICE_SPEED_EN = 1.2
+VOICE_SPEED_FR = 0.9
+VOICE_SPEED_AR = 0.95
+FR_VOICE_ID_DEFAULT = "c365oriviHmAhyLhpuN6"
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -145,6 +153,14 @@ def _get_voice_config() -> dict[str, dict[str, str]]:
             "voice_id": EN_VOICE_ID,
             "prompt_file": "podcast_script_prompt.md",
         },
+        "fr": {
+            "voice_id": os.getenv("FRENCH_VOICE_ID", FR_VOICE_ID_DEFAULT),
+            "prompt_file": "podcast_script_prompt_fr.md",
+        },
+        "ar": {
+            "voice_id": os.getenv("ARABIC_VOICE_ID", ""),
+            "prompt_file": "podcast_script_prompt_ar.md",
+        },
     }
 
 
@@ -154,6 +170,30 @@ def _audio_brief_enabled() -> bool:
     Default is ON unless explicitly disabled via ENABLE_AUDIO_BRIEF.
     """
     raw = (os.getenv("ENABLE_AUDIO_BRIEF") or "").strip().lower()
+    if not raw:
+        return True
+    return raw not in {"0", "false", "no", "off"}
+
+
+def _french_audio_enabled() -> bool:
+    """Return whether French audio generation is enabled (default: False)."""
+    raw = (os.getenv("ENABLE_FRENCH_AUDIO") or "").strip().lower()
+    if not raw:
+        return False
+    return raw not in {"0", "false", "no", "off"}
+
+
+def _arabic_audio_enabled() -> bool:
+    """Return whether Arabic audio generation is enabled (default: False)."""
+    raw = (os.getenv("ENABLE_ARABIC_AUDIO") or "").strip().lower()
+    if not raw:
+        return False
+    return raw not in {"0", "false", "no", "off"}
+
+
+def _learning_content_enabled() -> bool:
+    """Return whether language learning content generation is enabled (default: True)."""
+    raw = (os.getenv("ENABLE_LEARNING_CONTENT") or "").strip().lower()
     if not raw:
         return True
     return raw not in {"0", "false", "no", "off"}
@@ -976,6 +1016,10 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
             }
             if lang == "en":
                 payload["speed"] = VOICE_SPEED_EN
+            elif lang == "fr":
+                payload["speed"] = VOICE_SPEED_FR
+            elif lang == "ar":
+                payload["speed"] = VOICE_SPEED_AR
             headers = {
                 "Accept": "audio/mpeg",
                 "Content-Type": "application/json",
@@ -1167,9 +1211,8 @@ def _update_briefs_table(
     update_data: dict = {
         "audio_script": script,
         "audio_status": "ready",
+        "audio_url": audio_url,  # always set, allowing None to clear the field
     }
-    if audio_url is not None:
-        update_data["audio_url"] = audio_url
 
     try:
         sb.table("briefs").update(update_data).eq("brief_date", target_date).execute()
@@ -1198,6 +1241,149 @@ def _update_briefs_table(
         "set" if audio_url else "null",
         "set" if audio_url_fr else "null",
     )
+
+
+# ---------------------------------------------------------------------------
+# Language learning content generation
+# ---------------------------------------------------------------------------
+
+LEARNING_SCRIPT_PROMPT_FILE = "language_learning_prompt.md"
+LEARNING_SCRIPT_MAX_TOKENS = 2048
+LEARNING_SCRIPT_MAX_ATTEMPTS = 2
+
+
+def _load_learning_prompt(item: dict, lang: str) -> str:
+    """Load the language learning prompt and inject item data."""
+    prompt_path = PROMPTS_DIR / LEARNING_SCRIPT_PROMPT_FILE
+
+    if not prompt_path.exists():
+        log.warning("Learning prompt not found at %s — skipping learning content generation", prompt_path)
+        return ""
+
+    raw_md = prompt_path.read_text(encoding="utf-8")
+    prompt_text = _extract_prompt_from_md(raw_md)
+
+    # Build item summary for the prompt
+    item_summary = {
+        "id": item.get("id", ""),
+        "headline": item.get("headline", ""),
+        "section": item.get("section", ""),
+        "main_bullet": item.get("main_bullet", ""),
+        "context": item.get("context", ""),
+        "implication": item.get("implication", ""),
+    }
+    # v2 card fields (optional)
+    if item.get("key_bullets"):
+        item_summary["key_bullets"] = item.get("key_bullets")
+    if item.get("analysis"):
+        item_summary["analysis"] = item.get("analysis")
+    if item.get("primary_entity"):
+        item_summary["primary_entity"] = item.get("primary_entity")
+
+    prompt_text = prompt_text.replace("{item_json}", json.dumps(item_summary, indent=2, ensure_ascii=False))
+    prompt_text = prompt_text.replace("{target_language}", "French" if lang == "fr" else "Arabic")
+
+    return prompt_text
+
+
+def _generate_learning_content(item: dict, lang: str) -> dict | None:
+    """Generate language learning content for a single brief item using Claude Sonnet.
+
+    Returns a dict with {script, vocabulary: [{term, translation, definition, example_sentence, pos}], difficulty}
+    or None on failure.
+    """
+    import anthropic
+
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        log.warning("ANTHROPIC_API_KEY not set — skipping learning content generation")
+        return None
+
+    prompt_text = _load_learning_prompt(item, lang)
+    if not prompt_text:
+        return None
+
+    client = anthropic.Anthropic(api_key=api_key)
+    lang_label = "French" if lang == "fr" else "Arabic"
+
+    for attempt in range(LEARNING_SCRIPT_MAX_ATTEMPTS):
+        try:
+            response = client.messages.create(
+                model=ANTHROPIC_MODEL,
+                max_tokens=LEARNING_SCRIPT_MAX_TOKENS,
+                messages=[{"role": "user", "content": prompt_text}],
+            )
+
+            text_blocks = [block.text for block in response.content if block.type == "text"]
+            raw = "\n".join(text_blocks).strip()
+            parsed = _extract_json_object(raw)
+
+            if parsed and isinstance(parsed, dict):
+                script = str(parsed.get("script", "")).strip()
+                vocab = parsed.get("vocabulary", [])
+                difficulty = str(parsed.get("difficulty", "intermediate")).strip()
+
+                if script and len(script) > 30:
+                    # Validate vocabulary entries
+                    validated_vocab = []
+                    for v in (vocab if isinstance(vocab, list) else []):
+                        if isinstance(v, dict) and v.get("term") and v.get("translation"):
+                            validated_vocab.append({
+                                "term": str(v.get("term", "")).strip(),
+                                "translation": str(v.get("translation", "")).strip(),
+                                "definition": str(v.get("definition", "")).strip(),
+                                "example_sentence": str(v.get("example_sentence", "")).strip(),
+                                "part_of_speech": str(v.get("part_of_speech", "")).strip(),
+                            })
+
+                    return {
+                        "script": script,
+                        "vocabulary": validated_vocab[:10],  # Cap at 10 entries
+                        "difficulty": difficulty,
+                    }
+                else:
+                    log.warning("Learning script for %s item %s too short (%d chars) on attempt %d",
+                                lang_label, item.get("id", "?"), len(script), attempt + 1)
+            else:
+                log.warning("Could not parse %s learning content JSON for item %s on attempt %d",
+                            lang_label, item.get("id", "?"), attempt + 1)
+
+        except Exception as exc:
+            log.warning("Learning content generation failed for %s item %s on attempt %d: %s",
+                        lang_label, item.get("id", "?"), attempt + 1, exc)
+
+    return None
+
+
+def _generate_item_learning_audio(
+    sb: Client,
+    script: str,
+    voice_id: str,
+    target_date: str,
+    item_id: str,
+    lang: str,
+) -> str | None:
+    """Generate TTS audio for a learning script and upload to Supabase Storage.
+
+    Path: {target_date}/learning/{item_id}_{lang}.mp3
+    Returns public URL on success, None on failure.
+    """
+    try:
+        audio_bytes = _generate_audio(script, voice_id, lang=lang)
+        file_path = f"{target_date}/learning/{item_id}_{lang}.mp3"
+        log.info("Uploading learning audio to audio-briefs/%s...", file_path)
+        sb.storage.from_("audio-briefs").upload(
+            file_path,
+            audio_bytes,
+            file_options={"content-type": "audio/mpeg", "upsert": "true"},
+        )
+        public_url = sb.storage.from_("audio-briefs").get_public_url(file_path)
+        log.info("Learning audio uploaded for %s item %s (%s): %s",
+                 target_date, item_id, lang, public_url)
+        return public_url
+    except Exception as exc:
+        log.warning("Learning audio generation failed for item %s (%s): %s", item_id, lang, exc)
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -1457,16 +1643,83 @@ def generate_audio_brief(
                     log.info("Item audio generated for %s (%d chars): %s",
                              item_id, chars, url)
 
+    # 3b. Generate language learning content (FR + AR)
+    if _learning_content_enabled():
+        _update_audio_status(sb, target_date, "generating_learning_content")
+        LEARNING_LANGS = []
+        if _french_audio_enabled():
+            LEARNING_LANGS.append("fr")
+        if _arabic_audio_enabled() and _get_voice_config().get("ar", {}).get("voice_id"):
+            LEARNING_LANGS.append("ar")
+
+        if LEARNING_LANGS:
+            log.info(
+                "Generating language learning content for %s (languages: %s)",
+                target_date, ", ".join(LEARNING_LANGS),
+            )
+
+            for lang in LEARNING_LANGS:
+                lang_display = "French" if lang == "fr" else "Arabic"
+                voice_config = _get_voice_config()
+                voice_id = voice_config.get(lang, {}).get("voice_id", "")
+
+                learning_count = 0
+                audio_count = 0
+                learning_pending_items = [
+                    item for item in active_items
+                    if not item.get(f"learning_{lang}")
+                ]
+
+                for item in learning_pending_items:
+                    item_id = item.get("id", "?")
+                    try:
+                        learning = _generate_learning_content(item, lang)
+                        if learning:
+                            item[f"learning_{lang}"] = learning
+                            learning_count += 1
+
+                            # Generate learning audio if voice is configured
+                            if voice_id:
+                                script = learning.get("script", "")
+                                if script and len(script) > 20:
+                                    audio_url = _generate_item_learning_audio(
+                                        sb, script, voice_id, target_date, item_id, lang
+                                    )
+                                    if audio_url:
+                                        learning["audio_url"] = audio_url
+                                        audio_count += 1
+                    except Exception as exc:
+                        log.warning(
+                            "%s learning content failed for item %s: %s",
+                            lang_display, item_id, exc,
+                        )
+
+                log.info(
+                    "%s learning content: %d items with content, %d with audio",
+                    lang_display, learning_count, audio_count,
+                )
+
+            # Save updated raw_json with learning content
+            if any(
+                item.get(f"learning_{lang}")
+                for item in active_items
+                for lang in LEARNING_LANGS
+            ):
+                try:
+                    sb.table("briefs").update({"raw_json": brief_json}).eq(
+                        "brief_date", target_date
+                    ).execute()
+                    log.info("Updated raw_json with language learning content")
+                except Exception as exc:
+                    log.warning("Failed to update raw_json with learning content: %s", exc)
+
     # Save updated raw_json with per-item audio URLs to DB
     if en_item_audio_count > 0:
         try:
             sb.table("briefs").update({"raw_json": brief_json}).eq(
                 "brief_date", target_date
             ).execute()
-            log.info(
-                "Updated raw_json with %d per-item audio URLs",
-                en_item_audio_count,
-            )
+            log.info("Updated raw_json with %d per-item audio URLs", en_item_audio_count)
         except Exception as exc:
             log.warning("Failed to update raw_json with item audio URLs: %s", exc)
 
