@@ -1666,6 +1666,8 @@ def generate_audio_brief(
 
                 learning_count = 0
                 audio_count = 0
+
+                # Items without any learning content — generate from scratch
                 learning_pending_items = [
                     item for item in active_items
                     if not item.get(f"learning_{lang}")
@@ -1695,9 +1697,36 @@ def generate_audio_brief(
                             lang_display, item_id, exc,
                         )
 
+                # Items with learning content but missing audio_url — generate audio only
+                items_needing_audio = [
+                    item for item in active_items
+                    if item.get(f"learning_{lang}")
+                    and not item[f"learning_{lang}"].get("audio_url")
+                ]
+
+                for item in items_needing_audio:
+                    item_id = item.get("id", "?")
+                    learning = item[f"learning_{lang}"]
+                    script = learning.get("script", "")
+                    if voice_id and script and len(script) > 20:
+                        try:
+                            audio_url = _generate_item_learning_audio(
+                                sb, script, voice_id, target_date, item_id, lang
+                            )
+                            if audio_url:
+                                learning["audio_url"] = audio_url
+                                audio_count += 1
+                                log.info("Backfilled %s audio for item %s: %s",
+                                         lang_display, item_id, audio_url)
+                        except Exception as exc:
+                            log.warning(
+                                "%s audio backfill failed for item %s: %s",
+                                lang_display, item_id, exc,
+                            )
+
                 log.info(
-                    "%s learning content: %d items with content, %d with audio",
-                    lang_display, learning_count, audio_count,
+                    "%s learning content: %d new items, %d total with audio (%d backfilled)",
+                    lang_display, learning_count, audio_count, len(items_needing_audio),
                 )
 
             # Save updated raw_json with learning content
