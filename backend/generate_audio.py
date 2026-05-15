@@ -1250,8 +1250,14 @@ def _update_briefs_table(
 # ---------------------------------------------------------------------------
 
 LEARNING_SCRIPT_PROMPT_FILE = "language_learning_prompt.md"
+LEARNING_OUTLINE_PROMPT_FILE = "language_learning_outline_prompt.md"
+LEARNING_SECTIONS_PROMPT_FILE = "language_learning_sections_prompt.md"
 LEARNING_SCRIPT_MAX_TOKENS = 2048
+LEARNING_SECTIONS_MAX_TOKENS = 4096
 LEARNING_SCRIPT_MAX_ATTEMPTS = 2
+# Chars-per-second for audio duration estimation
+CHARS_PER_SECOND_FR = 5.5
+CHARS_PER_SECOND_AR = 4.5
 
 
 def _load_learning_prompt(item: dict, lang: str) -> str:
@@ -1387,6 +1393,312 @@ def _generate_item_learning_audio(
     except Exception as exc:
         log.warning("Learning audio generation failed for item %s (%s): %s", item_id, lang, exc)
         return None
+
+
+def _has_v2_learning(item: dict, lang: str) -> bool:
+    """Check if an item already has v2 (multi-section) learning content."""
+    lc = item.get(f"learning_{lang}")
+    if not lc or not isinstance(lc, dict):
+        return False
+    sections = lc.get("sections")
+    return isinstance(sections, list) and len(sections) >= 2
+
+
+def _build_rich_item_summary(item: dict) -> dict:
+    """Build a comprehensive item summary with ALL available fields for maximum differentiation."""
+    summary = {
+        "id": item.get("id", ""),
+        "headline": item.get("headline", ""),
+        "section": item.get("section", ""),
+        "main_bullet": item.get("main_bullet", ""),
+        "context": item.get("context", ""),
+        "implication": item.get("implication", ""),
+    }
+    if item.get("key_bullets"):
+        bullets = item["key_bullets"]
+        summary["key_bullets"] = (
+            " | ".join(bullets) if isinstance(bullets, list) else str(bullets)
+        )
+    if item.get("analysis"):
+        summary["analysis"] = item["analysis"]
+    if item.get("primary_entity"):
+        summary["primary_entity"] = item["primary_entity"]
+    if item.get("primary_subject"):
+        summary["primary_subject"] = item["primary_subject"]
+    if item.get("entities"):
+        summary["entities"] = item["entities"][:8]
+    return summary
+
+
+def _load_learning_outline_prompt(item: dict, lang: str) -> str:
+    """Load the outline prompt and inject item data."""
+    prompt_path = PROMPTS_DIR / LEARNING_OUTLINE_PROMPT_FILE
+    if not prompt_path.exists():
+        log.warning("Learning outline prompt not found at %s", prompt_path)
+        return ""
+    prompt_text = prompt_path.read_text(encoding="utf-8").strip()
+    item_summary = _build_rich_item_summary(item)
+    lang_label = "French" if lang == "fr" else "Arabic"
+    prompt_text = prompt_text.replace("{item_json}", json.dumps(item_summary, indent=2, ensure_ascii=False))
+    prompt_text = prompt_text.replace("{target_language}", lang_label)
+    prompt_text = prompt_text.replace("{item_id}", str(item.get("id", "")))
+    prompt_text = prompt_text.replace("{item_headline}", str(item.get("headline", "")))
+    return prompt_text
+
+
+def _load_learning_sections_prompt(item: dict, outline: dict, lang: str) -> str:
+    """Load the sections prompt and inject item data + outline."""
+    prompt_path = PROMPTS_DIR / LEARNING_SECTIONS_PROMPT_FILE
+    if not prompt_path.exists():
+        log.warning("Learning sections prompt not found at %s", prompt_path)
+        return ""
+    prompt_text = prompt_path.read_text(encoding="utf-8").strip()
+    item_summary = _build_rich_item_summary(item)
+    lang_label = "French" if lang == "fr" else "Arabic"
+    prompt_text = prompt_text.replace("{item_json}", json.dumps(item_summary, indent=2, ensure_ascii=False))
+    prompt_text = prompt_text.replace("{outline_json}", json.dumps(outline, indent=2, ensure_ascii=False))
+    prompt_text = prompt_text.replace("{target_language}", lang_label)
+    prompt_text = prompt_text.replace("{item_id}", str(item.get("id", "")))
+    prompt_text = prompt_text.replace("{item_headline}", str(item.get("headline", "")))
+    return prompt_text
+
+
+def _generate_learning_outline(item: dict, lang: str) -> dict | None:
+    """Step 1: Generate a teaching outline for a news item."""
+    import anthropic
+
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        log.warning("ANTHROPIC_API_KEY not set — skipping learning outline generation")
+        return None
+
+    prompt_text = _load_learning_outline_prompt(item, lang)
+    if not prompt_text:
+        return None
+
+    client = anthropic.Anthropic(api_key=api_key)
+    lang_label = "French" if lang == "fr" else "Arabic"
+
+    for attempt in range(LEARNING_SCRIPT_MAX_ATTEMPTS):
+        try:
+            response = client.messages.create(
+                model=ANTHROPIC_MODEL,
+                max_tokens=LEARNING_SCRIPT_MAX_TOKENS,
+                messages=[{"role": "user", "content": prompt_text}],
+            )
+            text_blocks = [block.text for block in response.content if block.type == "text"]
+            raw = "\n".join(text_blocks).strip()
+            parsed = _extract_json_object(raw)
+
+            if parsed and isinstance(parsed, dict):
+                sections = parsed.get("sections", [])
+                if isinstance(sections, list) and len(sections) >= 3:
+                    log.info("%s outline generated for item %s: %d sections",
+                             lang_label, item.get("id", "?"), len(sections))
+                    return parsed
+                else:
+                    log.warning("Outline for %s item %s has too few sections (%d) on attempt %d",
+                                lang_label, item.get("id", "?"),
+                                len(sections) if isinstance(sections, list) else 0, attempt + 1)
+            else:
+                log.warning("Could not parse %s outline JSON for item %s on attempt %d",
+                            lang_label, item.get("id", "?"), attempt + 1)
+        except Exception as exc:
+            log.warning("Outline generation failed for %s item %s on attempt %d: %s",
+                        lang_label, item.get("id", "?"), attempt + 1, exc)
+    return None
+
+
+def _generate_learning_sections(item: dict, outline: dict, lang: str) -> dict | None:
+    """Step 2: Generate full section content given an outline."""
+    import anthropic
+
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        log.warning("ANTHROPIC_API_KEY not set — skipping learning sections generation")
+        return None
+
+    prompt_text = _load_learning_sections_prompt(item, outline, lang)
+    if not prompt_text:
+        return None
+
+    client = anthropic.Anthropic(api_key=api_key)
+    lang_label = "French" if lang == "fr" else "Arabic"
+
+    for attempt in range(LEARNING_SCRIPT_MAX_ATTEMPTS):
+        try:
+            response = client.messages.create(
+                model=ANTHROPIC_MODEL,
+                max_tokens=LEARNING_SECTIONS_MAX_TOKENS,
+                messages=[{"role": "user", "content": prompt_text}],
+            )
+            text_blocks = [block.text for block in response.content if block.type == "text"]
+            raw = "\n".join(text_blocks).strip()
+            parsed = _extract_json_object(raw)
+
+            if not parsed or not isinstance(parsed, dict):
+                log.warning("Could not parse %s sections JSON for item %s on attempt %d",
+                            lang_label, item.get("id", "?"), attempt + 1)
+                continue
+
+            sections = parsed.get("sections", [])
+            if not isinstance(sections, list) or len(sections) < 3:
+                log.warning("Sections for %s item %s has too few entries (%d) on attempt %d",
+                            lang_label, item.get("id", "?"),
+                            len(sections) if isinstance(sections, list) else 0, attempt + 1)
+                continue
+
+            validated_sections = []
+            for s in sections:
+                if not isinstance(s, dict):
+                    continue
+                script = str(s.get("script", "")).strip()
+                if len(script) < 30:
+                    log.warning("Section %s script too short (%d chars) for %s item %s",
+                                s.get("id", "?"), len(script), lang_label, item.get("id", "?"))
+                    continue
+
+                validated_phrases = []
+                for p in (s.get("key_phrases") or []):
+                    if isinstance(p, dict) and p.get("phrase") and p.get("translation"):
+                        validated_phrases.append({
+                            "phrase": str(p.get("phrase", "")).strip(),
+                            "translation": str(p.get("translation", "")).strip(),
+                            "context_note": str(p.get("context_note", "")).strip(),
+                            "example_sentence": str(p.get("example_sentence", "")).strip(),
+                            "part_of_speech": str(p.get("part_of_speech", "")).strip(),
+                        })
+
+                validated_sections.append({
+                    "id": str(s.get("id", f"section_{len(validated_sections)}")),
+                    "type": str(s.get("type", "narrative")),
+                    "title": str(s.get("title", "")),
+                    "title_en": str(s.get("title_en", "")),
+                    "script": script,
+                    "key_phrases": validated_phrases,
+                })
+
+            if len(validated_sections) < 3:
+                log.warning("Only %d valid sections for %s item %s on attempt %d",
+                            len(validated_sections), lang_label, item.get("id", "?"), attempt + 1)
+                continue
+
+            vocab = parsed.get("vocabulary", [])
+            validated_vocab = []
+            for v in (vocab if isinstance(vocab, list) else []):
+                if isinstance(v, dict) and v.get("term") and v.get("translation"):
+                    validated_vocab.append({
+                        "term": str(v.get("term", "")).strip(),
+                        "translation": str(v.get("translation", "")).strip(),
+                        "definition": str(v.get("definition", "")).strip(),
+                        "example_sentence": str(v.get("example_sentence", "")).strip(),
+                        "part_of_speech": str(v.get("part_of_speech", "")).strip(),
+                    })
+
+            difficulty = str(parsed.get("difficulty", "intermediate")).strip()
+            log.info("%s sections generated for item %s: %d sections, %d vocab terms",
+                     lang_label, item.get("id", "?"), len(validated_sections), len(validated_vocab))
+
+            return {
+                "sections": validated_sections,
+                "vocabulary": validated_vocab[:10],
+                "difficulty": difficulty,
+            }
+
+        except Exception as exc:
+            log.warning("Sections generation failed for %s item %s on attempt %d: %s",
+                        lang_label, item.get("id", "?"), attempt + 1, exc)
+    return None
+
+
+def _generate_section_audio(
+    sb: Client,
+    script: str,
+    voice_id: str,
+    target_date: str,
+    item_id: str,
+    lang: str,
+    section_id: str,
+) -> str | None:
+    """Generate TTS audio for a single learning section and upload to Supabase Storage.
+
+    Path: {target_date}/learning/{item_id}_{lang}_{section_id}.mp3
+    """
+    try:
+        audio_bytes = _generate_audio(script, voice_id, lang=lang)
+        file_path = f"{target_date}/learning/{item_id}_{lang}_{section_id}.mp3"
+        log.info("Uploading section audio to audio-briefs/%s...", file_path)
+        sb.storage.from_("audio-briefs").upload(
+            file_path,
+            audio_bytes,
+            file_options={"content-type": "audio/mpeg", "upsert": "true"},
+        )
+        public_url = sb.storage.from_("audio-briefs").get_public_url(file_path)
+        return public_url
+    except Exception as exc:
+        log.warning("Section audio failed for item %s section %s (%s): %s",
+                    item_id, section_id, lang, exc)
+        return None
+
+
+def _estimate_duration_seconds(script: str, lang: str) -> float:
+    """Estimate audio duration in seconds from script character count."""
+    cps = CHARS_PER_SECOND_FR if lang == "fr" else CHARS_PER_SECOND_AR
+    return len(script) / cps
+
+
+def _generate_learning_content_v2(item: dict, lang: str) -> dict | None:
+    """Generate multi-section language learning content (v2 pipeline).
+
+    Step 1: Generate teaching outline
+    Step 2: Generate section scripts, phrases, and vocabulary
+    Returns dict {sections, vocabulary, difficulty, total_audio_duration_seconds} or None.
+    """
+    item_id = item.get("id", "?")
+    lang_label = "French" if lang == "fr" else "Arabic"
+    log.info("Generating v2 learning content for %s item %s: %s",
+             lang_label, item_id, item.get("headline", "?")[:80])
+
+    # Step 1: Generate outline
+    outline = _generate_learning_outline(item, lang)
+    if not outline:
+        log.warning("Outline generation failed for %s item %s — falling back to v1", lang_label, item_id)
+        v1 = _generate_learning_content(item, lang)
+        if v1:
+            title_intro = "Introduction" if lang == "fr" else "مقدمة"
+            return {
+                "sections": [{
+                    "id": "full",
+                    "type": "narrative",
+                    "title": title_intro,
+                    "title_en": "Full Lesson",
+                    "script": v1["script"],
+                    "key_phrases": [],
+                }],
+                "vocabulary": v1.get("vocabulary", []),
+                "difficulty": v1.get("difficulty", "intermediate"),
+            }
+        return None
+
+    # Step 2: Generate full section content
+    content = _generate_learning_sections(item, outline, lang)
+    if not content:
+        log.warning("Sections generation failed for %s item %s", lang_label, item_id)
+        return None
+
+    # Estimate total duration
+    total_duration = sum(
+        _estimate_duration_seconds(s["script"], lang)
+        for s in content["sections"]
+    )
+    content["total_audio_duration_seconds"] = round(total_duration, 1)
+
+    for s in content["sections"]:
+        s["estimated_duration_seconds"] = round(
+            _estimate_duration_seconds(s["script"], lang), 1
+        )
+
+    return content
 
 
 # ---------------------------------------------------------------------------
@@ -1647,7 +1959,7 @@ def generate_audio_brief(
                     log.info("Item audio generated for %s (%d chars): %s",
                              item_id, chars, url)
 
-    # 3b. Generate language learning content (FR + AR)
+    # 3b. Generate language learning content (FR + AR) — v2 multi-section pipeline
     if _learning_content_enabled():
         _update_audio_status(sb, target_date, "generating_learning_content")
         LEARNING_LANGS = []
@@ -1658,7 +1970,7 @@ def generate_audio_brief(
 
         if LEARNING_LANGS:
             log.info(
-                "Generating language learning content for %s (languages: %s)",
+                "Generating v2 language learning content for %s (languages: %s)",
                 target_date, ", ".join(LEARNING_LANGS),
             )
 
@@ -1668,69 +1980,74 @@ def generate_audio_brief(
                 voice_id = voice_config.get(lang, {}).get("voice_id", "")
 
                 learning_count = 0
-                audio_count = 0
+                section_audio_count = 0
 
-                # Items without any learning content — generate from scratch
+                # Determine which items need learning content
+                # With --force, regenerate all items; otherwise only those without v2 sections
                 learning_pending_items = [
                     item for item in active_items
-                    if not item.get(f"learning_{lang}")
+                    if force or not _has_v2_learning(item, lang)
                 ]
 
                 for item in learning_pending_items:
                     item_id = item.get("id", "?")
                     try:
-                        learning = _generate_learning_content(item, lang)
+                        learning = _generate_learning_content_v2(item, lang)
                         if learning:
                             item[f"learning_{lang}"] = learning
                             learning_count += 1
 
-                            # Generate learning audio if voice is configured
+                            # Generate per-section audio
                             if voice_id:
-                                script = learning.get("script", "")
-                                if script and len(script) > 20:
-                                    audio_url = _generate_item_learning_audio(
-                                        sb, script, voice_id, target_date, item_id, lang
-                                    )
-                                    if audio_url:
-                                        learning["audio_url"] = audio_url
-                                        audio_count += 1
+                                for section in learning.get("sections", []):
+                                    script = section.get("script", "")
+                                    sid = section.get("id", "unknown")
+                                    if script and len(script) > 20:
+                                        audio_url = _generate_section_audio(
+                                            sb, script, voice_id, target_date,
+                                            item_id, lang, sid,
+                                        )
+                                        if audio_url:
+                                            section["audio_url"] = audio_url
+                                            section_audio_count += 1
                     except Exception as exc:
                         log.warning(
-                            "%s learning content failed for item %s: %s",
+                            "%s v2 learning content failed for item %s: %s",
                             lang_display, item_id, exc,
                         )
 
-                # Items with learning content but missing audio_url — generate audio only
-                # (with --force, also regenerate items that already have audio_url)
-                items_needing_audio = [
-                    item for item in active_items
-                    if item.get(f"learning_{lang}")
-                    and (force or not item[f"learning_{lang}"].get("audio_url"))
-                ]
-
-                for item in items_needing_audio:
-                    item_id = item.get("id", "?")
-                    learning = item[f"learning_{lang}"]
-                    script = learning.get("script", "")
-                    if voice_id and script and len(script) > 20:
-                        try:
-                            audio_url = _generate_item_learning_audio(
-                                sb, script, voice_id, target_date, item_id, lang
-                            )
-                            if audio_url:
-                                learning["audio_url"] = audio_url
-                                audio_count += 1
-                                log.info("Backfilled %s audio for item %s: %s",
-                                         lang_display, item_id, audio_url)
-                        except Exception as exc:
-                            log.warning(
-                                "%s audio backfill failed for item %s: %s",
-                                lang_display, item_id, exc,
-                            )
+                # Backfill: items with v2 sections but missing audio on some sections
+                if voice_id and not force:
+                    for item in active_items:
+                        lc = item.get(f"learning_{lang}")
+                        if not lc or not isinstance(lc.get("sections"), list):
+                            continue
+                        item_id = item.get("id", "?")
+                        for section in lc["sections"]:
+                            if section.get("audio_url"):
+                                continue
+                            script = section.get("script", "")
+                            sid = section.get("id", "unknown")
+                            if script and len(script) > 20:
+                                try:
+                                    audio_url = _generate_section_audio(
+                                        sb, script, voice_id, target_date,
+                                        item_id, lang, sid,
+                                    )
+                                    if audio_url:
+                                        section["audio_url"] = audio_url
+                                        section_audio_count += 1
+                                        log.info("Backfilled %s section audio %s for item %s",
+                                                 lang_display, sid, item_id)
+                                except Exception as exc:
+                                    log.warning(
+                                        "%s section audio backfill failed for item %s section %s: %s",
+                                        lang_display, item_id, sid, exc,
+                                    )
 
                 log.info(
-                    "%s learning content: %d new items, %d total with audio (%d backfilled)",
-                    lang_display, learning_count, audio_count, len(items_needing_audio),
+                    "%s learning content: %d new items, %d section audio files",
+                    lang_display, learning_count, section_audio_count,
                 )
 
             # Save updated raw_json with learning content

@@ -129,12 +129,45 @@ export interface LearningVocabulary {
   part_of_speech: string;
 }
 
+export interface LearningPhrase {
+  phrase: string;
+  translation: string;
+  context_note?: string;
+  example_sentence?: string;
+  part_of_speech?: string;
+}
+
+export type LearningSectionType = "narrative" | "phrase_focus" | "vocabulary" | "summary";
+
+export interface LearningSection {
+  id: string;
+  type: LearningSectionType;
+  title: string;
+  title_en: string;
+  script: string;
+  key_phrases?: LearningPhrase[];
+  audio_url?: string;
+  estimated_duration_seconds?: number;
+}
+
+/** V2 multi-section learning content (preferred). */
 export interface ItemLearningContent {
+  sections: LearningSection[];
+  vocabulary: LearningVocabulary[];
+  difficulty: "beginner" | "intermediate" | "advanced";
+  total_audio_duration_seconds?: number;
+}
+
+/** V1 legacy flat learning content (single script). */
+export interface ItemLearningContentLegacy {
   script: string;
   vocabulary: LearningVocabulary[];
   difficulty: "beginner" | "intermediate" | "advanced";
   audio_url?: string;
 }
+
+/** Raw learning content from DB — can be either v1 or v2. */
+export type ItemLearningContentRaw = ItemLearningContent | ItemLearningContentLegacy;
 
 export interface AudioSegment {
   item_id: string;
@@ -246,9 +279,9 @@ export interface RawPipelineItem {
   exhibits?: ExhibitData[] | null;
   audio_url?: string | null;
   is_placeholder?: boolean;
-  // Language learning content (per-item)
-  learning_fr?: ItemLearningContent | null;
-  learning_ar?: ItemLearningContent | null;
+  // Language learning content (per-item) — may be v1 legacy or v2 sections
+  learning_fr?: ItemLearningContentRaw | null;
+  learning_ar?: ItemLearningContentRaw | null;
 }
 
 // ─── Sprint 3 shapes (defined now for forward-compatibility) ────────────────

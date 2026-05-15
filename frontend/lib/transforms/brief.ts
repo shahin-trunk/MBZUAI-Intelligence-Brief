@@ -5,6 +5,8 @@ import type {
   RawPipelineBrief,
   RawPipelineItem,
   SectionName,
+  ItemLearningContent,
+  ItemLearningContentRaw,
 } from "@/lib/types/brief";
 import { SECTION_ORDER } from "@/lib/types/brief";
 
@@ -123,9 +125,9 @@ function transformItem(raw: RawPipelineItem): BriefItem {
         ? [raw.exhibits]
         : undefined,
     audio_url: raw.audio_url ?? undefined,
-    // Language learning content
-    learning_fr: raw.learning_fr ?? undefined,
-    learning_ar: raw.learning_ar ?? undefined,
+    // Language learning content — normalize v1 legacy → v2 sections if needed
+    learning_fr: normalizeLearningContent(raw.learning_fr),
+    learning_ar: normalizeLearningContent(raw.learning_ar),
   };
 }
 
@@ -218,4 +220,42 @@ export function getSectionShortName(name: string): string {
     "Model Releases & Technical Developments": "AI & Tech",
   };
   return shortNames[name as SectionName] ?? name;
+}
+
+/**
+ * Normalize learning content from raw DB format.
+ * V1 legacy (has `script`, no `sections`) → wrapped into a single-section v2 structure.
+ * V2 (has `sections`) → passed through as-is.
+ */
+function normalizeLearningContent(
+  raw: ItemLearningContentRaw | null | undefined,
+): ItemLearningContent | undefined {
+  if (!raw) return undefined;
+
+  // V2 format: already has sections array
+  if ("sections" in raw && Array.isArray(raw.sections) && raw.sections.length > 0) {
+    return raw as ItemLearningContent;
+  }
+
+  // V1 legacy: has script field, no sections — wrap into single-section v2
+  if ("script" in raw && typeof raw.script === "string" && raw.script.length > 0) {
+    const legacy = raw as { script: string; vocabulary: any[]; difficulty: string; audio_url?: string };
+    return {
+      sections: [
+        {
+          id: "full",
+          type: "narrative",
+          title: "Lesson",
+          title_en: "Lesson",
+          script: legacy.script,
+          key_phrases: [],
+          audio_url: legacy.audio_url,
+        },
+      ],
+      vocabulary: Array.isArray(legacy.vocabulary) ? legacy.vocabulary : [],
+      difficulty: (legacy.difficulty as ItemLearningContent["difficulty"]) || "intermediate",
+    };
+  }
+
+  return undefined;
 }
