@@ -21,7 +21,7 @@ jobs:
   audio:
     if: ${{ !contains(fromJSON('["0","false","False","FALSE","no","No","NO","off","Off","OFF"]'), vars.ENABLE_AUDIO_BRIEF || '') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 150
 
     steps:
       - name: Checkout repository

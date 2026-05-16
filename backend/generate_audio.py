@@ -1406,7 +1406,7 @@ def _update_briefs_table(
 LEARNING_SCRIPT_PROMPT_FILE = "language_learning_prompt.md"
 LEARNING_OUTLINE_PROMPT_FILE = "language_learning_outline_prompt.md"
 LEARNING_SECTIONS_PROMPT_FILE = "language_learning_sections_prompt.md"
-LEARNING_SCRIPT_MAX_TOKENS = 2048
+LEARNING_SCRIPT_MAX_TOKENS = 4096
 LEARNING_SECTIONS_MAX_TOKENS = 8192
 LEARNING_SCRIPT_MAX_ATTEMPTS = 2
 # Chars-per-second for audio duration estimation
