@@ -18,52 +18,11 @@ This outline MUST be specific to THIS news item. Every section must reference en
 
 ## Output Format
 
-Return a single JSON object (no markdown fences, no surrounding text):
+You MUST return ONLY a valid JSON object. No explanation, no commentary, no markdown fences — just the raw JSON starting with `{` and ending with `}`.
 
-```json
-{
-  "sections": [
-    {
-      "id": "context_intro",
-      "type": "narrative",
-      "title": "Title in {target_language}",
-      "title_en": "Context & First Words",
-      "focus": "Set the news context in 2-3 English sentences, then introduce 2 key {target_language} terms from the headline with pronunciation. Specify WHICH terms and WHY they matter linguistically."
-    },
-    {
-      "id": "grammar_focus",
-      "type": "grammar",
-      "title": "Title in {target_language}",
-      "title_en": "Grammar in Action",
-      "focus": "Teach 1-2 grammar patterns that appear naturally in this story — e.g. adjective-noun order, verb tense used in news reporting, genitive constructions, article gender agreement. Specify WHICH grammar pattern and WHICH words demonstrate it."
-    },
-    {
-      "id": "vocabulary_deep_dive",
-      "type": "vocabulary",
-      "title": "Title in {target_language}",
-      "title_en": "Vocabulary Deep Dive",
-      "focus": "Deep treatment of 3-4 key terms: pronunciation, etymology, gender, multiple usage examples in different contexts. Specify WHICH terms and WHAT linguistic features each one teaches."
-    },
-    {
-      "id": "usage_in_context",
-      "type": "phrase_focus",
-      "title": "Title in {target_language}",
-      "title_en": "Professional Usage",
-      "focus": "Teach 2-3 multi-word expressions used in professional/diplomatic settings. Show register differences (formal vs informal). Specify WHICH expressions and HOW they differ from everyday equivalents."
-    },
-    {
-      "id": "recap",
-      "type": "summary",
-      "title": "Title in {target_language}",
-      "title_en": "Quick Recap",
-      "focus": "Reinforce the 3 most important terms/patterns from the lesson in 2 concise sentences."
-    }
-  ],
-  "vocabulary_focus_terms": [
-    {"term": "English term from the news", "pos": "noun/verb/phrase", "grammar_challenge": "Why this word is interesting for English speakers learning {target_language}"}
-  ]
-}
-```
+The JSON must have this exact structure:
+
+{"sections": [{"id": "context_intro", "type": "narrative", "title": "Title in {target_language}", "title_en": "Context & First Words", "focus": "Set the news context in 2-3 English sentences, then introduce 2 key {target_language} terms from the headline with pronunciation. Specify WHICH terms and WHY they matter linguistically."}, {"id": "grammar_focus", "type": "grammar", "title": "Title in {target_language}", "title_en": "Grammar in Action", "focus": "Teach 1-2 grammar patterns that appear naturally in this story. Specify WHICH grammar pattern and WHICH words demonstrate it."}, {"id": "vocabulary_deep_dive", "type": "vocabulary", "title": "Title in {target_language}", "title_en": "Vocabulary Deep Dive", "focus": "Deep treatment of 3-4 key terms: pronunciation, etymology, gender, multiple usage examples. Specify WHICH terms and WHAT linguistic features each one teaches."}, {"id": "usage_in_context", "type": "phrase_focus", "title": "Title in {target_language}", "title_en": "Professional Usage", "focus": "Teach 2-3 multi-word expressions used in professional/diplomatic settings. Specify WHICH expressions and HOW they differ from everyday equivalents."}, {"id": "recap", "type": "summary", "title": "Title in {target_language}", "title_en": "Quick Recap", "focus": "Reinforce the 3 most important terms/patterns from the lesson in 2 concise sentences."}], "vocabulary_focus_terms": [{"term": "English term from the news", "pos": "noun/verb/phrase", "grammar_challenge": "Why this word is interesting for English speakers learning {target_language}"}]}
 
 ## Requirements
 

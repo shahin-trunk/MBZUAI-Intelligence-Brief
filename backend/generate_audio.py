@@ -466,26 +466,91 @@ def _load_podcast_prompt(brief_json: dict, shared_outline: str, lang: str = "en"
 # ---------------------------------------------------------------------------
 
 def _extract_json_object(text: str) -> dict | None:
-    """Parse a JSON object even if the model wraps it in markdown fences."""
+    """Parse a JSON object even if the model wraps it in markdown fences or surrounding text."""
     stripped = text.strip()
     if not stripped:
         return None
 
-    stripped = re.sub(r"^```(?:json)?\s*", "", stripped)
-    stripped = re.sub(r"\s*```$", "", stripped)
+    # Strategy 1: Strip fences at start/end of entire response
+    cleaned = re.sub(r"^```(?:json)?\s*", "", stripped)
+    cleaned = re.sub(r"\s*```$", "", cleaned)
 
     try:
-        parsed = json.loads(stripped)
+        parsed = json.loads(cleaned)
+        if isinstance(parsed, dict):
+            return parsed
     except json.JSONDecodeError:
-        match = re.search(r"\{.*\}", stripped, re.DOTALL)
-        if not match:
-            return None
-        try:
-            parsed = json.loads(match.group(0))
-        except json.JSONDecodeError:
-            return None
+        pass
 
-    return parsed if isinstance(parsed, dict) else None
+    # Strategy 2: Extract content from markdown code fence anywhere in response
+    fence_match = re.search(r"```(?:json)?\s*\n?(.*?)\n?\s*```", stripped, re.DOTALL)
+    if fence_match:
+        fenced_content = fence_match.group(1).strip()
+        try:
+            parsed = json.loads(fenced_content)
+            if isinstance(parsed, dict):
+                return parsed
+        except json.JSONDecodeError:
+            # Try fixing trailing commas in fenced content
+            fixed = re.sub(r",\s*([}\]])", r"\1", fenced_content)
+            try:
+                parsed = json.loads(fixed)
+                if isinstance(parsed, dict):
+                    return parsed
+            except json.JSONDecodeError:
+                pass
+
+    # Strategy 3: Find outermost JSON object using brace matching
+    start_idx = stripped.find("{")
+    if start_idx == -1:
+        return None
+
+    # Find matching closing brace by counting depth
+    depth = 0
+    in_string = False
+    escape_next = False
+    end_idx = -1
+    for i in range(start_idx, len(stripped)):
+        ch = stripped[i]
+        if escape_next:
+            escape_next = False
+            continue
+        if ch == "\\":
+            if in_string:
+                escape_next = True
+            continue
+        if ch == '"' and not escape_next:
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                end_idx = i
+                break
+
+    if end_idx == -1:
+        return None
+
+    candidate = stripped[start_idx:end_idx + 1]
+    try:
+        parsed = json.loads(candidate)
+        if isinstance(parsed, dict):
+            return parsed
+    except json.JSONDecodeError:
+        # Try fixing trailing commas
+        fixed = re.sub(r",\s*([}\]])", r"\1", candidate)
+        try:
+            parsed = json.loads(fixed)
+            if isinstance(parsed, dict):
+                return parsed
+        except json.JSONDecodeError:
+            pass
+
+    return None
 
 
 def _audit_script_coverage(
@@ -1595,8 +1660,9 @@ def _generate_learning_outline(item: dict, lang: str) -> dict | None:
                                 lang_label, item.get("id", "?"),
                                 len(sections) if isinstance(sections, list) else 0, attempt + 1)
             else:
-                log.warning("Could not parse %s outline JSON for item %s on attempt %d",
-                            lang_label, item.get("id", "?"), attempt + 1)
+                log.warning("Could not parse %s outline JSON for item %s on attempt %d. "
+                            "Response starts with: %.500s",
+                            lang_label, item.get("id", "?"), attempt + 1, raw[:500] if raw else "<empty>")
         except Exception as exc:
             log.warning("Outline generation failed for %s item %s on attempt %d: %s",
                         lang_label, item.get("id", "?"), attempt + 1, exc)

@@ -50,102 +50,11 @@ Every section script MUST use vocabulary drawn from THIS specific news item. Do 
 
 ## Output Format
 
-Return a single valid JSON object. DO NOT include any preamble, explanation, or text before or after the JSON. DO NOT wrap in markdown code fences. The JSON must parse correctly:
+You MUST return ONLY a valid JSON object. No explanation, no commentary, no markdown fences — just the raw JSON starting with `{` and ending with `}`. Ensure all commas between fields are present. The JSON must parse correctly with `json.loads()`.
 
-{
-  "sections": [
-    {
-      "id": "context_intro",
-      "type": "narrative",
-      "title": "Section title in {target_language}",
-      "title_en": "Context & First Words",
-      "script": "100-200 chars. ~80% ENGLISH. Set the news context in 1-2 sentences, then introduce 2 key {target_language} terms with pronunciation. E.g.: 'Today's story involves AI policy in the UAE. The key term is intelligence artificielle, pronounced an-teh-lee-ZHAWNSS ar-tee-fee-SYELL, meaning artificial intelligence.'"
-      "key_phrases": [
-        {
-          "phrase": "term in {target_language}",
-          "translation": "English translation",
-          "pronunciation_guide": "phonetic rendering",
-          "part_of_speech": "noun|verb|phrase"
-        }
-      ]
-    },
-    {
-      "id": "grammar_focus",
-      "type": "grammar",
-      "title": "Section title in {target_language}",
-      "title_en": "Grammar in Action",
-      "script": "200-400 chars. ~80% ENGLISH. Teach 1-2 grammar patterns from this story. Explain the RULE, give the {target_language} example, show WHY it works that way. E.g.: 'In French, adjectives follow the noun — the opposite of English. So we say intelligence artificielle, not artificielle intelligence. Notice the feminine ending -elle on artificielle. This matches because intelligence is feminine — la intelligence, shortened to l'intelligence.'"
-      "key_phrases": [
-        {
-          "phrase": "term in {target_language}",
-          "translation": "English translation",
-          "grammar_note": "MANDATORY: gender, agreement, tense, conjugation pattern",
-          "pronunciation_guide": "phonetic rendering",
-          "conjugation": "For verbs: compact conjugation (je/il/nous forms)",
-          "example_sentences": ["Example 1 in {target_language} with inline English gloss", "Example 2 in different context"],
-          "part_of_speech": "noun|verb|adjective"
-        }
-      ]
-    },
-    {
-      "id": "vocabulary_deep_dive",
-      "type": "vocabulary",
-      "title": "Section title in {target_language}",
-      "title_en": "Vocabulary Deep Dive",
-      "script": "250-450 chars. ~80% ENGLISH. Deep treatment of 3-4 key terms. For EACH term: pronunciation, word root/etymology, gender (for nouns), and show usage in 2 contexts. E.g.: 'The word gouvernement comes from the Latin gubernare, to steer. It's masculine — le gouvernement. You'll hear it in le gouvernement federal, the federal government, and also le gouvernement provisoire, the interim government.'"
-      "key_phrases": [
-        {
-          "phrase": "term in {target_language}",
-          "translation": "English translation",
-          "grammar_note": "MANDATORY: gender, number, morphological note",
-          "pronunciation_guide": "MANDATORY: phonetic rendering with stress",
-          "word_root": "Etymology or morphological breakdown",
-          "register": "formal|diplomatic|standard|technical",
-          "example_sentences": ["MANDATORY: Example 1 in {target_language} — 'English gloss'", "MANDATORY: Example 2 in different context — 'English gloss'"],
-          "part_of_speech": "noun|verb|adjective"
-        }
-      ]
-    },
-    {
-      "id": "usage_in_context",
-      "type": "phrase_focus",
-      "title": "Section title in {target_language}",
-      "title_en": "Professional Usage",
-      "script": "200-350 chars. ~80% ENGLISH. Teach 2-3 multi-word professional expressions. Show how register differs — formal diplomatic usage vs. everyday speech. E.g.: 'In a diplomatic communique, you'd write accord bilateral, a bilateral agreement. In everyday French, you might simply say un accord entre les deux pays, an agreement between the two countries. The formal version carries more weight in official documents.'"
-      "key_phrases": [
-        {
-          "phrase": "multi-word expression in {target_language}",
-          "translation": "English translation",
-          "register": "MANDATORY: formal|diplomatic|standard",
-          "context_note": "When and where to use this expression",
-          "example_sentences": ["Formal usage example — 'English gloss'", "Informal equivalent — 'English gloss'"],
-          "part_of_speech": "phrase"
-        }
-      ]
-    },
-    {
-      "id": "recap",
-      "type": "summary",
-      "title": "Section title in {target_language}",
-      "title_en": "Quick Recap",
-      "script": "80-150 chars. ~80% ENGLISH. Reinforce the 3 most important terms from the lesson. Say each term in {target_language}, give the English meaning one more time. Keep it concise and confident."
-      "key_phrases": []
-    }
-  ],
-  "vocabulary": [
-    {
-      "term": "English term from the news",
-      "translation": "Translation in {target_language}",
-      "definition": "One-sentence definition in {target_language}",
-      "example_sentence": "Primary example in {target_language} using this story's context",
-      "part_of_speech": "noun|verb|adjective|adverb|phrase",
-      "grammar_note": "Gender, conjugation, or morphological note",
-      "pronunciation_guide": "Phonetic rendering",
-      "example_sentences": ["Example 1 in {target_language}", "Example 2 in different context"]
-    }
-  ],
-  "difficulty": "beginner|intermediate|advanced"
-}
+The JSON must follow this structure (note: all commas between fields are required):
+
+{"sections": [{"id": "context_intro", "type": "narrative", "title": "Section title in {target_language}", "title_en": "Context & First Words", "script": "100-200 chars. ~80% ENGLISH narration teaching {target_language} terms from this news item with pronunciation.", "key_phrases": [{"phrase": "term in {target_language}", "translation": "English translation", "pronunciation_guide": "phonetic rendering", "part_of_speech": "noun|verb|phrase"}]}, {"id": "grammar_focus", "type": "grammar", "title": "Section title in {target_language}", "title_en": "Grammar in Action", "script": "200-400 chars. ~80% ENGLISH. Teach 1-2 grammar patterns from this story. Explain the RULE, give the example, show WHY it works that way.", "key_phrases": [{"phrase": "term in {target_language}", "translation": "English translation", "grammar_note": "gender, agreement, tense, conjugation pattern", "pronunciation_guide": "phonetic rendering", "conjugation": "For verbs: compact conjugation", "example_sentences": ["Example 1", "Example 2"], "part_of_speech": "noun|verb|adjective"}]}, {"id": "vocabulary_deep_dive", "type": "vocabulary", "title": "Section title in {target_language}", "title_en": "Vocabulary Deep Dive", "script": "250-450 chars. ~80% ENGLISH. Deep treatment of 3-4 key terms with pronunciation, etymology, gender, and 2 usage contexts each.", "key_phrases": [{"phrase": "term in {target_language}", "translation": "English translation", "grammar_note": "gender, number, morphological note", "pronunciation_guide": "phonetic rendering with stress", "word_root": "Etymology or morphological breakdown", "register": "formal|diplomatic|standard|technical", "example_sentences": ["Example 1", "Example 2"], "part_of_speech": "noun|verb|adjective"}]}, {"id": "usage_in_context", "type": "phrase_focus", "title": "Section title in {target_language}", "title_en": "Professional Usage", "script": "200-350 chars. ~80% ENGLISH. Teach 2-3 multi-word professional expressions showing register differences.", "key_phrases": [{"phrase": "multi-word expression in {target_language}", "translation": "English translation", "register": "formal|diplomatic|standard", "context_note": "When and where to use this expression", "example_sentences": ["Formal usage", "Informal equivalent"], "part_of_speech": "phrase"}]}, {"id": "recap", "type": "summary", "title": "Section title in {target_language}", "title_en": "Quick Recap", "script": "80-150 chars. ~80% ENGLISH. Reinforce the 3 most important terms from the lesson.", "key_phrases": []}], "vocabulary": [{"term": "English term from the news", "translation": "Translation in {target_language}", "definition": "One-sentence definition in {target_language}", "example_sentence": "Primary example using this story context", "part_of_speech": "noun|verb|adjective|adverb|phrase", "grammar_note": "Gender, conjugation, or morphological note", "pronunciation_guide": "Phonetic rendering", "example_sentences": ["Example 1", "Example 2"]}], "difficulty": "beginner|intermediate|advanced"}
 
 ## Requirements
 
