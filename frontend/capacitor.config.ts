@@ -12,9 +12,17 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: "automatic",
     preferredContentMode: "mobile",
+    scrollEnabled: true,
+    // Capacitor iOS already sets allowsInlineMediaPlayback=true and
+    // mediaTypesRequiringUserActionForPlayback=[] in its WKWebView config,
+    // enabling TTS audio autoplay without user gesture.
+    appendUserAgent: "MBZUAIIntel",
   },
   android: {
     allowMixedContent: false,
+    // Android WebView permits autoplay by default; no extra config needed
+    // for HTML5 audio TTS playback.
+    appendUserAgent: "MBZUAIIntel",
   },
   plugins: {
     SplashScreen: {
@@ -29,6 +37,9 @@ const config: CapacitorConfig = {
     },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"],
+    },
+    CapacitorHttp: {
+      enabled: true,
     },
   },
 };
