@@ -47,8 +47,8 @@ SCRIPT_GENERATION_MAX_ATTEMPTS = 3
 LANGUAGE_SCRIPT_BUDGETS = {
     "en": {
         "target_words": 850,
-        "hard_max_words": 1100,
-        "hard_max_chars": 8500,
+        "hard_max_words": 0,       # disabled — user prefers natural length
+        "hard_max_chars": 15000,   # generous ceiling to prevent runaway
     },
     "fr": {
         "target_words": 950,
@@ -62,6 +62,43 @@ LANGUAGE_SCRIPT_BUDGETS = {
     },
 }
 BREAK_TAG_PATTERN = r'<break\s+time="[^"]+"\s*/>'
+
+# English stop words for bilingual script validation — used to detect whether
+# a script contains actual English narration vs pure target language.
+ENGLISH_STOP_WORDS = frozenset({
+    "a", "about", "above", "after", "again", "against", "all", "am", "an", "and",
+    "any", "are", "as", "at", "be", "because", "been", "before", "being", "below",
+    "between", "both", "but", "by", "can", "could", "did", "do", "does", "doing",
+    "done", "down", "during", "each", "few", "for", "from", "had", "has", "have",
+    "having", "he", "her", "here", "hers", "herself", "him", "himself", "his",
+    "how", "i", "if", "in", "into", "is", "it", "its", "itself", "just", "let",
+    "lets", "look", "me", "more", "most", "my", "myself", "no", "nor", "not",
+    "now", "of", "off", "on", "once", "only", "or", "other", "our", "ours",
+    "ourselves", "out", "over", "own", "per", "quite", "rather", "said", "same",
+    "see", "she", "should", "show", "shown", "shows", "so", "some", "such",
+    "than", "that", "the", "their", "them", "then", "there", "these", "they",
+    "this", "those", "through", "to", "too", "under", "until", "up", "upon",
+    "us", "very", "was", "way", "we", "were", "what", "when", "where", "which",
+    "while", "who", "why", "will", "with", "would", "you", "your",
+})
+
+
+def _is_bilingual_script(script: str, _lang: str = "") -> bool:
+    """Check that a learning section script contains actual English narration.
+
+    Pure target-language scripts (e.g. entirely French or Arabic) are rejected.
+    A valid bilingual script must have at least 3 English stop words in the
+    first ~20 words of text.
+
+    Returns True if the script passes the bilingual check.
+    """
+    first_20_words = script[:120].lower().split()[:20]
+    eng_count = sum(
+        1 for w in first_20_words
+        if w.strip(".,!?;:()\"'-«»") in ENGLISH_STOP_WORDS
+    )
+    return eng_count >= 3
+
 
 # TTS base URL — defaults to Argent custom TTS; override for ElevenLabs
 # compatibility endpoint (e.g. VOICE_BASE_URL=https://api.elevenlabs.io)
@@ -319,6 +356,53 @@ def _build_shared_outline(brief_json: dict) -> tuple[str, list[dict[str, str | i
     return "\n".join(lines), outline_items
 
 
+# ---------------------------------------------------------------------------
+# Brief JSON sanitisation for TTS narration — strips AI-generated speculative
+# fields that cause Claude to fabricate/hallucinate details in the spoken script.
+# ---------------------------------------------------------------------------
+
+# Fields we keep — all factual, from direct source reporting
+_TTS_KEEP_FIELDS = frozenset({
+    "id", "rank", "headline", "section", "category",
+    "source_url", "source_name", "source_domain", "source_origin",
+    "main_bullet", "key_bullets",
+    "entities", "primary_entity", "primary_subject",
+    "primary_entity_category", "primary_subject_type",
+    "depth", "cluster", "composite_score", "significance_level",
+    "is_placeholder",  # needed so the model knows which items to skip
+    "continuity", "additional_sources", "exhibits",
+    "badge_text", "badge_subject", "badge_subject_type", "badge_subject_category",
+})
+
+# Fields we strip — AI-generated analysis/synthesis prone to hallucination
+_TTS_STRIP_FIELDS = {"analysis", "implication", "context"}
+
+# Irrelevant to script generation
+_TTS_STRIP_FIELDS.update({"audio_url", "learning_fr", "learning_ar"})
+
+
+def _sanitize_brief_json_for_tts(brief_json: dict) -> dict:
+    """Return a clean copy of brief_json with hallucination-prone fields removed."""
+    # Shallow copy metadata and all non-items keys
+    clean: dict = {
+        k: v for k, v in brief_json.items() if k != "items"
+    }
+    clean_items: list[dict] = []
+    for item in brief_json.get("items", []):
+        sanitised: dict = {}
+        for key, value in item.items():
+            if key not in _TTS_STRIP_FIELDS:
+                sanitised[key] = value
+        clean_items.append(sanitised)
+    clean["items"] = clean_items
+    return clean
+
+
+# ---------------------------------------------------------------------------
+# Podcast script prompt loading
+# ---------------------------------------------------------------------------
+
+
 def _load_podcast_prompt(brief_json: dict, shared_outline: str, lang: str = "en") -> str:
     """Load the podcast script prompt for the given language and inject outline + brief JSON."""
     voice_config = _get_voice_config()
@@ -333,7 +417,10 @@ def _load_podcast_prompt(brief_json: dict, shared_outline: str, lang: str = "en"
     prompt_text = _extract_prompt_from_md(raw_md)
 
     brief_date = brief_json.get("brief_metadata", {}).get("date", "unknown")
-    prompt_text = prompt_text.replace("{brief_json}", json.dumps(brief_json, indent=2, ensure_ascii=False))
+    prompt_text = prompt_text.replace(
+        "{brief_json}",
+        json.dumps(_sanitize_brief_json_for_tts(brief_json), indent=2, ensure_ascii=False),
+    )
     prompt_text = prompt_text.replace("{shared_outline}", shared_outline)
     prompt_text = prompt_text.replace("{date}", brief_date)
 
@@ -781,6 +868,8 @@ def _enforce_script_budget(
     char_count = len(normalized)
     budget = _get_script_budget(lang)
 
+    if budget["hard_max_words"] == 0:
+        return normalized  # Budget enforcement disabled for this language
     if word_count <= budget["hard_max_words"] and char_count <= budget["hard_max_chars"]:
         return normalized
 
@@ -1253,7 +1342,7 @@ LEARNING_SCRIPT_PROMPT_FILE = "language_learning_prompt.md"
 LEARNING_OUTLINE_PROMPT_FILE = "language_learning_outline_prompt.md"
 LEARNING_SECTIONS_PROMPT_FILE = "language_learning_sections_prompt.md"
 LEARNING_SCRIPT_MAX_TOKENS = 2048
-LEARNING_SECTIONS_MAX_TOKENS = 4096
+LEARNING_SECTIONS_MAX_TOKENS = 8192
 LEARNING_SCRIPT_MAX_ATTEMPTS = 2
 # Chars-per-second for audio duration estimation
 CHARS_PER_SECOND_FR = 5.5
@@ -1404,23 +1493,28 @@ def _has_v2_learning(item: dict, lang: str) -> bool:
     return isinstance(sections, list) and len(sections) >= 2
 
 
-def _build_rich_item_summary(item: dict) -> dict:
-    """Build a comprehensive item summary with ALL available fields for maximum differentiation."""
-    summary = {
+def _build_rich_item_summary(item: dict, for_learning: bool = False) -> dict:
+    """Build a comprehensive item summary with ALL available fields for maximum differentiation.
+
+    When for_learning=True, strips verbose AI-generated fields (context, analysis,
+    implication) that bias Claude toward pure target-language output.
+    """
+    summary: dict[str, Any] = {
         "id": item.get("id", ""),
         "headline": item.get("headline", ""),
         "section": item.get("section", ""),
         "main_bullet": item.get("main_bullet", ""),
-        "context": item.get("context", ""),
-        "implication": item.get("implication", ""),
     }
+    if not for_learning:
+        summary["context"] = item.get("context", "")
+        summary["implication"] = item.get("implication", "")
+        if item.get("analysis"):
+            summary["analysis"] = item["analysis"]
     if item.get("key_bullets"):
         bullets = item["key_bullets"]
         summary["key_bullets"] = (
             " | ".join(bullets) if isinstance(bullets, list) else str(bullets)
         )
-    if item.get("analysis"):
-        summary["analysis"] = item["analysis"]
     if item.get("primary_entity"):
         summary["primary_entity"] = item["primary_entity"]
     if item.get("primary_subject"):
@@ -1437,7 +1531,7 @@ def _load_learning_outline_prompt(item: dict, lang: str) -> str:
         log.warning("Learning outline prompt not found at %s", prompt_path)
         return ""
     prompt_text = prompt_path.read_text(encoding="utf-8").strip()
-    item_summary = _build_rich_item_summary(item)
+    item_summary = _build_rich_item_summary(item, for_learning=True)
     lang_label = "French" if lang == "fr" else "Arabic"
     prompt_text = prompt_text.replace("{item_json}", json.dumps(item_summary, indent=2, ensure_ascii=False))
     prompt_text = prompt_text.replace("{target_language}", lang_label)
@@ -1453,7 +1547,7 @@ def _load_learning_sections_prompt(item: dict, outline: dict, lang: str) -> str:
         log.warning("Learning sections prompt not found at %s", prompt_path)
         return ""
     prompt_text = prompt_path.read_text(encoding="utf-8").strip()
-    item_summary = _build_rich_item_summary(item)
+    item_summary = _build_rich_item_summary(item, for_learning=True)
     lang_label = "French" if lang == "fr" else "Arabic"
     prompt_text = prompt_text.replace("{item_json}", json.dumps(item_summary, indent=2, ensure_ascii=False))
     prompt_text = prompt_text.replace("{outline_json}", json.dumps(outline, indent=2, ensure_ascii=False))
@@ -1525,12 +1619,26 @@ def _generate_learning_sections(item: dict, outline: dict, lang: str) -> dict | 
     client = anthropic.Anthropic(api_key=api_key)
     lang_label = "French" if lang == "fr" else "Arabic"
 
+    bilingual_repair = (
+        f"CRITICAL: The previous attempt generated scripts entirely in {lang_label} "
+        f"with NO English narration. This is REJECTED. "
+        f"Every single script MUST open with an English sentence. "
+        f"Write teaching content in English with {lang_label} words embedded, "
+        f"followed by their English translations."
+    )
+
     for attempt in range(LEARNING_SCRIPT_MAX_ATTEMPTS):
         try:
+            request_prompt = prompt_text
+            max_tokens = LEARNING_SECTIONS_MAX_TOKENS
+            if attempt > 0:
+                request_prompt = f"{prompt_text}\n\n{bilingual_repair}"
+                max_tokens = int(LEARNING_SECTIONS_MAX_TOKENS * 1.25)
+
             response = client.messages.create(
                 model=ANTHROPIC_MODEL,
-                max_tokens=LEARNING_SECTIONS_MAX_TOKENS,
-                messages=[{"role": "user", "content": prompt_text}],
+                max_tokens=max_tokens,
+                messages=[{"role": "user", "content": request_prompt}],
             )
             text_blocks = [block.text for block in response.content if block.type == "text"]
             raw = "\n".join(text_blocks).strip()
@@ -1561,12 +1669,26 @@ def _generate_learning_sections(item: dict, outline: dict, lang: str) -> dict | 
                 validated_phrases = []
                 for p in (s.get("key_phrases") or []):
                     if isinstance(p, dict) and p.get("phrase") and p.get("translation"):
+                        # Extract example_sentences array (cap at 4)
+                        raw_examples = p.get("example_sentences") or []
+                        example_sentences = [
+                            str(e).strip()
+                            for e in (raw_examples if isinstance(raw_examples, list) else [])
+                            if e
+                        ][:4]
+
                         validated_phrases.append({
                             "phrase": str(p.get("phrase", "")).strip(),
                             "translation": str(p.get("translation", "")).strip(),
                             "context_note": str(p.get("context_note", "")).strip(),
                             "example_sentence": str(p.get("example_sentence", "")).strip(),
                             "part_of_speech": str(p.get("part_of_speech", "")).strip(),
+                            "grammar_note": str(p.get("grammar_note", "")).strip(),
+                            "pronunciation_guide": str(p.get("pronunciation_guide", "")).strip(),
+                            "example_sentences": example_sentences,
+                            "word_root": str(p.get("word_root", "")).strip(),
+                            "register": str(p.get("register", "")).strip(),
+                            "conjugation": str(p.get("conjugation", "")).strip(),
                         })
 
                 validated_sections.append({
@@ -1583,16 +1705,45 @@ def _generate_learning_sections(item: dict, outline: dict, lang: str) -> dict | 
                             len(validated_sections), lang_label, item.get("id", "?"), attempt + 1)
                 continue
 
+            # Bilingual validation — every script MUST contain English narration
+            all_bilingual = True
+            for s in validated_sections:
+                script = s["script"]
+                if not _is_bilingual_script(script, lang):
+                    all_bilingual = False
+                    log.warning(
+                        "Section %s failed bilingual check for %s item %s (attempt %d)",
+                        s["id"], lang_label, item.get("id", "?"), attempt + 1,
+                    )
+                    break
+
+            if not all_bilingual:
+                log.warning(
+                    "%s sections are pure target language — retrying with bilingual enforcement",
+                    lang_label,
+                )
+                continue
+
             vocab = parsed.get("vocabulary", [])
             validated_vocab = []
             for v in (vocab if isinstance(vocab, list) else []):
                 if isinstance(v, dict) and v.get("term") and v.get("translation"):
+                    raw_examples = v.get("example_sentences") or []
+                    example_sentences = [
+                        str(e).strip()
+                        for e in (raw_examples if isinstance(raw_examples, list) else [])
+                        if e
+                    ][:4]
+
                     validated_vocab.append({
                         "term": str(v.get("term", "")).strip(),
                         "translation": str(v.get("translation", "")).strip(),
                         "definition": str(v.get("definition", "")).strip(),
                         "example_sentence": str(v.get("example_sentence", "")).strip(),
                         "part_of_speech": str(v.get("part_of_speech", "")).strip(),
+                        "grammar_note": str(v.get("grammar_note", "")).strip(),
+                        "pronunciation_guide": str(v.get("pronunciation_guide", "")).strip(),
+                        "example_sentences": example_sentences,
                     })
 
             difficulty = str(parsed.get("difficulty", "intermediate")).strip()
@@ -1642,8 +1793,12 @@ def _generate_section_audio(
 
 
 def _estimate_duration_seconds(script: str, lang: str) -> float:
-    """Estimate audio duration in seconds from script character count."""
-    cps = CHARS_PER_SECOND_FR if lang == "fr" else CHARS_PER_SECOND_AR
+    """Estimate audio duration in seconds from script character count.
+
+    Bilingual scripts are mostly English narration with embedded target-language
+    phrases, so we use an English-dominated speech rate (~14 chars/sec).
+    """
+    cps = 14.0
     return len(script) / cps
 
 
@@ -1662,28 +1817,13 @@ def _generate_learning_content_v2(item: dict, lang: str) -> dict | None:
     # Step 1: Generate outline
     outline = _generate_learning_outline(item, lang)
     if not outline:
-        log.warning("Outline generation failed for %s item %s — falling back to v1", lang_label, item_id)
-        v1 = _generate_learning_content(item, lang)
-        if v1:
-            title_intro = "Introduction" if lang == "fr" else "مقدمة"
-            return {
-                "sections": [{
-                    "id": "full",
-                    "type": "narrative",
-                    "title": title_intro,
-                    "title_en": "Full Lesson",
-                    "script": v1["script"],
-                    "key_phrases": [],
-                }],
-                "vocabulary": v1.get("vocabulary", []),
-                "difficulty": v1.get("difficulty", "intermediate"),
-            }
+        log.warning("Outline generation failed for %s item %s — skipping item", lang_label, item_id)
         return None
 
     # Step 2: Generate full section content
     content = _generate_learning_sections(item, outline, lang)
     if not content:
-        log.warning("Sections generation failed for %s item %s", lang_label, item_id)
+        log.warning("Sections generation failed for %s item %s — skipping item", lang_label, item_id)
         return None
 
     # Estimate total duration
@@ -1998,13 +2138,15 @@ def generate_audio_brief(
                             learning_count += 1
 
                             # Generate per-section audio
-                            if voice_id:
+                            # Bilingual learning scripts are narrated in English with embedded target language
+                            learning_voice_id = voice_config.get("en", {}).get("voice_id", voice_id)
+                            if learning_voice_id:
                                 for section in learning.get("sections", []):
                                     script = section.get("script", "")
                                     sid = section.get("id", "unknown")
                                     if script and len(script) > 20:
                                         audio_url = _generate_section_audio(
-                                            sb, script, voice_id, target_date,
+                                            sb, script, learning_voice_id, target_date,
                                             item_id, lang, sid,
                                         )
                                         if audio_url:
@@ -2017,7 +2159,9 @@ def generate_audio_brief(
                         )
 
                 # Backfill: items with v2 sections but missing audio on some sections
-                if voice_id and not force:
+                # Use English voice for bilingual learning scripts
+                backfill_voice_id = voice_config.get("en", {}).get("voice_id", voice_id)
+                if backfill_voice_id and not force:
                     for item in active_items:
                         lc = item.get(f"learning_{lang}")
                         if not lc or not isinstance(lc.get("sections"), list):
@@ -2031,7 +2175,7 @@ def generate_audio_brief(
                             if script and len(script) > 20:
                                 try:
                                     audio_url = _generate_section_audio(
-                                        sb, script, voice_id, target_date,
+                                        sb, script, backfill_voice_id, target_date,
                                         item_id, lang, sid,
                                     )
                                     if audio_url:

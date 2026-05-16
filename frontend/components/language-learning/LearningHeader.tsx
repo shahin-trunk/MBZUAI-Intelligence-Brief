@@ -11,10 +11,9 @@ interface LearningHeaderProps {
   onLanguageChange: (lang: LearnLang) => void;
   hasFr: boolean;
   hasAr: boolean;
+  currentSection: number;
+  totalSections: number;
 }
-
-const toggleBtn =
-  "flex h-10 items-center justify-center rounded-full px-4 font-ui text-[13px] font-medium transition-colors";
 
 export default function LearningHeader({
   backHref,
@@ -23,59 +22,76 @@ export default function LearningHeader({
   onLanguageChange,
   hasFr,
   hasAr,
+  currentSection,
+  totalSections,
 }: LearningHeaderProps) {
+  const showBothLangs = hasFr && hasAr;
+
   return (
-    <header className="sticky top-0 z-10 border-b border-rule bg-bg-primary/95 backdrop-blur-sm">
-      <div className="flex items-center justify-between px-3 py-2.5 sm:px-5 sm:py-3">
+    <header
+      className="sticky top-0 z-20 bg-bg-primary/80 backdrop-blur-xl"
+      style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
+    >
+      {/* Main row: back | counter | language toggle */}
+      <div className="flex items-center justify-between px-4 pb-2">
         {/* Back button */}
         <a
           href={backHref}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-rule bg-bg-surface text-text-primary transition-colors hover:bg-bg-surface-2"
+          className="flex h-[44px] w-[44px] shrink-0 items-center justify-center"
           aria-label="Back to briefing"
         >
-          <ArrowLeft className="h-5 w-5" strokeWidth={1.75} />
+          <ArrowLeft
+            className="h-5 w-5 text-text-primary"
+            strokeWidth={1.75}
+          />
         </a>
 
-        {/* English headline reference (subtle) */}
-        <p className="mx-3 line-clamp-1 text-center font-ui text-[12px] text-text-muted sm:mx-4 sm:text-[13px]">
-          {headline}
-        </p>
+        {/* Section counter */}
+        <span className="font-ui text-[13px] font-medium text-text-secondary tabular-nums">
+          {currentSection} / {totalSections}
+        </span>
 
-        {/* Language toggle */}
-        <div className="flex shrink-0 items-center overflow-hidden rounded-full border border-rule bg-bg-surface">
-          {hasFr && (
+        {/* Language toggle pill */}
+        {showBothLangs ? (
+          <div className="flex shrink-0 items-center overflow-hidden rounded-full border border-rule bg-bg-surface/50 backdrop-blur-sm">
             <button
               type="button"
-              disabled={!hasFr}
               onClick={() => onLanguageChange("fr")}
-              className={`${toggleBtn} ${
+              className={`flex h-8 items-center justify-center px-3 font-ui text-[12px] font-medium transition-colors ${
                 language === "fr"
-                  ? "bg-accent-primary text-white"
-                  : "text-text-secondary hover:text-text-primary"
+                  ? "text-accent-primary"
+                  : "text-text-muted hover:text-text-secondary"
               }`}
               aria-label="French"
               aria-pressed={language === "fr"}
             >
               FR
             </button>
-          )}
-          {hasAr && (
+            <div className="h-3 w-px bg-rule" />
             <button
               type="button"
-              disabled={!hasAr}
               onClick={() => onLanguageChange("ar")}
-              className={`${toggleBtn} ${
+              className={`flex h-8 items-center justify-center px-3 font-ui text-[12px] font-medium transition-colors ${
                 language === "ar"
-                  ? "bg-accent-primary text-white"
-                  : "text-text-secondary hover:text-text-primary"
+                  ? "text-accent-primary"
+                  : "text-text-muted hover:text-text-secondary"
               }`}
               aria-label="Arabic"
               aria-pressed={language === "ar"}
             >
               AR
             </button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="w-[44px]" />
+        )}
+      </div>
+
+      {/* Headline subtitle */}
+      <div className="px-4 pb-3">
+        <p className="text-center font-body text-[12px] leading-snug text-text-muted truncate">
+          {headline}
+        </p>
       </div>
     </header>
   );

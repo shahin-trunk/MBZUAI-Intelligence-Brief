@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { formatTime } from "@/lib/utils";
+import { registerAudio, unregisterAudio } from "@/hooks/useSectionAudio";
 
 type Speed = 1 | 1.25 | 1.5 | 2;
 type Language = "en" | "fr" | "ar";
@@ -81,6 +82,7 @@ export function useAudioPlayer(
     const audio = new Audio(currentUrl);
     // "metadata" often leaves large gaps unbuffered; paused seeks then fail until enough data loads.
     audio.preload = "auto";
+    registerAudio(audio);
     audioRef.current = audio;
 
     const onTimeUpdate = () => setCurrentTime(audio.currentTime);
@@ -114,6 +116,7 @@ export function useAudioPlayer(
     audio.addEventListener("canplay", onCanPlay);
 
     return () => {
+      unregisterAudio(audio);
       audio.pause();
       audio.src = "";
       audio.load(); // Reset the audio element's internal state

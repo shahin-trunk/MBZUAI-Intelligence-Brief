@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
 export interface SectionAudioState {
-  /** Index of the currently active section in the playlist */
   currentSectionIndex: number;
   isPlaying: boolean;
   currentTime: number;
   duration: number;
   speed: number;
   isLoading: boolean;
+  overallProgress: number;
+  totalDuration: number;
+  elapsedTotal: number;
+  sectionProgress: number;
 }
 
 export interface SectionAudioActions {
@@ -24,22 +27,59 @@ export interface SectionAudioActions {
 
 const SPEED_CYCLE = [0.75, 1, 1.25];
 
+// ---------------------------------------------------------------------------
+// Global Audio Registry — tracks ALL Audio objects across the app (DOM + non-DOM)
+// ---------------------------------------------------------------------------
+const GLOBAL_AUDIO_REGISTRY = new Set<HTMLAudioElement>();
+
+export function registerAudio(el: HTMLAudioElement) {
+  GLOBAL_AUDIO_REGISTRY.add(el);
+}
+
+export function unregisterAudio(el: HTMLAudioElement) {
+  GLOBAL_AUDIO_REGISTRY.delete(el);
+}
+
 /**
- * Manages an ordered playlist of section audio URLs with auto-advance.
- *
- * When one section's audio ends, fires `onSectionComplete` and optionally
- * advances to the next section (if `autoAdvance` is true).
+ * Kill every <audio> and Audio object on the page.
+ * Prevents echo from brief-page audio bleeding through client-side navigation.
  */
+function killAllPageAudio() {
+  if (typeof document === "undefined") return;
+  // Kill DOM-attached audio elements
+  document.querySelectorAll("audio").forEach((el) => {
+    el.pause();
+    el.removeAttribute("src");
+    el.load();
+  });
+  // Kill non-DOM Audio objects that other hooks created via `new Audio()`
+  GLOBAL_AUDIO_REGISTRY.forEach((audio) => {
+    try {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+    } catch {
+      // Already destroyed
+    }
+  });
+  GLOBAL_AUDIO_REGISTRY.clear();
+}
+
 export function useSectionAudio(
-  /** Ordered audio URLs per section. `undefined` entries = no audio for that section. */
   sectionAudioUrls: (string | undefined)[],
   options?: {
     autoAdvance?: boolean;
+    estimatedDurations?: number[];
     onSectionComplete?: (index: number) => void;
     onAllComplete?: () => void;
   },
 ): SectionAudioState & SectionAudioActions {
-  const { autoAdvance = true, onSectionComplete, onAllComplete } = options ?? {};
+  const {
+    autoAdvance = true,
+    estimatedDurations,
+    onSectionComplete,
+    onAllComplete,
+  } = options ?? {};
 
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -47,27 +87,61 @@ export function useSectionAudio(
   const [duration, setDuration] = useState(0);
   const [speed, setSpeed] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  // Counter to force effect re-run even when index stays the same
+  const [epoch, setEpoch] = useState(0);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pendingPlayRef = useRef(false);
   const sectionUrlsRef = useRef(sectionAudioUrls);
   sectionUrlsRef.current = sectionAudioUrls;
 
-  // Stable callback refs
+  const urlsKey = sectionAudioUrls.map((u) => u ?? "").join("|");
+
   const onSectionCompleteRef = useRef(onSectionComplete);
   onSectionCompleteRef.current = onSectionComplete;
   const onAllCompleteRef = useRef(onAllComplete);
   onAllCompleteRef.current = onAllComplete;
 
-  // Create / swap audio element when section changes
-  useEffect(() => {
-    const url = sectionAudioUrls[currentSectionIndex];
+  const estimatedDurationsRef = useRef(estimatedDurations);
+  estimatedDurationsRef.current = estimatedDurations;
 
-    // Tear down previous
+  // On first mount: kill ALL audio on the page (brief player, stale elements)
+  useEffect(() => {
+    killAllPageAudio();
+    return () => {
+      // On unmount: destroy our audio element completely
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.removeAttribute("src");
+        audioRef.current.load();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const findNextWithAudio = useCallback(
+    (startIdx: number): number | null => {
+      let target = startIdx;
+      while (target < sectionUrlsRef.current.length && !sectionUrlsRef.current[target]) {
+        target++;
+      }
+      return target < sectionUrlsRef.current.length ? target : null;
+    },
+    [],
+  );
+
+  // Main effect: set up audio for current section
+  // `epoch` in deps ensures re-run even when index stays at 0
+  useEffect(() => {
+    const url = sectionUrlsRef.current[currentSectionIndex];
+
+    // Destroy previous audio element entirely
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.removeAttribute("src");
-      audioRef.current.load();
+      const old = audioRef.current;
+      old.pause();
+      old.removeAttribute("src");
+      old.load();
+      unregisterAudio(old);
       audioRef.current = null;
     }
 
@@ -81,49 +155,60 @@ export function useSectionAudio(
     }
 
     setIsLoading(true);
-    const audio = new Audio(url);
+
+    // Create a FRESH audio element each time — no singleton tricks
+    const audio = new Audio();
     audio.preload = "auto";
     audio.playbackRate = speed;
+    registerAudio(audio);
     audioRef.current = audio;
 
     const onLoadedMetadata = () => {
+      // Guard: only act if this is still the active audio
+      if (audioRef.current !== audio) return;
       setDuration(audio.duration);
       setIsLoading(false);
       if (pendingPlayRef.current) {
         pendingPlayRef.current = false;
-        audio.play().then(() => setIsPlaying(true)).catch(() => {});
+        audio.play().then(() => {
+          if (audioRef.current === audio) setIsPlaying(true);
+        }).catch(() => {});
       }
     };
 
     const onTimeUpdate = () => {
-      setCurrentTime(audio.currentTime);
+      if (audioRef.current === audio) setCurrentTime(audio.currentTime);
     };
 
     const onEnded = () => {
+      if (audioRef.current !== audio) return;
       setIsPlaying(false);
       onSectionCompleteRef.current?.(currentSectionIndex);
 
       if (autoAdvance) {
-        const nextIdx = currentSectionIndex + 1;
-        // Find the next section that has audio
-        let target = nextIdx;
-        while (target < sectionUrlsRef.current.length && !sectionUrlsRef.current[target]) {
-          target++;
-        }
-        if (target < sectionUrlsRef.current.length) {
+        const nextIdx = findNextWithAudio(currentSectionIndex + 1);
+        if (nextIdx !== null) {
           pendingPlayRef.current = true;
-          setCurrentSectionIndex(target);
+          setCurrentSectionIndex(nextIdx);
         } else {
           onAllCompleteRef.current?.();
         }
       }
     };
 
-    const onWaiting = () => setIsLoading(true);
-    const onCanPlay = () => setIsLoading(false);
+    const onWaiting = () => { if (audioRef.current === audio) setIsLoading(true); };
+    const onCanPlay = () => { if (audioRef.current === audio) setIsLoading(false); };
     const onError = () => {
+      if (audioRef.current !== audio) return;
       setIsLoading(false);
       setIsPlaying(false);
+      if (autoAdvance) {
+        const nextIdx = findNextWithAudio(currentSectionIndex + 1);
+        if (nextIdx !== null) {
+          pendingPlayRef.current = true;
+          setCurrentSectionIndex(nextIdx);
+        }
+      }
     };
 
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
@@ -133,7 +218,12 @@ export function useSectionAudio(
     audio.addEventListener("canplay", onCanPlay);
     audio.addEventListener("error", onError);
 
+    // Set src AFTER adding listeners so loadedmetadata is never missed
+    audio.src = url;
+    audio.load();
+
     return () => {
+      unregisterAudio(audio);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("ended", onEnded);
@@ -143,16 +233,39 @@ export function useSectionAudio(
       audio.pause();
       audio.removeAttribute("src");
       audio.load();
+      if (audioRef.current === audio) audioRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSectionIndex, sectionAudioUrls, autoAdvance]);
+  }, [currentSectionIndex, urlsKey, autoAdvance, epoch]);
 
-  // Keep playback rate in sync with speed state
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.playbackRate = speed;
-    }
+    if (audioRef.current) audioRef.current.playbackRate = speed;
   }, [speed]);
+
+  const totalDuration = useMemo(() => {
+    if (!estimatedDurations || estimatedDurations.length === 0) return 0;
+    return estimatedDurations.reduce((sum, d) => sum + (d || 0), 0);
+  }, [estimatedDurations]);
+
+  const elapsedTotal = useMemo(() => {
+    if (!estimatedDurations || estimatedDurations.length === 0) return 0;
+    let elapsed = 0;
+    for (let i = 0; i < currentSectionIndex; i++) {
+      elapsed += estimatedDurations[i] || 0;
+    }
+    elapsed += currentTime;
+    return elapsed;
+  }, [estimatedDurations, currentSectionIndex, currentTime]);
+
+  const overallProgress = useMemo(() => {
+    if (totalDuration <= 0) return 0;
+    return Math.min(1, Math.max(0, elapsedTotal / totalDuration));
+  }, [elapsedTotal, totalDuration]);
+
+  const sectionProgress = useMemo(() => {
+    if (duration <= 0) return 0;
+    return Math.min(1, Math.max(0, currentTime / duration));
+  }, [currentTime, duration]);
 
   const togglePlayPause = useCallback(() => {
     const audio = audioRef.current;
@@ -166,8 +279,9 @@ export function useSectionAudio(
   }, []);
 
   const pause = useCallback(() => {
-    if (audioRef.current && !audioRef.current.paused) {
-      audioRef.current.pause();
+    const audio = audioRef.current;
+    if (audio && !audio.paused) {
+      audio.pause();
       setIsPlaying(false);
     }
   }, []);
@@ -186,10 +300,12 @@ export function useSectionAudio(
     });
   }, []);
 
+  // playSection uses epoch counter to force effect re-run even at same index
   const playSection = useCallback((index: number) => {
     if (index < 0 || index >= sectionUrlsRef.current.length) return;
     pendingPlayRef.current = true;
     setCurrentSectionIndex(index);
+    setEpoch((e) => e + 1); // Force effect re-run
   }, []);
 
   const nextSection = useCallback(() => {
@@ -204,7 +320,6 @@ export function useSectionAudio(
   }, [currentSectionIndex]);
 
   const prevSection = useCallback(() => {
-    // If >3s into current section, restart it; otherwise go to previous
     if (audioRef.current && audioRef.current.currentTime > 3) {
       audioRef.current.currentTime = 0;
       setCurrentTime(0);
@@ -227,6 +342,10 @@ export function useSectionAudio(
     duration,
     speed,
     isLoading,
+    overallProgress,
+    totalDuration,
+    elapsedTotal,
+    sectionProgress,
     playSection,
     togglePlayPause,
     pause,

@@ -127,6 +127,9 @@ export interface LearningVocabulary {
   definition: string;
   example_sentence: string;
   part_of_speech: string;
+  grammar_note?: string;
+  pronunciation_guide?: string;
+  example_sentences?: string[];
 }
 
 export interface LearningPhrase {
@@ -135,9 +138,15 @@ export interface LearningPhrase {
   context_note?: string;
   example_sentence?: string;
   part_of_speech?: string;
+  grammar_note?: string;
+  pronunciation_guide?: string;
+  example_sentences?: string[];
+  word_root?: string;
+  register?: string;
+  conjugation?: string;
 }
 
-export type LearningSectionType = "narrative" | "phrase_focus" | "vocabulary" | "summary";
+export type LearningSectionType = "narrative" | "phrase_focus" | "vocabulary" | "grammar" | "summary";
 
 export interface LearningSection {
   id: string;
