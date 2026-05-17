@@ -483,7 +483,7 @@ export default function LanguageLearningView({
       />
 
       {/* Phrase navigation dots */}
-      <div className="flex justify-center py-3 sm:py-4">
+      <div className="flex justify-center py-2 sm:py-4 px-4 overflow-x-auto">
         <PhraseNavigationDots
           totalPhrases={phrases.length}
           currentPhraseIndex={currentPhraseIndex}

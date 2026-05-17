@@ -18,10 +18,17 @@ Select exactly {phrase_count} phrases from the briefing item above. Each phrase 
 ## Phrase Selection Strategy
 
 For each phrase, follow this process:
-1. **Identify key terms** from the briefing (entities, subjects, action words, specific claims)
+1. **Identify key terms** from the briefing (entities, subjects, action words, specific claims, unique details)
 2. **Find the {target_language} equivalent** that a native speaker would use in this context
 3. **Verify it appears in the source** — the phrase should be traceable back to specific briefing text
-4. **Assign a context_anchor** — quote the exact briefing text this phrase comes from
+4. **Assign a context_anchor** — quote the exact briefing text this phrase comes from (15-40 characters)
+5. **Cross-reference multiple briefing elements** — connect phrases to entities, locations, dates, or claims mentioned elsewhere in the briefing
+
+**Enhanced Context Requirements:**
+- Each `context_anchor` must quote 15-40 characters of actual briefing text
+- At least one phrase must reference a specific entity (person, organization, location) by name
+- At least one phrase must reference a specific action, event, or claim from the briefing
+- Script1 and Script4 must explicitly mention the briefing context (e.g., "In this briefing about...", "The report states...", "According to the news...")
 
 ## Per Phrase — Generate 4 Scripts
 
@@ -102,5 +109,7 @@ Return ONLY valid JSON matching this exact structure:
 3. Script1 and script4 must pass the bilingual check (>=3 English stop words in first 10 words)
 4. Script3 must be pure {target_language} — no English whatsoever
 5. Phrase selection MUST cover different grammatical categories (not all nouns)
-6. Every phrase must have a non-empty `context_anchor` that quotes the briefing source text
-7. If the briefing is about a specific event/entity, at least 2 phrases must directly reference it
+6. Every phrase must have a non-empty `context_anchor` that quotes 15-40 characters of briefing source text
+7. If the briefing is about a specific event/entity, at least 2 phrases must directly reference it by name
+8. **Context diversity rule**: Across all phrases, you must reference at least 3 different briefing elements (e.g., one entity, one action, one location/date)
+9. **No generic phrases**: Avoid phrases like "The situation is developing" unless they directly quote the briefing. Always use the specific terminology from the source.
