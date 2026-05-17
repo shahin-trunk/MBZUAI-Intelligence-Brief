@@ -189,6 +189,33 @@
 
 ---
 
+### Iteration 3.1 - Enhanced Audio Controller
+**Date:** 2026-05-17
+**Status:** Completed
+
+#### Changes Made
+
+**ImmersiveAudioController.tsx** - Complete rewrite with interactive controls:
+- **Script context display**: Shows current script type on hover (Explanation/Transition/In Context)
+- **Speed indicator**: Shows current playback speed (0.75x/1x/1.25x) with gauge icon
+- **Tap-to-change speed**: Click progress bar to cycle through playback speeds
+- **Speed toast**: Shows "Speed: 1.25x" notification for 1 second after change
+- **Loading indicator**: Small pulsing dot at progress bar end when audio is buffering
+- **Accessibility**: Added `role="button"`, `tabIndex`, and `aria-label` for screen readers
+
+**LanguageLearningView.tsx** - Updated to pass new props:
+- `currentScriptIndex` - for script type label
+- `speed` - from `audio.speed`
+- `onSpeedChange` - from `audio.cycleSpeed`
+- `isLoading` - from `audio.isLoading`
+
+#### Test Results
+- TypeScript compilation: PASSED
+- Build: PASSED (✓ Compiled successfully, 68/68 static pages)
+- ESLint: PASSED
+
+---
+
 ## PHASE 3: Backend Pipeline Improvements
 *(To be filled during execution)*
 

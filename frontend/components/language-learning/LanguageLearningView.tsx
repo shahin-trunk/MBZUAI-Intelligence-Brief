@@ -291,26 +291,40 @@ export default function LanguageLearningView({
   /*  Loading: generation in progress                                    */
   /* ------------------------------------------------------------------ */
   const isGenerating = !hasAnyAudio && phrases.length === 0;
+
+  // Check for partial generation (some phrases have audio, others don't)
+  const phrasesWithAudio = phrases.filter((p) => p.audio_url_1).length;
+  const isPartialGeneration = phrases.length > 0 && phrasesWithAudio < phrases.length && phrasesWithAudio > 0;
+
   if (isGenerating) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center bg-bg-primary px-6">
         <div className="mx-auto max-w-md text-center">
           <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-accent-primary" />
-          <h1 className="font-display text-xl text-text-primary">
+          <h1 className="font-display text-xl text-text-primary mb-2">
             Generating learning content...
           </h1>
-          <p className="mt-3 font-body text-sm text-text-secondary">
-            Phrases and audio are being generated in the background. Please check back shortly.
+          <p className="font-body text-sm text-text-secondary mb-4">
+            Phrases and audio are being generated in the background.
           </p>
+          <div className="flex items-center justify-center gap-2 text-xs text-text-muted mb-6">
+            <div className="w-2 h-2 rounded-full bg-accent-primary/40 animate-pulse" />
+            <span>This may take a minute</span>
+          </div>
           <a
             href={backHref}
-            className="mt-6 inline-block rounded-full border border-rule bg-bg-surface px-5 py-2.5 font-ui text-sm text-accent-primary transition-colors hover:bg-bg-surface-2"
+            className="inline-block rounded-full border border-rule bg-bg-surface px-5 py-2.5 font-ui text-sm text-accent-primary transition-colors hover:bg-bg-surface-2"
           >
             Back to briefing
           </a>
         </div>
       </div>
     );
+  }
+
+  // Partial generation: show content but indicate some audio is pending
+  if (isPartialGeneration) {
+    // Continue rendering - the normal view will handle missing audio gracefully
   }
 
   /* ------------------------------------------------------------------ */
