@@ -1332,7 +1332,7 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
     for i, chunk in enumerate(chunks):
         if using_argent:
             url = f"{VOICE_BASE_URL}/v1/synthesize"
-            payload = {"text": chunk, "speaker_id": voice_id}
+            payload = {"text": chunk, "speaker_id": voice_id, "lang": lang}
             headers = {"Content-Type": "application/json"}
         else:
             url = f"{VOICE_BASE_URL}/v1/text-to-speech/{voice_id}"

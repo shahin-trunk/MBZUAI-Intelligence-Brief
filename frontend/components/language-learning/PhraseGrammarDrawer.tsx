@@ -178,7 +178,7 @@ export default function PhraseGrammarDrawer({
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-accent-primary animate-pulse" />
               <h3 className="font-ui text-sm font-semibold text-text-primary uppercase tracking-wide">
-                Deep Dive
+                Teacher's Deep Dive
               </h3>
             </div>
             <button
@@ -190,7 +190,7 @@ export default function PhraseGrammarDrawer({
             </button>
           </div>
 
-          {/* Audio playback for Script4 */}
+          {/* Audio playback for Script4 - teacher's narration */}
           {script4AudioUrl && (
             <div className="px-4 py-3 border-b border-rule/20">
               {hasError ? (
@@ -208,7 +208,7 @@ export default function PhraseGrammarDrawer({
                     onClick={togglePlay}
                     disabled={isLoading}
                     className="flex items-center justify-center w-10 h-10 rounded-full bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer shrink-0 disabled:opacity-50"
-                    aria-label={isPlaying ? "Pause" : "Play"}
+                    aria-label={isPlaying ? "Pause narration" : "Play narration"}
                   >
                     {isLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -218,7 +218,7 @@ export default function PhraseGrammarDrawer({
                       <Play className="w-4 h-4" />
                     )}
                   </button>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="h-1.5 bg-rule/20 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-accent-primary transition-all duration-200 rounded-full"
@@ -241,17 +241,30 @@ export default function PhraseGrammarDrawer({
             </div>
           )}
 
-          {/* Script4 text (if available) */}
+          {/* Script4: Teacher's deep narration — main content */}
           {script4Text && (
-            <div className="px-4 py-3 border-b border-rule/20">
-              <p className="font-body text-[13px] text-text-secondary leading-relaxed italic">
+            <div className="px-4 py-4 border-b border-rule/20 bg-accent-primary/5">
+              <div className="flex items-start gap-2 mb-2">
+                <span className="text-xs" role="img" aria-label="teacher">👨‍🏫</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Teacher's Narration
+                </span>
+              </div>
+              <p className="font-body text-[13px] sm:text-[14px] text-text-primary leading-relaxed">
                 {script4Text}
               </p>
             </div>
           )}
 
-          {/* Grammar metadata cards - scrollable */}
+          {/* Grammar breakdown cards — secondary content */}
           <div className="divide-y divide-rule/10 overflow-y-auto flex-1" style={{ maxHeight: "calc(85vh - 200px)" }}>
+            {activeFields.length > 0 && (
+              <div className="px-4 py-2">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Grammar Breakdown
+                </span>
+              </div>
+            )}
             {activeFields.map(({ key, label, icon }, idx) => (
               <div
                 key={key}
@@ -259,16 +272,16 @@ export default function PhraseGrammarDrawer({
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-sm shrink-0 mt-0.5" role="img" aria-hidden>
-                    {icon}
-                  </span>
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-bg-surface/80 border border-rule/20">
+                    <span className="text-xs" role="img" aria-hidden>{icon}</span>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-1">
                       {label}
                     </span>
                     <p
                       dir={language === "ar" ? "rtl" : "ltr"}
-                      className="font-body text-[13px] text-text-primary leading-relaxed"
+                      className="font-body text-[13px] text-text-secondary leading-relaxed"
                     >
                       {grammar[key]}
                     </p>
@@ -289,7 +302,7 @@ export default function PhraseGrammarDrawer({
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-accent-primary animate-pulse" />
               <h3 className="font-ui text-sm font-semibold text-text-primary uppercase tracking-wide">
-                Deep Dive
+                Teacher's Deep Dive
               </h3>
             </div>
             <button
@@ -301,7 +314,7 @@ export default function PhraseGrammarDrawer({
             </button>
           </div>
 
-          {/* Audio playback for Script4 */}
+          {/* Audio playback for Script4 - teacher's narration */}
           {script4AudioUrl && (
             <div className="px-5 py-3 border-b border-rule/20">
               {hasError ? (
@@ -319,7 +332,7 @@ export default function PhraseGrammarDrawer({
                     onClick={togglePlay}
                     disabled={isLoading}
                     className="flex items-center justify-center w-10 h-10 rounded-full bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer shrink-0 disabled:opacity-50"
-                    aria-label={isPlaying ? "Pause" : "Play"}
+                    aria-label={isPlaying ? "Pause narration" : "Play narration"}
                   >
                     {isLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -329,7 +342,7 @@ export default function PhraseGrammarDrawer({
                       <Play className="w-4 h-4" />
                     )}
                   </button>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="h-1.5 bg-rule/20 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-accent-primary transition-all duration-200 rounded-full"
@@ -352,17 +365,30 @@ export default function PhraseGrammarDrawer({
             </div>
           )}
 
-          {/* Script4 text (if available) */}
+          {/* Script4: Teacher's deep narration — main content */}
           {script4Text && (
-            <div className="px-5 py-3 border-b border-rule/20">
-              <p className="font-body text-[14px] text-text-secondary leading-relaxed italic">
+            <div className="px-5 py-4 border-b border-rule/20 bg-accent-primary/5">
+              <div className="flex items-start gap-2 mb-2">
+                <span className="text-xs" role="img" aria-label="teacher">👨‍🏫</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Teacher's Narration
+                </span>
+              </div>
+              <p className="font-body text-[14px] text-text-primary leading-relaxed">
                 {script4Text}
               </p>
             </div>
           )}
 
-          {/* Grammar metadata cards */}
+          {/* Grammar breakdown cards — secondary content */}
           <div className="divide-y divide-rule/10 max-h-[50vh] overflow-y-auto">
+            {activeFields.length > 0 && (
+              <div className="px-5 py-2">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  Grammar Breakdown
+                </span>
+              </div>
+            )}
             {activeFields.map(({ key, label, icon }, idx) => (
               <div
                 key={key}
@@ -370,16 +396,16 @@ export default function PhraseGrammarDrawer({
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-sm shrink-0 mt-0.5" role="img" aria-hidden>
-                    {icon}
-                  </span>
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-bg-surface/80 border border-rule/20">
+                    <span className="text-xs" role="img" aria-hidden>{icon}</span>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-1">
                       {label}
                     </span>
                     <p
                       dir={language === "ar" ? "rtl" : "ltr"}
-                      className="font-body text-[14px] text-text-primary leading-relaxed"
+                      className="font-body text-[14px] text-text-secondary leading-relaxed"
                     >
                       {grammar[key]}
                     </p>

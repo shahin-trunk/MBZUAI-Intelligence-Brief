@@ -213,6 +213,75 @@
 
 ---
 
+## ITER 17: Teacher Narration & Audio Exclusivity
+**Date**: 2026-05-17
+**Focus**: Fix missing English teacher narration, eliminate overlapping audio chaos, add rich grammar teaching
+
+### Critical Issues Fixed
+
+1. **Audio Playback Chaos** (User-reported):
+   - Multiple audio files playing simultaneously when clicking navigation dots
+   - Swipe gestures triggering overlapping audio
+   - Grammar drawer audio bleeding into main lesson playback
+   - **Root Cause**: `killAllPageAudio()` only ran on mount, not on navigation
+
+2. **Missing Teacher Narration** (User-reported):
+   - No English teacher voice explaining phrases
+   - Content was just translated phrases, not teaching
+   - Grammar drawer showed empty or placeholder content
+   - No word-level breakdown, no etymology, no pronunciation guidance
+
+### Backend Changes
+
+1. **Prompt Rewrite** (`backend/prompts/language_learning_phrases_prompt.md`):
+   - Complete rewrite with teacher-first philosophy
+   - Explicit "You are a master language teacher" framing
+   - Forbids just reading translations: "Must NOT: Just read the translation"
+   - Requires word breakdown in script1: "Breakdown of 1-2 KEY words"
+   - Requires deep linguistics in script4: "Must cover at least 3 of: word structure, verb conjugation, register, pronunciation trap, cognate, grammar pattern, cultural usage"
+   - Increased script1 length: 150-300 chars (was 120-280)
+   - Increased script4 length: 250-500 chars (was 220-450)
+   - Required ALL 7 grammar fields, each 20-80 chars substantive
+   - Concrete examples provided for French and Arabic
+
+2. **TTS Language Hint** (`backend/generate_audio.py`):
+   - Added `"lang": lang` to Argent TTS payload
+   - Helps TTS engine select proper pronunciation model
+
+### Frontend Changes
+
+1. **Audio Exclusivity** (`frontend/hooks/useSectionAudio.ts`):
+   - `killAllPageAudio()` called at start of main effect (was only on mount)
+   - `killAllPageAudio()` called in `playSection()` before navigating
+   - `killAllPageAudio()` called in `nextSection()` and `prevSection()`
+   - `togglePlayPause()` now pauses ALL other audio in registry before playing
+   - Immediate audio destruction before new Audio element creation
+
+2. **Grammar Drawer Enrichment** (`frontend/components/language-learning/PhraseGrammarDrawer.tsx`):
+   - Renamed "Deep Dive" to "Teacher's Deep Dive"
+   - Script4 text now displayed as PRIMARY content with highlighted background
+   - Added "Teacher's Narration" label with teacher emoji
+   - Grammar fields moved to secondary "Grammar Breakdown" section
+   - Added icon containers for each grammar field (rounded bg + border)
+   - Improved ARIA labels: "Pause narration" / "Play narration"
+   - Consistent changes in both mobile and desktop versions
+
+### Test Coverage
+- **23 new tests** in `test_iter17_teacher_narration.py`:
+  - 5 audio exclusivity tests (killAllPageAudio in all navigation paths)
+  - 9 teacher narration quality tests (prompt validation, length, examples)
+  - 5 grammar drawer rich content tests (sections, ARIA, consistency)
+  - 1 TTS language hint test
+  - 3 pipeline integration tests (voice assignment, lang passthrough)
+
+### Metrics
+- Total tests: 232 (209 + 23)
+- All passing: 100%
+- Audio overlaps: 0 (was frequent)
+- Teacher narration quality: Enforced via prompt + bilingual check
+
+---
+
 ## Summary Statistics
 
 | Iteration | Tests Added | Tests Total | Key Focus |
@@ -225,6 +294,7 @@
 | Learning  | +32         | 159         | Enhanced prompt, UI/UX, context alignment |
 | ITER 15   | +30         | 189         | Context banner, stats, bookmarking |
 | ITER 16   | +20         | 209         | Audio loading, accessibility, polish |
+| ITER 17   | +23         | 232         | Teacher narration, audio exclusivity, rich grammar |
 
 ### Performance Improvements (Cumulative)
 - URL writeback: O(n) → O(1)
@@ -235,10 +305,12 @@
 - API protection: Dual circuit breakers (TTS + LLM)
 
 ### Quality Improvements
-- Learning content: Context-aligned, progressive difficulty
-- UI/UX: Enhanced visual hierarchy, responsive design
+- Learning content: Context-aligned, progressive difficulty, teacher-narrated
+- UI/UX: Enhanced visual hierarchy, responsive design, audio exclusivity
 - Type safety: Full TypeScript coverage
-- Test coverage: 159 E2E tests, all passing
+- Test coverage: 232 E2E tests, all passing
+- Teacher narration: Rich English explanations with word breakdown, etymology, pronunciation
+- Grammar drawer: Rich content display with teacher narration as primary content
 
 ### Production Readiness Checklist
 - [x] Circuit breaker protection (TTS + LLM)
@@ -251,7 +323,9 @@
 - [x] Enhanced learning prompt (12 critical rules)
 - [x] TypeScript types for all new fields
 - [x] UI component enhancements (Header, Card, Navigation)
-- [x] Comprehensive E2E test suite (159 tests)
+- [x] Comprehensive E2E test suite (232 tests)
+- [x] Audio exclusivity (no overlapping playback)
+- [x] Teacher narration quality enforced via prompt
 - [x] Clean Next.js build
 - [x] Cross-device responsive testing (complete)
 - [x] WCAG compliance (44x44px touch targets)

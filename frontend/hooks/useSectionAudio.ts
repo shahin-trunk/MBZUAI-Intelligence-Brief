@@ -135,22 +135,20 @@ export function useSectionAudio(
   useEffect(() => {
     const url = sectionUrlsRef.current[currentSectionIndex];
 
-    // Destroy previous audio element entirely
+    // CRITICAL: Kill ALL existing audio BEFORE setting up new one
+    // This prevents overlapping audio when navigating between phrases
+    killAllPageAudio();
     if (audioRef.current) {
-      const old = audioRef.current;
-      old.pause();
-      old.removeAttribute("src");
-      old.load();
-      unregisterAudio(old);
+      unregisterAudio(audioRef.current);
       audioRef.current = null;
     }
 
     setCurrentTime(0);
     setDuration(0);
     setIsPlaying(false);
+    setIsLoading(false);
 
     if (!url) {
-      setIsLoading(false);
       return;
     }
 
@@ -271,6 +269,12 @@ export function useSectionAudio(
     const audio = audioRef.current;
     if (!audio) return;
     if (audio.paused) {
+      // Kill any other audio that might be playing elsewhere
+      GLOBAL_AUDIO_REGISTRY.forEach((other) => {
+        if (other !== audio && !other.paused) {
+          other.pause();
+        }
+      });
       audio.play().then(() => setIsPlaying(true)).catch(() => {});
     } else {
       audio.pause();
@@ -303,6 +307,8 @@ export function useSectionAudio(
   // playSection uses epoch counter to force effect re-run even at same index
   const playSection = useCallback((index: number) => {
     if (index < 0 || index >= sectionUrlsRef.current.length) return;
+    // Kill ALL existing audio immediately to prevent overlaps
+    killAllPageAudio();
     pendingPlayRef.current = true;
     setCurrentSectionIndex(index);
     setEpoch((e) => e + 1); // Force effect re-run
@@ -314,6 +320,8 @@ export function useSectionAudio(
       target++;
     }
     if (target < sectionUrlsRef.current.length) {
+      // Kill ALL existing audio immediately to prevent overlaps
+      killAllPageAudio();
       pendingPlayRef.current = true;
       setCurrentSectionIndex(target);
     }
@@ -330,6 +338,8 @@ export function useSectionAudio(
       target--;
     }
     if (target >= 0) {
+      // Kill ALL existing audio immediately to prevent overlaps
+      killAllPageAudio();
       pendingPlayRef.current = true;
       setCurrentSectionIndex(target);
     }
