@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PhraseNavigationDotsProps {
@@ -23,7 +24,7 @@ const PhraseNavigationDots = memo(function PhraseNavigationDots({
   if (totalPhrases <= 1) return null;
 
   return (
-    <div className="flex items-center gap-2.5 sm:gap-3" role="navigation" aria-label="Phrase navigation">
+    <div className="flex items-center gap-3 sm:gap-4" role="navigation" aria-label="Phrase navigation">
       {Array.from({ length: totalPhrases }, (_, i) => {
         const isActive = i === currentPhraseIndex;
         const isCompleted = completedPhrases.has(i);
@@ -39,71 +40,66 @@ const PhraseNavigationDots = memo(function PhraseNavigationDots({
                 onPhraseSelect(i);
               }
             }}
-            className="relative flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent-primary/50 focus:ring-offset-2 rounded-full"
+            className="group relative flex flex-col items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent-primary/50 focus:ring-offset-2 rounded-full"
             aria-label={`Phrase ${i + 1} of ${totalPhrases}${isCompleted ? ", completed" : ""}${isActive ? ", currently playing" : ""}`}
             aria-current={isActive ? "step" : undefined}
             aria-posinset={i + 1}
             aria-setsize={totalPhrases}
           >
-            {/* Outer ring for active phrase */}
-            {isActive && (
-              <div className="absolute inset-0 rounded-full border-2 border-accent-primary/30 scale-150" aria-hidden="true" />
-            )}
-
-            {/* Completed progress ring */}
-            {isActive && scriptProgress > 0 && (
-              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 24 24" aria-hidden="true">
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="text-accent-primary/20"
-                />
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeDasharray={`${2 * Math.PI * 10}`}
-                  strokeDashoffset={`${2 * Math.PI * 10 * (1 - scriptProgress)}`}
-                  className="text-accent-primary transition-all duration-200"
-                  strokeLinecap="round"
-                />
-              </svg>
-            )}
-
-            {/* Main dot */}
-            <div
-              className={cn(
-                "h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full transition-all duration-300 relative z-10",
-                isActive && "bg-accent-primary",
-                isCompleted && !isActive && "bg-accent-primary/50",
-                !isActive && !isCompleted && "bg-rule/40 hover:bg-rule/60"
-              )}
-              aria-hidden="true"
-            />
-
-            {/* Script indicator pill (shown below active dot) */}
-            {isActive && (
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex gap-0.5" aria-hidden="true">
-                {[1, 2, 3].map((s) => (
-                  <div
-                    key={s}
-                    className={cn(
-                      "w-1 h-1 rounded-full transition-colors duration-200",
-                      s < currentScriptIndex ? "bg-accent-primary" :
-                      s === currentScriptIndex ? "bg-accent-primary" :
-                      "bg-rule/30"
-                    )}
-                  />
-                ))}
+            {/* Completed state: checkmark circle */}
+            {isCompleted && !isActive ? (
+              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-accent-primary/15 border border-accent-primary/30 flex items-center justify-center transition-all duration-300 group-hover:bg-accent-primary/20 group-hover:scale-110">
+                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent-primary" strokeWidth={2.5} />
               </div>
+            ) : isActive ? (
+              /* Active state: animated progress ring */
+              <div className="relative">
+                {/* Outer glow */}
+                <div className="absolute inset-0 rounded-full bg-accent-primary/10 blur-md scale-125" aria-hidden="true" />
+
+                {/* Progress ring */}
+                <svg className="relative h-8 w-8 sm:h-9 sm:w-9 -rotate-90" viewBox="0 0 32 32" aria-hidden="true">
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="13"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="text-accent-primary/15"
+                  />
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="13"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeDasharray={`${2 * Math.PI * 13}`}
+                    strokeDashoffset={`${2 * Math.PI * 13 * (1 - scriptProgress)}`}
+                    className="text-accent-primary transition-all duration-200"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                {/* Center dot */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-accent-primary" />
+                </div>
+              </div>
+            ) : (
+              /* Inactive/pending state */
+              <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-rule/35 transition-all duration-300 group-hover:bg-rule/55 group-hover:scale-125" aria-hidden="true" />
             )}
+
+            {/* Phrase number label (below dot) */}
+            <span className={cn(
+              "mt-1.5 font-ui text-[9px] sm:text-[10px] transition-colors duration-300",
+              isActive && "text-accent-primary font-semibold",
+              isCompleted && !isActive && "text-accent-primary/50",
+              !isActive && !isCompleted && "text-text-muted/50"
+            )}>
+              {i + 1}
+            </span>
           </button>
         );
       })}

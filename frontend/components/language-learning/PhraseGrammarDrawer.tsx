@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
-import { Play, Pause, X } from "lucide-react";
+import { Play, Pause, X, Loader2, AlertCircle } from "lucide-react";
 import type { PhraseGrammar } from "@/lib/types/brief";
 
 interface PhraseGrammarDrawerProps {
@@ -24,6 +24,8 @@ export default function PhraseGrammarDrawer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [translateY, setTranslateY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -33,26 +35,48 @@ export default function PhraseGrammarDrawer({
   useEffect(() => {
     if (!script4AudioUrl) return;
 
+    setIsLoading(true);
+    setHasError(false);
+
     const audio = new Audio(script4AudioUrl);
     audioRef.current = audio;
+    audio.preload = "auto";
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
-    const handleLoadedMetadata = () => setDuration(audio.duration);
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+      setIsLoading(false);
+    };
+    const handleCanPlayThrough = () => {
+      setIsLoading(false);
+    };
     const handleEnded = () => setIsPlaying(false);
-    const handleError = () => setIsPlaying(false);
+    const handleError = () => {
+      setIsPlaying(false);
+      setIsLoading(false);
+      setHasError(true);
+    };
+    const handleLoadStart = () => {
+      setIsLoading(true);
+      setHasError(false);
+    };
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("canplaythrough", handleCanPlayThrough);
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("error", handleError);
+    audio.addEventListener("loadstart", handleLoadStart);
 
     return () => {
       audio.pause();
       audio.removeAttribute("src");
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("canplaythrough", handleCanPlayThrough);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("error", handleError);
+      audio.removeEventListener("loadstart", handleLoadStart);
     };
   }, [script4AudioUrl]);
 
@@ -169,37 +193,51 @@ export default function PhraseGrammarDrawer({
           {/* Audio playback for Script4 */}
           {script4AudioUrl && (
             <div className="px-4 py-3 border-b border-rule/20">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={togglePlay}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer shrink-0"
-                  aria-label={isPlaying ? "Pause" : "Play"}
-                >
-                  {isPlaying ? (
-                    <Pause className="w-4 h-4" />
-                  ) : (
-                    <Play className="w-4 h-4" />
-                  )}
-                </button>
-                <div className="flex-1">
-                  <div className="h-1.5 bg-rule/20 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-accent-primary transition-all duration-200 rounded-full"
-                      style={{
-                        width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[10px] text-text-muted font-mono">
-                      {formatTime(currentTime)}
-                    </span>
-                    <span className="text-[10px] text-text-muted font-mono">
-                      {formatTime(duration)}
-                    </span>
+              {hasError ? (
+                <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-red-500/5 border border-red-500/20">
+                  <AlertCircle className="w-4 h-4 text-red-500/70 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] text-text-secondary font-body">
+                      Audio unavailable
+                    </p>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={togglePlay}
+                    disabled={isLoading}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                    aria-label={isPlaying ? "Pause" : "Play"}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : isPlaying ? (
+                      <Pause className="w-4 h-4" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
+                  </button>
+                  <div className="flex-1">
+                    <div className="h-1.5 bg-rule/20 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-accent-primary transition-all duration-200 rounded-full"
+                        style={{
+                          width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-[10px] text-text-muted font-mono">
+                        {formatTime(currentTime)}
+                      </span>
+                      <span className="text-[10px] text-text-muted font-mono">
+                        {formatTime(duration)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -266,37 +304,51 @@ export default function PhraseGrammarDrawer({
           {/* Audio playback for Script4 */}
           {script4AudioUrl && (
             <div className="px-5 py-3 border-b border-rule/20">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={togglePlay}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer shrink-0"
-                  aria-label={isPlaying ? "Pause" : "Play"}
-                >
-                  {isPlaying ? (
-                    <Pause className="w-4 h-4" />
-                  ) : (
-                    <Play className="w-4 h-4" />
-                  )}
-                </button>
-                <div className="flex-1">
-                  <div className="h-1.5 bg-rule/20 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-accent-primary transition-all duration-200 rounded-full"
-                      style={{
-                        width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[10px] text-text-muted font-mono">
-                      {formatTime(currentTime)}
-                    </span>
-                    <span className="text-[10px] text-text-muted font-mono">
-                      {formatTime(duration)}
-                    </span>
+              {hasError ? (
+                <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-red-500/5 border border-red-500/20">
+                  <AlertCircle className="w-4 h-4 text-red-500/70 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] text-text-secondary font-body">
+                      Audio unavailable
+                    </p>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={togglePlay}
+                    disabled={isLoading}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                    aria-label={isPlaying ? "Pause" : "Play"}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : isPlaying ? (
+                      <Pause className="w-4 h-4" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
+                  </button>
+                  <div className="flex-1">
+                    <div className="h-1.5 bg-rule/20 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-accent-primary transition-all duration-200 rounded-full"
+                        style={{
+                          width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-[10px] text-text-muted font-mono">
+                        {formatTime(currentTime)}
+                      </span>
+                      <span className="text-[10px] text-text-muted font-mono">
+                        {formatTime(duration)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

@@ -186,7 +186,20 @@ services:
     image: redis:7-alpine
     container_name: brief-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --tcp-backlog 2048
+      --tcp-keepalive 300
+      --timeout 300
+      --hz 10
+      --dynamic-hz yes
+      --save 900 1
+      --save 300 10
+      --save 60 10000
     volumes:
       - redis-data:/data
     networks:
@@ -199,11 +212,15 @@ services:
     deploy:
       resources:
         limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
           cpus: "0.5"
           memory: 512M
 
   # ---------------------------------------------------------------------------
   # Celery Worker — LLM/Claude script generation queue
+  # Optimized: 8 workers, 4GB RAM, prefetch=2 for better throughput
   # ---------------------------------------------------------------------------
   celery-worker-llm:
     build:
@@ -211,7 +228,7 @@ services:
       dockerfile: Dockerfile.backend
     container_name: brief-celery-llm
     restart: unless-stopped
-    command: celery -A celery_app worker -Q llm -c 5 --loglevel=info --prefetch-multiplier=1
+    command: celery -A celery_app worker -Q llm -c 8 --loglevel=info --prefetch-multiplier=2 --max-tasks-per-child=500
     working_dir: /app
     env_file:
       - deploy.env
@@ -219,6 +236,9 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
       - CELERY_BEAT_SCHEDULE={}
+      - CELERYD_HIJACK_ROOT_LOGGER=False
+      - CELERYD_TASK_TIME_LIMIT=600
+      - CELERYD_TASK_SOFT_TIME_LIMIT=540
     depends_on:
       redis:
         condition: service_healthy
@@ -234,15 +254,19 @@ services:
       driver: json-file
       options:
         max-size: "10m"
-        max-file: "3"
+        max-file: "5"
     deploy:
       resources:
         limits:
+          cpus: "4.0"
+          memory: 4G
+        reservations:
           cpus: "2.0"
           memory: 2G
 
   # ---------------------------------------------------------------------------
   # Celery Worker — Argent TTS audio generation queue
+  # Optimized: 20 workers, 8GB RAM, prefetch=4 for high I/O parallelism
   # ---------------------------------------------------------------------------
   celery-worker-audio:
     build:
@@ -250,13 +274,16 @@ services:
       dockerfile: Dockerfile.backend
     container_name: brief-celery-audio
     restart: unless-stopped
-    command: celery -A celery_app worker -Q audio -c 10 --loglevel=info --prefetch-multiplier=1
+    command: celery -A celery_app worker -Q audio -c 20 --loglevel=info --prefetch-multiplier=4 --max-tasks-per-child=1000
     working_dir: /app
     env_file:
       - deploy.env
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - CELERYD_HIJACK_ROOT_LOGGER=False
+      - CELERYD_TASK_TIME_LIMIT=300
+      - CELERYD_TASK_SOFT_TIME_LIMIT=270
     depends_on:
       redis:
         condition: service_healthy
@@ -272,15 +299,19 @@ services:
       driver: json-file
       options:
         max-size: "10m"
-        max-file: "3"
+        max-file: "5"
     deploy:
       resources:
         limits:
+          cpus: "8.0"
+          memory: 8G
+        reservations:
           cpus: "4.0"
           memory: 4G
 
   # ---------------------------------------------------------------------------
   # Celery Worker — Learning content orchestration queue
+  # Optimized: 10 workers, 4GB RAM, prefetch=2 for balanced throughput
   # ---------------------------------------------------------------------------
   celery-worker-learning:
     build:
@@ -288,13 +319,16 @@ services:
       dockerfile: Dockerfile.backend
     container_name: brief-celery-learning
     restart: unless-stopped
-    command: celery -A celery_app worker -Q learning -c 5 --loglevel=info --prefetch-multiplier=1
+    command: celery -A celery_app worker -Q learning -c 10 --loglevel=info --prefetch-multiplier=2 --max-tasks-per-child=750
     working_dir: /app
     env_file:
       - deploy.env
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - CELERYD_HIJACK_ROOT_LOGGER=False
+      - CELERYD_TASK_TIME_LIMIT=600
+      - CELERYD_TASK_SOFT_TIME_LIMIT=540
     depends_on:
       redis:
         condition: service_healthy
@@ -310,10 +344,13 @@ services:
       driver: json-file
       options:
         max-size: "10m"
-        max-file: "3"
+        max-file: "5"
     deploy:
       resources:
         limits:
+          cpus: "4.0"
+          memory: 4G
+        reservations:
           cpus: "2.0"
           memory: 2G
 

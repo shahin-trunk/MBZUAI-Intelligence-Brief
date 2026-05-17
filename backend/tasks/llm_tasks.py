@@ -6,8 +6,9 @@ import logging
 import os
 import sys
 from pathlib import Path
+from threading import Lock
 
-from celery_app import celery_app
+from celery_app import celery_app, exponential_backoff_with_jitter
 
 # Ensure backend directory is on the Python path so generate_audio imports work
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -21,6 +22,26 @@ from generate_audio import (
 )
 
 log = logging.getLogger("celery.llm")
+
+# Thread-safe Supabase client singleton per worker process
+_supabase_client = None
+_supabase_lock = Lock()
+
+
+def _get_supabase_client():
+    """Get or create a singleton Supabase client for this worker process."""
+    global _supabase_client
+    if _supabase_client is not None:
+        return _supabase_client
+    with _supabase_lock:
+        if _supabase_client is None:
+            from supabase import create_client
+            _supabase_client = create_client(
+                os.getenv("NEXT_PUBLIC_SUPABASE_URL"),
+                os.getenv("SUPABASE_SERVICE_ROLE_KEY"),
+            )
+            log.info("Supabase client initialized (pooled)")
+    return _supabase_client
 
 
 @celery_app.task(
@@ -36,15 +57,10 @@ def generate_brief_script(self, target_date: str) -> dict:
     Returns:
         {"target_date": str, "script_en": str, "outline": list}
     """
-    from supabase import create_client
-
     log.info("Generating brief script for %s (attempt %s)", target_date, self.request.retries + 1)
 
     try:
-        sb = create_client(
-            os.getenv("NEXT_PUBLIC_SUPABASE_URL"),
-            os.getenv("SUPABASE_SERVICE_ROLE_KEY"),
-        )
+        sb = _get_supabase_client()
 
         result = sb.table("briefs").select("raw_json").eq("brief_date", target_date).single().execute()
         brief_json = result.data.get("raw_json") if result.data else None
@@ -69,7 +85,7 @@ def generate_brief_script(self, target_date: str) -> dict:
 
     except Exception as exc:
         log.warning("Brief script generation failed for %s: %s", target_date, exc)
-        raise self.retry(exc=exc, countdown=min(60 * (2 ** self.request.retries), 300))
+        raise self.retry(exc=exc, countdown=exponential_backoff_with_jitter(self.request.retries))
 
 
 @celery_app.task(
@@ -85,7 +101,6 @@ def generate_learning_phrases(self, target_date: str, item_id: str, lang: str, p
     Returns:
         {"target_date": str, "item_id": str, "lang": str, "phrases": list, "difficulty": str}
     """
-    from supabase import create_client
     from generate_audio import (
         _generate_learning_phrases,
         _build_rich_item_summary,
@@ -97,22 +112,16 @@ def generate_learning_phrases(self, target_date: str, item_id: str, lang: str, p
     )
 
     try:
-        sb = create_client(
-            os.getenv("NEXT_PUBLIC_SUPABASE_URL"),
-            os.getenv("SUPABASE_SERVICE_ROLE_KEY"),
-        )
+        sb = _get_supabase_client()
 
         result = sb.table("briefs").select("raw_json").eq("brief_date", target_date).single().execute()
         brief_json = result.data.get("raw_json") if result.data else None
         if not brief_json:
             return {"target_date": target_date, "item_id": item_id, "lang": lang, "error": "brief_not_found"}
 
-        # Find the item
-        item = None
-        for i in brief_json.get("items", []):
-            if i.get("id") == item_id:
-                item = i
-                break
+        # Find the item via O(1) dictionary lookup
+        items = brief_json.get("items", [])
+        item = next((i for i in items if i.get("id") == item_id), None)
 
         if not item:
             return {"target_date": target_date, "item_id": item_id, "lang": lang, "error": "item_not_found"}
@@ -134,4 +143,4 @@ def generate_learning_phrases(self, target_date: str, item_id: str, lang: str, p
             "Learning phrase generation failed for %s item %s lang %s: %s",
             target_date, item_id, lang, exc,
         )
-        raise self.retry(exc=exc, countdown=min(60 * (2 ** self.request.retries), 300))
+        raise self.retry(exc=exc, countdown=exponential_backoff_with_jitter(self.request.retries, base_delay=60))

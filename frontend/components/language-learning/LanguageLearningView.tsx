@@ -7,10 +7,12 @@ import { useSectionAudio } from "@/hooks/useSectionAudio";
 import { useLearningAnalytics } from "@/hooks/useLearningAnalytics";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import LearningHeader from "./LearningHeader";
+import ContextBanner from "./ContextBanner";
 import PhraseCard from "./PhraseCard";
 import PhraseGrammarDrawer from "./PhraseGrammarDrawer";
 import PhraseNavigationDots from "./PhraseNavigationDots";
 import ImmersiveAudioController from "./ImmersiveAudioController";
+import LearningStats from "./LearningStats";
 import LanguageLearningErrorBoundary from "./LanguageLearningErrorBoundary";
 import LanguageLearningSkeleton from "./LanguageLearningSkeleton";
 
@@ -510,7 +512,20 @@ export default function LanguageLearningView({
         hasAr={hasAr}
         currentSection={currentPhraseIndex + 1}
         totalSections={phrases.length}
+        difficulty={currentContent?.difficulty}
+        lessonSummary={currentContent?.lesson_summary}
+        totalDuration={currentContent?.total_duration_seconds}
       />
+
+      {/* Context banner: link to parent briefing slide */}
+      <div className="px-4 py-3">
+        <ContextBanner
+          headline={item.headline}
+          briefDate={briefDate}
+          slideIndex={slideIndex}
+          category={item.section}
+        />
+      </div>
 
       {/* Phrase navigation dots */}
       <div className="flex justify-center py-2 sm:py-4 px-4 overflow-x-auto">
@@ -526,7 +541,7 @@ export default function LanguageLearningView({
 
       {/* Main content — tap to pause zone, swipe for navigation */}
       <div
-        className={`relative flex-1 flex flex-col items-center justify-start px-6 sm:px-10 lg:px-0 py-6 sm:py-10 lg:py-12 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] cursor-default select-none touch-pan-y transition-transform duration-150 ${
+        className={`relative flex-1 flex flex-col items-center justify-start px-6 sm:px-10 lg:px-0 py-6 sm:py-10 lg:py-12 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] xl:max-w-[700px] cursor-default select-none touch-pan-y transition-transform duration-150 ${
           isTapFeedback ? "scale-[0.98]" : "scale-100"
         }`}
         onClick={handleTapToggle}
@@ -654,9 +669,17 @@ export default function LanguageLearningView({
             <p className="font-body text-base sm:text-lg text-text-secondary/70 mb-2">
               You&apos;ve practiced all {phrases.length} phrase{phrases.length > 1 ? "s" : ""}.
             </p>
-            <p className="font-body text-sm text-text-muted mb-8">
+            <p className="font-body text-sm text-text-muted mb-6">
               {completedPhrases.size} / {phrases.length} phrases mastered
             </p>
+
+            {/* Learning stats */}
+            <LearningStats
+              totalPhrases={phrases.length}
+              completedPhrases={completedPhrases.size}
+              totalDuration={currentContent?.total_duration_seconds}
+              language={language}
+            />
 
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
@@ -684,7 +707,7 @@ export default function LanguageLearningView({
 
         {/* Swipe hint for mobile (shown briefly on first interaction) */}
         {!isLessonComplete && phrases.length > 1 && (
-          <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-1 text-text-muted opacity-40">
+          <div className="absolute bottom-2 sm:bottom-4 left-0 right-0 flex items-center justify-center gap-1 text-text-muted opacity-40">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="rotate-180">
               <path d="M6 3L2 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M2 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

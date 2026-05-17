@@ -128,6 +128,7 @@ export interface PhraseGrammar {
   register?: string;
   phonetic_guide?: string;
   usage_notes?: string;
+  cognate_note?: string;
 }
 
 export interface LearningPhrase {
@@ -153,6 +154,7 @@ export interface ItemLearningContent {
   phrases: LearningPhrase[];
   difficulty: "beginner" | "intermediate" | "advanced";
   total_duration_seconds?: number;
+  lesson_summary?: string;
 }
 
 // ─── V2 Legacy Types (backward compatibility) ───────────────────────────────

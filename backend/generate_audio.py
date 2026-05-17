@@ -129,6 +129,136 @@ FR_VOICE_ID_DEFAULT = "84fe56fcc955"  # Jean - French male, Paris
 AR_VOICE_ID_DEFAULT = "Tariq"  # Tariq - Arabic male, Modern Standard Arabic
 
 # ---------------------------------------------------------------------------
+# TTS Circuit Breaker
+# ---------------------------------------------------------------------------
+
+class TTSCircuitBreaker:
+    """Circuit breaker for TTS API to prevent thundering herd during outages.
+
+    States:
+    - CLOSED: Normal operation, requests pass through
+    - OPEN: Service may be down, reject requests immediately
+    - HALF_OPEN: Testing recovery, allow one probe request
+
+    After failure_threshold consecutive failures, circuit opens.
+    After timeout_seconds, circuit transitions to half-open.
+    A successful request in half-open closes the circuit.
+    """
+
+    def __init__(self, failure_threshold: int = 10, timeout_seconds: int = 60):
+        self.failure_threshold = failure_threshold
+        self.timeout_seconds = timeout_seconds
+        self.failure_count = 0
+        self.last_failure_time = 0
+        self.state = "CLOSED"
+
+    def record_failure(self):
+        """Record a TTS API failure."""
+        import time
+        self.failure_count += 1
+        self.last_failure_time = time.time()
+        if self.failure_count >= self.failure_threshold:
+            self.state = "OPEN"
+            log.warning(
+                "[TTS_CIRCUIT_BREAKER] Circuit OPEN after %d failures",
+                self.failure_count
+            )
+
+    def record_success(self):
+        """Record a successful TTS API call."""
+        self.failure_count = 0
+        self.state = "CLOSED"
+
+    def should_attempt(self) -> bool:
+        """Check if a TTS request should be attempted."""
+        import time
+        if self.state == "CLOSED":
+            return True
+        if self.state == "OPEN":
+            elapsed = time.time() - self.last_failure_time
+            if elapsed > self.timeout_seconds:
+                self.state = "HALF_OPEN"
+                log.info("[TTS_CIRCUIT_BREAKER] Circuit HALF_OPEN, probing...")
+                return True
+            return False
+        # HALF_OPEN: allow one probe request
+        return True
+
+    def get_status(self) -> dict:
+        """Get circuit breaker status for monitoring."""
+        return {
+            "state": self.state,
+            "failure_count": self.failure_count,
+            "threshold": self.failure_threshold,
+        }
+
+# Global circuit breaker instance (shared across threads in a worker)
+_tts_circuit_breaker = TTSCircuitBreaker(failure_threshold=10, timeout_seconds=60)
+
+
+# ---------------------------------------------------------------------------
+# Anthropic/LLM Circuit Breaker
+# ---------------------------------------------------------------------------
+
+class LLMApiCircuitBreaker:
+    """Circuit breaker for Anthropic/LLM API to prevent cascade failures.
+
+    Mirrors TTSCircuitBreaker but tuned for LLM API characteristics:
+    - Lower failure threshold (5 vs 10) since LLM calls are more expensive
+    - Longer timeout (120s vs 60s) since LLM outages tend to last longer
+    """
+
+    def __init__(self, failure_threshold: int = 5, timeout_seconds: int = 120):
+        self.failure_threshold = failure_threshold
+        self.timeout_seconds = timeout_seconds
+        self.failure_count = 0
+        self.last_failure_time = 0
+        self.state = "CLOSED"
+
+    def record_failure(self):
+        """Record an LLM API failure."""
+        import time
+        self.failure_count += 1
+        self.last_failure_time = time.time()
+        if self.failure_count >= self.failure_threshold:
+            self.state = "OPEN"
+            log.warning(
+                "[LLM_CIRCUIT_BREAKER] Circuit OPEN after %d failures",
+                self.failure_count
+            )
+
+    def record_success(self):
+        """Record a successful LLM API call."""
+        self.failure_count = 0
+        self.state = "CLOSED"
+
+    def should_attempt(self) -> bool:
+        """Check if an LLM request should be attempted."""
+        import time
+        if self.state == "CLOSED":
+            return True
+        if self.state == "OPEN":
+            elapsed = time.time() - self.last_failure_time
+            if elapsed > self.timeout_seconds:
+                self.state = "HALF_OPEN"
+                log.info("[LLM_CIRCUIT_BREAKER] Circuit HALF_OPEN, probing...")
+                return True
+            return False
+        # HALF_OPEN: allow one probe request
+        return True
+
+    def get_status(self) -> dict:
+        """Get circuit breaker status for monitoring."""
+        return {
+            "state": self.state,
+            "failure_count": self.failure_count,
+            "threshold": self.failure_threshold,
+        }
+
+# Global LLM circuit breaker
+_llm_circuit_breaker = LLMApiCircuitBreaker(failure_threshold=5, timeout_seconds=120)
+
+# ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
 logging.basicConfig(
@@ -138,6 +268,31 @@ logging.basicConfig(
 )
 log = logging.getLogger("generate_audio")
 DUBAI_TZ = ZoneInfo("Asia/Dubai")
+
+# ---------------------------------------------------------------------------
+# Anthropic Client Pooling
+# ---------------------------------------------------------------------------
+
+_anthropic_client = None
+
+
+def _get_anthropic_client():
+    """Get or create a singleton Anthropic client.
+
+    Reuses the same client instance across function calls to avoid
+    repeated TCP handshakes and SSL negotiations (~100-200ms saved per call).
+
+    Thread-safe: Each Celery worker process has its own instance.
+    """
+    global _anthropic_client
+    if _anthropic_client is None:
+        import anthropic
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise RuntimeError("ANTHROPIC_API_KEY not set")
+        _anthropic_client = anthropic.Anthropic(api_key=api_key)
+        log.info("Anthropic client initialized (pooled)")
+    return _anthropic_client
 
 # ---------------------------------------------------------------------------
 # Environment
@@ -568,7 +723,7 @@ def _audit_script_coverage(
     if not api_key:
         raise RuntimeError("ANTHROPIC_API_KEY not set")
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = _get_anthropic_client()
     prompt = f"""
 Audit whether this executive audio briefing script covers every numbered item in the shared outline.
 
@@ -701,7 +856,7 @@ def _generate_script(
         log.error("ANTHROPIC_API_KEY not set")
         sys.exit(1)
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = _get_anthropic_client()
     prompt_text = _load_podcast_prompt(brief_json, shared_outline, lang=lang)
 
     lang_label = "French" if lang == "fr" else "English"
@@ -881,7 +1036,7 @@ def _compress_script(
         raise RuntimeError("ANTHROPIC_API_KEY not set")
 
     budget = _get_script_budget(lang)
-    client = anthropic.Anthropic(api_key=api_key)
+    client = _get_anthropic_client()
     prompt = f"""
 Condense the following spoken executive briefing script.
 
@@ -1132,10 +1287,26 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
     If the script exceeds the API character limit, it is split into
     chunks at paragraph boundaries and the resulting audio segments
     are concatenated.
+
+    Optimizations:
+    - httpx connection pooling via persistent Client
+    - Concurrent chunk processing with ThreadPoolExecutor (ElevenLabs only)
+    - Reduced timeout (60s vs 180s) for faster fail-over
+    - Circuit breaker to prevent thundering herd during outages
     """
     import base64
     import httpx
     import json as _json
+    import time as _time
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    # Check circuit breaker before attempting
+    if not _tts_circuit_breaker.should_attempt():
+        status = _tts_circuit_breaker.get_status()
+        raise RuntimeError(
+            f"TTS circuit breaker OPEN ({status['failure_count']}/{status['threshold']} failures). "
+            "Service may be experiencing extended outage."
+        )
 
     api_key = os.getenv("VOICE_API_KEY")
     using_argent = "txt2sph.audarai.com" in VOICE_BASE_URL
@@ -1156,8 +1327,8 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
         "Argent" if using_argent else "ElevenLabs",
     )
 
-    all_audio: list[bytes] = []
-
+    # Build request specs for each chunk
+    request_specs = []
     for i, chunk in enumerate(chunks):
         if using_argent:
             url = f"{VOICE_BASE_URL}/v1/synthesize"
@@ -1181,72 +1352,146 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
                 "Content-Type": "application/json",
                 "xi-api-key": api_key,
             }
+        request_specs.append((i, url, payload, headers))
 
-        # Add a short delay between chunks for Argent (server cooldown)
-        if i > 0 and using_argent:
-            import time as _time
-            _time.sleep(3)
+    # Use connection-pooled httpx Client
+    timeout = httpx.Timeout(connect=10.0, read=60.0, write=10.0, pool=60.0)
+    limits = httpx.Limits(max_connections=20, max_keepalive_connections=10)
 
-        log.info("Calling TTS chunk %d/%d (%d chars)...", i + 1, len(chunks), len(chunk))
+    def _synthesize_chunk(spec: tuple) -> tuple:
+        """Synthesize a single chunk with retry logic and circuit breaker."""
+        idx, url, payload, headers = spec
+        client = httpx.Client(timeout=timeout, limits=limits)
+        try:
+            # Argent requires sequential calls with cooldown
+            if using_argent:
+                _time.sleep(3 * idx)  # stagger: 0s, 3s, 6s, etc.
 
-        # Retry up to 3 times for transient errors (429, 502, 503, 504)
-        import time as _time2
-        response = None
-        for attempt in range(3):
-            response = httpx.post(url, json=payload, headers=headers, timeout=180.0)
-            if response.status_code == 200:
+            log.info("Calling TTS chunk %d/%d (%d chars)...", idx + 1, len(chunks), len(payload.get("text", "")))
+
+            # Retry up to 3 times for transient errors
+            response = None
+            for attempt in range(3):
+                response = client.post(url, json=payload, headers=headers)
+                if response.status_code == 200:
+                    break
+                if response.status_code in (404, 429, 502, 503, 504) and attempt < 2:
+                    log.warning("TTS transient error %d (attempt %d/3), retrying in %ds...",
+                                response.status_code, attempt + 1, (attempt + 1) * 3)
+                    _time.sleep((attempt + 1) * 3)
+                    continue
                 break
-            if response.status_code in (404, 429, 502, 503, 504) and attempt < 2:
-                log.warning("TTS transient error %d (attempt %d/3), retrying in %ds...",
-                            response.status_code, attempt + 1, (attempt + 1) * 3)
-                _time2.sleep((attempt + 1) * 3)
-                continue
-            break
 
-        if response.status_code != 200:
-            log.error("TTS API error %d: %s", response.status_code, response.text[:500])
-            response.raise_for_status()
+            if response is None or response.status_code != 200:
+                error_text = response.text[:500] if response else "No response"
+                log.error("TTS API error %d: %s", response.status_code if response else 0, error_text)
+                # Record failure in circuit breaker
+                _tts_circuit_breaker.record_failure()
+                if response:
+                    response.raise_for_status()
+                raise RuntimeError("TTS API failed")
 
-        if using_argent:
-            result = _json.loads(response.text)
-            audio_b64 = result.get("audio", "")
-            if not audio_b64:
-                log.error("No audio in TTS response")
-                raise RuntimeError("Empty audio response from TTS API")
-            chunk_audio = base64.b64decode(audio_b64)
-            log.info("Chunk %d/%d: %.0f KB (Opus, %.1fs)",
-                     i + 1, len(chunks),
-                     len(chunk_audio) / 1024,
-                     result.get("duration", 0))
-        else:
-            chunk_audio = response.content
-            log.info("Chunk %d/%d: %.0f KB", i + 1, len(chunks), len(chunk_audio) / 1024)
+            # Record success in circuit breaker
+            _tts_circuit_breaker.record_success()
 
-        all_audio.append(chunk_audio)
+            if using_argent:
+                result = _json.loads(response.text)
+                audio_b64 = result.get("audio", "")
+                if not audio_b64:
+                    log.error("No audio in TTS response")
+                    raise RuntimeError("Empty audio response from TTS API")
+                chunk_audio = base64.b64decode(audio_b64)
+                log.info("Chunk %d/%d: %.0f KB (Opus, %.1fs)",
+                         idx + 1, len(chunks),
+                         len(chunk_audio) / 1024,
+                         result.get("duration", 0))
+            else:
+                chunk_audio = response.content
+                log.info("Chunk %d/%d: %.0f KB", idx + 1, len(chunks), len(chunk_audio) / 1024)
+
+            return (idx, chunk_audio)
+        except Exception:
+            # Record failure for any exception (network error, timeout, etc.)
+            _tts_circuit_breaker.record_failure()
+            raise
+        finally:
+            client.close()
+
+    # Execute chunks: sequentially for Argent (server cooldown), concurrently for ElevenLabs
+    all_audio: list[tuple[int, bytes]] = []
+    if using_argent:
+        # Sequential: Argent server needs cooldown between calls
+        for spec in request_specs:
+            all_audio.append(_synthesize_chunk(spec))
+    else:
+        # Concurrent: ElevenLabs can handle parallel requests
+        with ThreadPoolExecutor(max_workers=min(len(chunks), 5)) as executor:
+            futures = {executor.submit(_synthesize_chunk, spec): spec[0] for spec in request_specs}
+            for future in as_completed(futures):
+                all_audio.append(future.result())
+
+    # Sort by original chunk index to maintain order
+    all_audio.sort(key=lambda x: x[0])
+    audio_segments = [audio for _, audio in all_audio]
 
     # Merge chunks into a single MP3
-    if len(all_audio) == 1 and not using_argent:
+    if len(audio_segments) == 1 and not using_argent:
         # Single chunk from ElevenLabs — already MP3
-        audio_bytes = all_audio[0]
+        audio_bytes = audio_segments[0]
     else:
         from io import BytesIO
         from pydub import AudioSegment
 
-        combined = AudioSegment.empty()
-        for i, raw in enumerate(all_audio):
+        # Decode all segments
+        segments = []
+        for i, raw in enumerate(audio_segments):
             buf = BytesIO(raw)
             if using_argent:
                 # Argent returns Ogg Opus audio — let ffmpeg auto-detect format
                 segment = AudioSegment.from_file(buf)
             else:
                 segment = AudioSegment.from_mp3(buf)
+            segments.append(segment)
+            log.info("Decoded chunk %d/%d (%.1fs, %.1f dBFS)",
+                     i + 1, len(audio_segments),
+                     len(segment) / 1000, segment.dBFS)
+
+        # Normalize loudness across all segments to -20 dBFS (standard for speech)
+        target_loudness = -20.0
+        normalized_segments = []
+        for i, segment in enumerate(segments):
+            current_loudness = segment.dBFS
+            # Skip normalization for silence (< -60 dBFS)
+            if current_loudness > -60:
+                gain_delta = target_loudness - current_loudness
+                # Limit gain adjustment to +/- 6 dB to prevent distortion
+                gain_delta = max(-6.0, min(6.0, gain_delta))
+                normalized = segment.apply_gain(gain_delta)
+                normalized_segments.append(normalized)
+                if abs(gain_delta) > 0.5:
+                    log.info("Normalized chunk %d: %.1f dB %s",
+                             i + 1, abs(gain_delta),
+                             "boost" if gain_delta > 0 else "cut")
+            else:
+                normalized_segments.append(segment)
+
+        # Concatenate normalized segments
+        combined = AudioSegment.empty()
+        for i, segment in enumerate(normalized_segments):
             combined += segment
-            log.info("Merged chunk %d/%d (%.1fs)", i + 1, len(all_audio), len(segment) / 1000)
+            log.info("Merged chunk %d/%d (%.1fs)", i + 1, len(normalized_segments), len(segment) / 1000)
+
+        # Apply final limiter to prevent clipping (peak at -1 dBFS)
+        peak = combined.max_dBFS
+        if peak > -1.0:
+            combined = combined.apply_gain(-1.0 - peak)
+            log.info("Applied final limiter: %.1f dB gain", -1.0 - peak)
 
         buf = BytesIO()
         combined.export(buf, format="mp3", bitrate="128k")
         audio_bytes = buf.getvalue()
-        log.info("Total merged duration: %.1fs", len(combined) / 1000)
+        log.info("Total merged duration: %.1fs (normalized to %.1f dBFS)",
+                 len(combined) / 1000, combined.dBFS)
 
     size_mb = len(audio_bytes) / (1024 * 1024)
     log.info("Audio generated: %.1f MB total", size_mb)
@@ -1259,7 +1504,11 @@ def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") 
 # ---------------------------------------------------------------------------
 
 def _upload_to_supabase(sb: Client, audio_bytes: bytes, target_date: str, lang: str = "en") -> str:
-    """Upload MP3 to Supabase Storage, return public URL."""
+    """Upload MP3 to Supabase Storage, return public URL.
+
+    Constructs the URL directly instead of calling get_public_url() to save
+    a network round-trip per upload (~50-100ms saved).
+    """
     file_path = f"{target_date}/briefing_{lang}.mp3"
 
     log.info("Uploading to audio-briefs/%s...", file_path)
@@ -1269,7 +1518,9 @@ def _upload_to_supabase(sb: Client, audio_bytes: bytes, target_date: str, lang: 
         file_options={"content-type": "audio/mpeg", "upsert": "true"},
     )
 
-    public_url = sb.storage.from_("audio-briefs").get_public_url(file_path)
+    # Construct URL directly: Supabase public URLs are deterministic
+    base_url = os.getenv("NEXT_PUBLIC_SUPABASE_URL", "").rstrip("/")
+    public_url = f"{base_url}/storage/v1/object/public/audio-briefs/{file_path}"
     log.info("Uploaded successfully: %s", public_url)
     return public_url
 
@@ -1278,6 +1529,7 @@ def _upload_item_audio(sb: Client, audio_bytes: bytes, target_date: str, item_id
     """Upload a single item's MP3 to Supabase Storage, return public URL.
 
     Path: {target_date}/items/{item_id}.mp3
+    Constructs URL directly to avoid get_public_url() network call.
     """
     file_path = f"{target_date}/items/{item_id}.mp3"
 
@@ -1288,7 +1540,9 @@ def _upload_item_audio(sb: Client, audio_bytes: bytes, target_date: str, item_id
         file_options={"content-type": "audio/mpeg", "upsert": "true"},
     )
 
-    public_url = sb.storage.from_("audio-briefs").get_public_url(file_path)
+    # Construct URL directly
+    base_url = os.getenv("NEXT_PUBLIC_SUPABASE_URL", "").rstrip("/")
+    public_url = f"{base_url}/storage/v1/object/public/audio-briefs/{file_path}"
     log.info("Item audio uploaded: %s", public_url)
     return public_url
 
@@ -1466,7 +1720,7 @@ def _generate_learning_content(item: dict, lang: str) -> dict | None:
     if not prompt_text:
         return None
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = _get_anthropic_client()
     lang_label = "French" if lang == "fr" else "Arabic"
 
     for attempt in range(LEARNING_SCRIPT_MAX_ATTEMPTS):
@@ -1635,7 +1889,7 @@ def _generate_learning_outline(item: dict, lang: str) -> dict | None:
     if not prompt_text:
         return None
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = _get_anthropic_client()
     lang_label = "French" if lang == "fr" else "Arabic"
 
     for attempt in range(LEARNING_SCRIPT_MAX_ATTEMPTS):
@@ -1682,7 +1936,7 @@ def _generate_learning_sections(item: dict, outline: dict, lang: str) -> dict | 
     if not prompt_text:
         return None
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = _get_anthropic_client()
     lang_label = "French" if lang == "fr" else "Arabic"
 
     bilingual_repair = (
@@ -1861,11 +2115,37 @@ def _generate_section_audio(
 def _estimate_duration_seconds(script: str, lang: str) -> float:
     """Estimate audio duration in seconds from script character count.
 
-    Bilingual scripts are mostly English narration with embedded target-language
-    phrases, so we use an English-dominated speech rate (~14 chars/sec).
+    Uses language-specific and script-type-aware character-per-second rates:
+    - English-dominated bilingual (script1, script4): ~14 chars/sec
+    - Pure target language (script3): varies by language
+      - French: ~13 chars/sec (slightly slower due to liaison/elision)
+      - Arabic: ~11 chars/sec (diacritics, longer phonetic units)
+    - Short transitions (script2): ~15 chars/sec (clear, deliberate speech)
+
+    Adds a small pause buffer (0.3s) for natural breathing between segments.
     """
-    cps = 14.0
-    return len(script) / cps
+    script_len = len(script)
+
+    # Determine speech rate based on script content
+    if script_len <= 45:
+        # Short transitions: deliberate, clear speech
+        cps = 15.0
+    elif any(c in script for c in ("،", "؟", "ٱ", "ً", "ٍ", "ٌ", "َ", "ِ", "ُ")):
+        # Arabic with diacritics or special punctuation: slower
+        cps = 11.0
+    elif lang == "ar":
+        # Arabic without diacritics
+        cps = 12.0
+    elif lang == "fr":
+        # French with liaisons
+        cps = 13.0
+    else:
+        # Default: English-dominated bilingual
+        cps = 14.0
+
+    # Add natural pause buffer for segments over 50 chars
+    pause_buffer = 0.3 if script_len > 50 else 0.1
+    return (script_len / cps) + pause_buffer
 
 
 def _generate_learning_content_v2(item: dict, lang: str) -> dict | None:
@@ -1944,6 +2224,47 @@ def _load_learning_phrases_prompt(item: dict, lang: str, phrase_count: int = 3) 
         item_id=item_id,
         item_headline=item_headline,
     )
+
+
+def _call_anthropic(prompt: str, max_tokens: int) -> str:
+    """Call Anthropic Claude API with circuit breaker protection.
+
+    Uses the pooled Anthropic client for connection reuse.
+    Checks circuit breaker before making the call to prevent
+    cascade failures during API outages.
+    Returns the raw response text.
+    Raises RuntimeError if circuit is open.
+    """
+    if not _llm_circuit_breaker.should_attempt():
+        raise RuntimeError(
+            f"LLM API circuit breaker is OPEN (state={_llm_circuit_breaker.state}). "
+            "Skipping request to prevent cascade failures."
+        )
+
+    try:
+        client = _get_anthropic_client()
+        response = client.messages.create(
+            model=ANTHROPIC_MODEL,
+            max_tokens=max_tokens,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text_blocks = [block.text for block in response.content if block.type == "text"]
+        _llm_circuit_breaker.record_success()
+        return "\n".join(text_blocks).strip()
+    except Exception as exc:
+        _llm_circuit_breaker.record_failure()
+        raise
+
+
+def _parse_json_response(text: str) -> dict | None:
+    """Extract and parse JSON from an Anthropic response.
+
+    Handles markdown code blocks and leading/trailing whitespace.
+    Returns parsed dict or None on failure or empty input.
+    """
+    if not text:
+        return None
+    return _extract_json_object(text)
 
 
 def _generate_learning_phrases(item: dict, lang: str, phrase_count: int = 3) -> dict | None:
@@ -2405,6 +2726,8 @@ def generate_audio_brief(
     items = brief_json.get("items", [])
 
     active_items = [item for item in items if not item.get("is_placeholder") and item.get("id")]
+    # O(1) index for fast URL writeback
+    items_by_id = {item["id"]: item for item in active_items}
     log.info(
         "Generating per-item audio for %d of %d items (EN)",
         len(active_items),
@@ -2422,7 +2745,8 @@ def generate_audio_brief(
         pending_items.append(item)
 
     if pending_items:
-        MAX_CONCURRENT = 3
+        # Adaptive concurrency: scale up to 8 for larger batches, minimum 3
+        MAX_CONCURRENT = min(len(pending_items), 8)
         MAX_RETRIES = 3
 
         def _process_item(item: dict) -> tuple[str, str, int] | None:
@@ -2469,11 +2793,9 @@ def generate_audio_brief(
                 result = future.result()
                 if result:
                     item_id, url, chars = result
-                    # Write audio_url back into the active_items list in brief_json
-                    for ai in active_items:
-                        if ai["id"] == item_id:
-                            ai["audio_url"] = url
-                            break
+                    # O(1) writeback via dictionary index
+                    if item_id in items_by_id:
+                        items_by_id[item_id]["audio_url"] = url
                     en_item_audio_count += 1
                     log.info("Item audio generated for %s (%d chars): %s",
                              item_id, chars, url)
@@ -2589,30 +2911,48 @@ def main() -> None:
 
         log.info("Backfill mode: found %d brief files", len(brief_files))
 
+        # Parallel backfill: process 3-5 briefs concurrently (I/O-bound)
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        MAX_BACKFILL_WORKERS = min(len(brief_files), 5)
+
+        def _process_backfill_item(bp: Path) -> tuple[str, bool]:
+            """Process a single brief file for backfill."""
+            target = bp.stem.replace("brief_", "")
+            try:
+                date.fromisoformat(target)
+            except ValueError:
+                log.warning("Skipping non-date file: %s", bp.name)
+                return (bp.name, False)
+
+            ok = generate_audio_brief(sb, target, script_only=args.script_only, force=args.force)
+            return (target, ok)
+
         success_count = 0
         fail_count = 0
+        skipped_count = 0
 
-        for brief_path in brief_files:
-            # Extract date from filename: brief_YYYY-MM-DD.json
-            target_date = brief_path.stem.replace("brief_", "")
-            try:
-                date.fromisoformat(target_date)
-            except ValueError:
-                log.warning("Skipping non-date file: %s", brief_path.name)
-                continue
-
-            ok = generate_audio_brief(sb, target_date, script_only=args.script_only, force=args.force)
-            if ok:
-                success_count += 1
-            else:
-                fail_count += 1
+        log.info("Processing backfill with %d concurrent workers", MAX_BACKFILL_WORKERS)
+        with ThreadPoolExecutor(max_workers=MAX_BACKFILL_WORKERS) as pool:
+            futures = {pool.submit(_process_backfill_item, bp): bp for bp in brief_files}
+            for future in as_completed(futures):
+                bp = futures[future]
+                try:
+                    target, ok = future.result()
+                    if ok:
+                        success_count += 1
+                    else:
+                        fail_count += 1
+                except Exception as exc:
+                    log.error("Backfill failed for %s: %s", bp.name, exc)
+                    fail_count += 1
 
         log.info("=" * 60)
         log.info(
-            "Backfill complete: %d succeeded, %d failed, %d total",
+            "Backfill complete: %d succeeded, %d failed, %d skipped, %d total",
             success_count,
             fail_count,
-            success_count + fail_count,
+            skipped_count,
+            success_count + fail_count + skipped_count,
         )
         if fail_count > 0:
             sys.exit(1)
