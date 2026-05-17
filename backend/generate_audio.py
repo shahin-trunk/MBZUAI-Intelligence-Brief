@@ -2268,13 +2268,14 @@ def _parse_json_response(text: str) -> dict | None:
 
 
 def _generate_learning_phrases(item: dict, lang: str, phrase_count: int = 3) -> dict | None:
-    """Generate phrase-based learning content via a single Claude call (v3 pipeline).
+    """Generate sentence-based learning content via a single Claude call (v3 pipeline, ITER 18).
 
     Returns dict {phrases, vocabulary, difficulty} or None on failure.
+    Supports both "phrases" and "sentences" key names from LLM response.
     """
     item_id = item.get("id", "?")
     lang_label = "French" if lang == "fr" else "Arabic"
-    log.info("Generating v3 learning phrases for %s item %s: %s",
+    log.info("Generating v3 learning sentences for %s item %s: %s",
              lang_label, item_id, item.get("headline", "?")[:80])
 
     for attempt in range(LEARNING_SCRIPT_MAX_ATTEMPTS):
@@ -2288,21 +2289,26 @@ def _generate_learning_phrases(item: dict, lang: str, phrase_count: int = 3) -> 
 
             # Validate structure
             if not content or not isinstance(content, dict):
-                log.warning("v3 phrases: invalid response format (attempt %d)", attempt + 1)
+                log.warning("v3 sentences: invalid response format (attempt %d)", attempt + 1)
                 continue
 
-            phrases = content.get("phrases")
+            # ITER 18: Accept both "phrases" and "sentences" keys
+            phrases = content.get("sentences") or content.get("phrases")
             if not phrases or not isinstance(phrases, list) or len(phrases) < 1:
-                log.warning("v3 phrases: missing or empty phrases array (attempt %d)", attempt + 1)
+                log.warning("v3 sentences: missing or empty array (attempt %d)", attempt + 1)
                 continue
 
-            # Validate each phrase has required fields
+            # Validate each phrase/sentence has required fields
             valid_phrases = []
             for p in phrases:
+                if not isinstance(p, dict):
+                    continue
+                # ITER 18: Accept both old (phrase_*) and new (sentence_*) field names
+                target_text = p.get("sentence_target") or p.get("phrase_target")
+                english_text = p.get("sentence_en") or p.get("phrase_en")
                 if (
-                    isinstance(p, dict)
-                    and p.get("phrase_target")
-                    and p.get("phrase_en")
+                    target_text
+                    and english_text
                     and p.get("script1")
                     and p.get("script2")
                     and p.get("script3")
@@ -2311,15 +2317,20 @@ def _generate_learning_phrases(item: dict, lang: str, phrase_count: int = 3) -> 
                 ):
                     # Bilingual check on script1 and script4
                     if not _is_bilingual_script(p.get("script1", "")):
-                        log.warning("v3 phrases: script1 failed bilingual check for '%s'", p["phrase_target"][:40])
+                        log.warning("v3 sentences: script1 failed bilingual check for '%s'", target_text[:40])
                         continue
                     if not _is_bilingual_script(p.get("script4", "")):
-                        log.warning("v3 phrases: script4 failed bilingual check for '%s'", p["phrase_target"][:40])
+                        log.warning("v3 sentences: script4 failed bilingual check for '%s'", target_text[:40])
                         continue
+                    # Normalize to consistent field names (prefer sentence_* for ITER 18)
+                    if "sentence_target" not in p and "phrase_target" in p:
+                        p["sentence_target"] = p["phrase_target"]
+                    if "sentence_en" not in p and "phrase_en" in p:
+                        p["sentence_en"] = p["phrase_en"]
                     valid_phrases.append(p)
 
             if len(valid_phrases) < 1:
-                log.warning("v3 phrases: no valid phrases after validation (attempt %d)", attempt + 1)
+                log.warning("v3 sentences: no valid sentences after validation (attempt %d)", attempt + 1)
                 continue
 
             difficulty = content.get("difficulty", "intermediate")
@@ -2332,9 +2343,9 @@ def _generate_learning_phrases(item: dict, lang: str, phrase_count: int = 3) -> 
             }
 
         except Exception as exc:
-            log.warning("v3 phrases: generation error (attempt %d): %s", attempt + 1, exc)
+            log.warning("v3 sentences: generation error (attempt %d): %s", attempt + 1, exc)
 
-    log.warning("v3 phrases: all %d attempts failed for item %s", LEARNING_SCRIPT_MAX_ATTEMPTS, item_id)
+    log.warning("v3 sentences: all %d attempts failed for item %s", LEARNING_SCRIPT_MAX_ATTEMPTS, item_id)
     return None
 
 

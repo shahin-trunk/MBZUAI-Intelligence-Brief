@@ -19,6 +19,16 @@ interface PhraseCardProps {
   showGrammarTrigger: boolean;
 }
 
+/** Get the target language text, preferring sentence fields when available (ITER 18). */
+function getTargetText(phrase: LearningPhrase): string {
+  return phrase.sentence_target || phrase.phrase_target;
+}
+
+/** Get the English translation, preferring sentence fields when available (ITER 18). */
+function getEnglishText(phrase: LearningPhrase): string {
+  return phrase.sentence_en || phrase.phrase_en;
+}
+
 const PhraseCard = memo(function PhraseCard({
   phrase,
   phraseNumber,
@@ -32,6 +42,8 @@ const PhraseCard = memo(function PhraseCard({
   showGrammarTrigger,
 }: PhraseCardProps) {
   const isArabic = language === "ar";
+  const targetText = getTargetText(phrase);
+  const englishText = getEnglishText(phrase);
 
   /* ------------------------------------------------------------------ */
   /*  Script 2: Transition — elegant centered bridge                    */
@@ -78,22 +90,22 @@ const PhraseCard = memo(function PhraseCard({
             </div>
             <PhraseBookmark
               phraseId={phrase.id}
-              phraseText={phrase.phrase_target}
+              phraseText={targetText}
               language={language}
             />
           </div>
 
-          {/* Target phrase — large, prominent */}
+          {/* Target phrase/sentence — large, prominent */}
           <p
             dir={isArabic ? "rtl" : "ltr"}
             className="font-body text-[26px] sm:text-[30px] lg:text-[34px] text-text-primary font-semibold leading-tight tracking-tight"
           >
-            {phrase.phrase_target}
+            {targetText}
           </p>
 
           {/* English translation */}
           <p className="font-body text-[14px] sm:text-[15px] text-text-secondary/60">
-            {phrase.phrase_en}
+            {englishText}
           </p>
 
           {/* Context anchor badge */}
@@ -149,7 +161,7 @@ const PhraseCard = memo(function PhraseCard({
           </div>
           <PhraseBookmark
             phraseId={phrase.id}
-            phraseText={phrase.phrase_target}
+            phraseText={targetText}
             language={language}
           />
         </div>
@@ -180,10 +192,44 @@ const PhraseCard = memo(function PhraseCard({
       <div className="flex items-center gap-3 mb-5">
         <div className="h-px w-10 bg-gradient-to-r from-transparent to-rule/40" />
         <p className="font-body text-[14px] sm:text-[15px] lg:text-[16px] text-text-secondary/50 italic">
-          {phrase.phrase_en}
+          {englishText}
         </p>
         <div className="h-px w-10 bg-gradient-to-l from-transparent to-rule/40" />
       </div>
+
+      {/* ITER 18: Key words breakdown — vocabulary at a glance */}
+      {phrase.grammar.key_words && phrase.grammar.key_words.length > 0 && (
+        <div className="w-full px-4 mb-5 max-w-[340px] sm:max-w-[420px] mx-auto">
+          <div className="flex flex-wrap gap-2 justify-center">
+            {phrase.grammar.key_words.map((kw, i) => (
+              <div
+                key={i}
+                className="flex flex-col items-center px-3 py-2 rounded-lg bg-bg-surface/60 border border-rule/20 min-w-[80px]"
+              >
+                <span
+                  className="font-body text-[13px] sm:text-[14px] text-accent-primary font-semibold"
+                  dir={language === "ar" ? "rtl" : "ltr"}
+                >
+                  {kw.word}
+                </span>
+                <span className="font-body text-[10px] text-text-muted mt-0.5 text-center leading-tight">
+                  {kw.note}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Phonetic features (ITER 18) — pronunciation tips */}
+      {phrase.grammar.phonetic_features && (
+        <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-purple-500/5 border border-purple-500/20 mb-5 max-w-[340px] sm:max-w-[420px] mx-auto">
+          <span className="text-sm shrink-0" role="img" aria-label="music">🎵</span>
+          <p className="font-body text-[12px] sm:text-[13px] text-text-secondary/70 leading-relaxed">
+            {phrase.grammar.phonetic_features}
+          </p>
+        </div>
+      )}
 
       {/* Pronunciation guide (if available) */}
       {phrase.grammar.phonetic_guide && (

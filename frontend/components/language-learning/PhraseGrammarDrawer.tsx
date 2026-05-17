@@ -147,17 +147,29 @@ export default function PhraseGrammarDrawer({
 
   if (!isOpen) return null;
 
+  // ITER 18: Enhanced grammar fields including sentence analysis
   const grammarFields: { key: keyof PhraseGrammar; label: string; icon: string }[] = [
+    // Sentence analysis (ITER 18) - shown first for context
+    { key: "syntax", label: "Sentence Structure", icon: "🏗️" },
+    { key: "phonetic_features", label: "Phonetic Features", icon: "🎵" },
+    // Core fields
     { key: "morphology", label: "Morphology", icon: "🔤" },
     { key: "etymology", label: "Etymology", icon: "📜" },
     { key: "conjugation", label: "Conjugation", icon: "🔀" },
     { key: "register", label: "Register", icon: "🎯" },
     { key: "phonetic_guide", label: "Pronunciation", icon: "🔊" },
     { key: "usage_notes", label: "Usage Notes", icon: "💡" },
+    { key: "cognate_note", label: "English Cognates", icon: "🔗" },
   ];
 
   const activeFields = grammarFields.filter(
-    (f) => grammar[f.key] && grammar[f.key]!.length > 0,
+    (f) => {
+      const val = grammar[f.key];
+      if (!val) return false;
+      // For key_words array, check if it has entries
+      if (Array.isArray(val)) return val.length > 0;
+      return typeof val === "string" && val.length > 0;
+    },
   );
 
   return (
@@ -283,30 +295,67 @@ export default function PhraseGrammarDrawer({
                 </span>
               </div>
             )}
-            {activeFields.map(({ key, label, icon }, idx) => (
-              <div
-                key={key}
-                className="px-4 py-3.5 animate-in fade-in duration-300"
-                style={{ animationDelay: `${idx * 100}ms` }}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-bg-surface/80 border border-rule/20">
-                    <span className="text-xs" role="img" aria-hidden>{icon}</span>
+            {activeFields.map(({ key, label, icon }, idx) => {
+              const value = grammar[key];
+              // Handle key_words array specially
+              if (key === "key_words" && Array.isArray(value)) {
+                return (
+                  <div
+                    key={key}
+                    className="px-4 py-3.5 animate-in fade-in duration-300"
+                    style={{ animationDelay: `${idx * 100}ms` }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-bg-surface/80 border border-rule/20">
+                        <span className="text-xs" role="img" aria-hidden>{icon}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-2">
+                          {label}
+                        </span>
+                        <div className="space-y-2">
+                          {value.map((kw, i) => (
+                            <div key={i} className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                              <code className="font-mono text-[13px] text-accent-primary font-semibold" dir={language === "ar" ? "rtl" : "ltr"}>
+                                {kw.word}
+                              </code>
+                              <span className="font-body text-[12px] text-text-secondary leading-relaxed">
+                                — {kw.note}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-1">
-                      {label}
-                    </span>
-                    <p
-                      dir={language === "ar" ? "rtl" : "ltr"}
-                      className="font-body text-[13px] text-text-secondary leading-relaxed"
-                    >
-                      {grammar[key]}
-                    </p>
+                );
+              }
+              // Standard string field rendering
+              return (
+                <div
+                  key={key}
+                  className="px-4 py-3.5 animate-in fade-in duration-300"
+                  style={{ animationDelay: `${idx * 100}ms` }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-bg-surface/80 border border-rule/20">
+                      <span className="text-xs" role="img" aria-hidden>{icon}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-1">
+                        {label}
+                      </span>
+                      <p
+                        dir={language === "ar" ? "rtl" : "ltr"}
+                        className="font-body text-[13px] text-text-secondary leading-relaxed"
+                      >
+                        {String(value)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Safe area padding for mobile */}
@@ -407,30 +456,67 @@ export default function PhraseGrammarDrawer({
                 </span>
               </div>
             )}
-            {activeFields.map(({ key, label, icon }, idx) => (
-              <div
-                key={key}
-                className="px-5 py-3.5 animate-in fade-in duration-300"
-                style={{ animationDelay: `${idx * 100}ms` }}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-bg-surface/80 border border-rule/20">
-                    <span className="text-xs" role="img" aria-hidden>{icon}</span>
+            {activeFields.map(({ key, label, icon }, idx) => {
+              const value = grammar[key];
+              // Handle key_words array specially
+              if (key === "key_words" && Array.isArray(value)) {
+                return (
+                  <div
+                    key={key}
+                    className="px-5 py-3.5 animate-in fade-in duration-300"
+                    style={{ animationDelay: `${idx * 100}ms` }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-bg-surface/80 border border-rule/20">
+                        <span className="text-xs" role="img" aria-hidden>{icon}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-2">
+                          {label}
+                        </span>
+                        <div className="space-y-2">
+                          {value.map((kw, i) => (
+                            <div key={i} className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                              <code className="font-mono text-[14px] text-accent-primary font-semibold" dir={language === "ar" ? "rtl" : "ltr"}>
+                                {kw.word}
+                              </code>
+                              <span className="font-body text-[13px] text-text-secondary leading-relaxed">
+                                — {kw.note}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-1">
-                      {label}
-                    </span>
-                    <p
-                      dir={language === "ar" ? "rtl" : "ltr"}
-                      className="font-body text-[14px] text-text-secondary leading-relaxed"
-                    >
-                      {grammar[key]}
-                    </p>
+                );
+              }
+              // Standard string field rendering
+              return (
+                <div
+                  key={key}
+                  className="px-5 py-3.5 animate-in fade-in duration-300"
+                  style={{ animationDelay: `${idx * 100}ms` }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-bg-surface/80 border border-rule/20">
+                      <span className="text-xs" role="img" aria-hidden>{icon}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-1">
+                        {label}
+                      </span>
+                      <p
+                        dir={language === "ar" ? "rtl" : "ltr"}
+                        className="font-body text-[14px] text-text-secondary leading-relaxed"
+                      >
+                        {String(value)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Footer */}

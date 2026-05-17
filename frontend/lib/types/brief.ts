@@ -119,9 +119,17 @@ export type EntityCategory =
   | "country"
   | "other";
 
-// ─── Language Learning Types (V3 Phrase-Based) ──────────────────────────────
+// ─── Language Learning Types (V3 Sentence-Based) ────────────────────────────
 
+/** Key word breakdown within a sentence. */
+export interface KeyWord {
+  word: string;
+  note: string;
+}
+
+/** Grammar and linguistic analysis for a learning sentence. */
 export interface PhraseGrammar {
+  // Core fields (always populated)
   morphology?: string;
   etymology?: string;
   conjugation?: string;
@@ -129,12 +137,19 @@ export interface PhraseGrammar {
   phonetic_guide?: string;
   usage_notes?: string;
   cognate_note?: string;
+  // Sentence analysis fields (ITER 18)
+  syntax?: string;
+  key_words?: KeyWord[];
+  phonetic_features?: string;
 }
 
 export interface LearningPhrase {
   id: string;
+  // Target language content (supports both "phrase" and "sentence" terminology)
   phrase_target: string;
+  sentence_target?: string; // Alias for sentence-based content (ITER 18)
   phrase_en: string;
+  sentence_en?: string; // Alias for sentence-based content (ITER 18)
   context_anchor?: string;
   script1: string;
   script2: string;
