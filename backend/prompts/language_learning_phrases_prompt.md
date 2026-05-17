@@ -96,7 +96,7 @@ Populate ALL fields in the `grammar` object. Each field should be substantive (2
 
 ### Sentence Analysis Fields (always populate)
 - `syntax`: Sentence structure pattern. "SVO (subject-verb-object): 'La France' (subject) + 'participera' (verb) + 'au sommet' (prepositional object). Adjective position: after noun."
-- `key_words`: Array of 3-5 important words with brief notes. [{"word": "participera", "note": "future tense, 3rd person singular"}, {"word": "sommet", "note": "summit, peak meeting"}, {"word": "accord", "note": "agreement, pact"}]
+- `key_words`: Array of 3-5 important words with brief notes. Example: participera (future tense, 3rd person singular), sommet (summit, peak meeting), accord (agreement, pact)
 - `phonetic_features`: Notable pronunciation features in this sentence. "Liaison: 'la_France' (z sound). Nasal vowels: 'France' (ɑ̃), 'sommet' (no nasal, final t silent). Uvular R in 'France', 'participera'."
 
 ## Output Format
