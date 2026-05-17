@@ -35,6 +35,7 @@ export default function LanguageLearningView({
   const [expandedPhraseGrammar, setExpandedPhraseGrammar] = useState<number | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
+  const [isTapFeedback, setIsTapFeedback] = useState(false);
 
   const hasFr = Boolean(item.learning_fr);
   const hasAr = Boolean(item.learning_ar);
@@ -43,6 +44,47 @@ export default function LanguageLearningView({
     language === "fr" ? item.learning_fr : item.learning_ar;
 
   const phrases: LearningPhrase[] = currentContent?.phrases ?? [];
+
+  /* ------------------------------------------------------------------ */
+  /*  Progress persistence with localStorage                             */
+  /* ------------------------------------------------------------------ */
+  const progressKey = useMemo(() => {
+    if (!item.id) return null;
+    return `ll-progress-${item.id}-${language}`;
+  }, [item.id, language]);
+
+  // Load saved progress on mount
+  useEffect(() => {
+    if (!progressKey) return;
+    try {
+      const saved = localStorage.getItem(progressKey);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.completedPhrases?.length > 0) {
+          setCompletedPhrases(new Set(data.completedPhrases));
+        }
+        if (data.isLessonComplete) {
+          setIsLessonComplete(true);
+        }
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [progressKey]);
+
+  // Save progress when completed phrases change
+  useEffect(() => {
+    if (!progressKey) return;
+    try {
+      localStorage.setItem(progressKey, JSON.stringify({
+        completedPhrases: Array.from(completedPhrases),
+        isLessonComplete,
+        timestamp: Date.now(),
+      }));
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [progressKey, completedPhrases, isLessonComplete]);
 
   /* ------------------------------------------------------------------ */
   /*  Flatten phrases into script-level audio URLs for useSectionAudio   */
@@ -166,6 +208,64 @@ export default function LanguageLearningView({
   }, [currentPhraseIndex, phrases.length, handlePhraseSelect]);
 
   /* ------------------------------------------------------------------ */
+  /*  Tap-to-pause with haptic feedback                                  */
+  /* ------------------------------------------------------------------ */
+  const handleTapToggle = useCallback(() => {
+    if (isLessonComplete) return;
+
+    // Visual tap feedback
+    setIsTapFeedback(true);
+    setTimeout(() => setIsTapFeedback(false), 150);
+
+    if (audio.isPlaying && !isPaused) {
+      audio.pause();
+      setIsPaused(true);
+    } else if (isPaused) {
+      audio.togglePlayPause();
+      setIsPaused(false);
+    }
+  }, [audio, isPaused, isLessonComplete]);
+
+  /* ------------------------------------------------------------------ */
+  /*  Keyboard navigation for desktop                                    */
+  /* ------------------------------------------------------------------ */
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isLessonComplete) return;
+
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          setSwipeDirection("right");
+          const prevIdx = Math.max(currentPhraseIndex - 1, 0);
+          handlePhraseSelect(prevIdx);
+          setTimeout(() => setSwipeDirection(null), 300);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          setSwipeDirection("left");
+          const nextIdx = Math.min(currentPhraseIndex + 1, phrases.length - 1);
+          handlePhraseSelect(nextIdx);
+          setTimeout(() => setSwipeDirection(null), 300);
+          break;
+        case " ":
+          e.preventDefault();
+          handleTapToggle();
+          break;
+        case "Escape":
+          e.preventDefault();
+          if (expandedPhraseGrammar !== null) {
+            handleGrammarToggle(null);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentPhraseIndex, phrases.length, handlePhraseSelect, handleTapToggle, isLessonComplete, expandedPhraseGrammar]);
+
+  /* ------------------------------------------------------------------ */
   /*  One-shot auto-play on mount                                        */
   /* ------------------------------------------------------------------ */
   const hasStartedRef = useRef(false);
@@ -229,21 +329,6 @@ export default function LanguageLearningView({
   }, [audio.isPlaying, isPaused, isLessonComplete]);
 
   /* ------------------------------------------------------------------ */
-  /*  Tap-to-pause                                                       */
-  /* ------------------------------------------------------------------ */
-  const handleTapToggle = useCallback(() => {
-    if (isLessonComplete) return;
-
-    if (audio.isPlaying && !isPaused) {
-      audio.pause();
-      setIsPaused(true);
-    } else if (isPaused) {
-      audio.togglePlayPause();
-      setIsPaused(false);
-    }
-  }, [audio, isPaused, isLessonComplete]);
-
-  /* ------------------------------------------------------------------ */
   /*  Language change                                                     */
   /* ------------------------------------------------------------------ */
   const handleLanguageChange = useCallback(
@@ -271,6 +356,20 @@ export default function LanguageLearningView({
     setShowCelebration(false);
     audio.playSection(0);
   }, [audio]);
+
+  /* ------------------------------------------------------------------ */
+  /*  Reset progress (clear localStorage)                                */
+  /* ------------------------------------------------------------------ */
+  const handleResetProgress = useCallback(() => {
+    if (progressKey) {
+      try {
+        localStorage.removeItem(progressKey);
+      } catch {
+        // Ignore
+      }
+    }
+    handleReplay();
+  }, [progressKey, handleReplay]);
 
   /* ------------------------------------------------------------------ */
   /*  Grammar drawer toggle                                               */
@@ -397,7 +496,9 @@ export default function LanguageLearningView({
 
       {/* Main content — tap to pause zone, swipe for navigation */}
       <div
-        className="relative flex-1 flex flex-col items-center justify-start px-6 sm:px-10 lg:px-0 py-6 sm:py-10 lg:py-12 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] cursor-default select-none touch-pan-y"
+        className={`relative flex-1 flex flex-col items-center justify-start px-6 sm:px-10 lg:px-0 py-6 sm:py-10 lg:py-12 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] cursor-default select-none touch-pan-y transition-transform duration-150 ${
+          isTapFeedback ? "scale-[0.98]" : "scale-100"
+        }`}
         onClick={handleTapToggle}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -534,6 +635,12 @@ export default function LanguageLearningView({
                 className="w-full sm:w-auto rounded-full bg-accent-primary px-8 py-3 font-ui text-sm font-medium text-white transition-colors hover:bg-accent-primary/90 active:scale-95"
               >
                 Replay Lesson
+              </button>
+              <button
+                onClick={handleResetProgress}
+                className="w-full sm:w-auto rounded-full border border-rule bg-bg-surface px-8 py-3 font-ui text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary active:scale-95"
+              >
+                Reset Progress
               </button>
               <a
                 href={backHref}

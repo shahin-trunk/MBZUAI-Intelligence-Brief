@@ -216,6 +216,53 @@
 
 ---
 
+### Iteration 4 - Progress Persistence, Keyboard Navigation & Haptic Feedback
+**Date:** 2026-05-17
+**Status:** Completed
+
+#### Changes Made
+
+**LanguageLearningView.tsx** - Major enhancement with 4 new features:
+
+**1. Progress Persistence with localStorage:**
+- `progressKey` generated from item ID + language (e.g., `ll-progress-item123-fr`)
+- On mount: loads saved `completedPhrases` and `isLessonComplete` from localStorage
+- On change: saves progress with timestamp to localStorage
+- Survives page refresh, browser close, and navigation
+- Separate progress tracked per language (French vs Arabic)
+
+**2. Keyboard Navigation for Desktop:**
+- `ArrowLeft` → Previous phrase (with swipe direction feedback)
+- `ArrowRight` → Next phrase (with swipe direction feedback)
+- `Space` → Toggle play/pause (with haptic tap feedback)
+- `Escape` → Close grammar drawer if open
+- Full keyboard accessibility for desktop users
+
+**3. Haptic-like Visual Feedback:**
+- `isTapFeedback` state triggers `scale-[0.98]` transform on tap
+- 150ms duration provides subtle "press" feeling
+- Applied to main content container via conditional className
+- Enhances perceived responsiveness on both mobile and desktop
+
+**4. Reset Progress Button:**
+- New "Reset Progress" button in completion state
+- Clears localStorage entry for current item/language
+- Resets all state (completed phrases, lesson complete flag)
+- Starts lesson from beginning
+
+#### Technical Implementation
+- localStorage wrapped in try/catch for privacy mode compatibility
+- Keyboard event listener properly cleaned up on unmount
+- Tap feedback uses CSS transform for GPU-accelerated animation
+- Reset progress clears storage before calling handleReplay
+
+#### Test Results
+- TypeScript compilation: PASSED
+- Build: PASSED (✓ Compiled successfully, 68/68 static pages)
+- ESLint: PASSED
+
+---
+
 ## PHASE 3: Backend Pipeline Improvements
 *(To be filled during execution)*
 
