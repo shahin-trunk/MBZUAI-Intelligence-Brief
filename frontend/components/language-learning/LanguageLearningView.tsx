@@ -42,6 +42,10 @@ export default function LanguageLearningView({
   const [showCelebration, setShowCelebration] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
   const [isTapFeedback, setIsTapFeedback] = useState(false);
+  // ITER 18: Enhanced progress tracking
+  const [sentencesViewed, setSentencesViewed] = useState<Set<number>>(new Set());
+  const [grammarOpened, setGrammarOpened] = useState(0);
+  const [lessonStartTime] = useState(Date.now());
 
   const hasFr = Boolean(item.learning_fr);
   const hasAr = Boolean(item.learning_ar);
@@ -77,6 +81,13 @@ export default function LanguageLearningView({
         if (data.isLessonComplete) {
           setIsLessonComplete(true);
         }
+        // ITER 18: Load enhanced tracking data
+        if (data.sentencesViewed?.length > 0) {
+          setSentencesViewed(new Set(data.sentencesViewed));
+        }
+        if (data.grammarOpened) {
+          setGrammarOpened(data.grammarOpened);
+        }
       }
     } catch {
       // Ignore localStorage errors
@@ -90,12 +101,16 @@ export default function LanguageLearningView({
       localStorage.setItem(progressKey, JSON.stringify({
         completedPhrases: Array.from(completedPhrases),
         isLessonComplete,
+        // ITER 18: Enhanced tracking data
+        sentencesViewed: Array.from(sentencesViewed),
+        grammarOpened,
+        lessonStartTime,
         timestamp: Date.now(),
       }));
     } catch {
       // Ignore localStorage errors
     }
-  }, [progressKey, completedPhrases, isLessonComplete]);
+  }, [progressKey, completedPhrases, isLessonComplete, sentencesViewed, grammarOpened, lessonStartTime]);
 
   /* ------------------------------------------------------------------ */
   /*  Flatten phrases into script-level audio URLs for useSectionAudio   */
@@ -163,6 +178,18 @@ export default function LanguageLearningView({
     }
   }, [isLessonComplete, language, currentPhraseIndex, currentScriptIndex, trackEvent]);
 
+  // ITER 18: Track sentences viewed as user navigates
+  useEffect(() => {
+    if (phrases.length > 0 && currentPhraseIndex >= 0 && currentPhraseIndex < phrases.length) {
+      setSentencesViewed((prev) => {
+        if (prev.has(currentPhraseIndex)) return prev;
+        const next = new Set(prev);
+        next.add(currentPhraseIndex);
+        return next;
+      });
+    }
+  }, [currentPhraseIndex, phrases.length]);
+
   // Script-level progress within the phrase (0-1)
   const scriptProgress = useMemo(() => {
     const scriptStartIndex = currentPhraseIndex * 3;
@@ -181,6 +208,12 @@ export default function LanguageLearningView({
       audio.playSection(scriptIdx);
       setIsPaused(false);
       setExpandedPhraseGrammar(null);
+      // ITER 18: Track sentence viewed
+      setSentencesViewed((prev) => {
+        const next = new Set(prev);
+        next.add(phraseIdx);
+        return next;
+      });
     },
     [audio],
   );
@@ -368,6 +401,9 @@ export default function LanguageLearningView({
       setIsPaused(false);
       setExpandedPhraseGrammar(null);
       setShowCelebration(false);
+      // ITER 18: Reset tracking states
+      setSentencesViewed(new Set());
+      setGrammarOpened(0);
       hasStartedRef.current = false;
     },
     [audio],
@@ -408,6 +444,8 @@ export default function LanguageLearningView({
       setExpandedPhraseGrammar(phraseIdx);
       if (phraseIdx !== null) {
         trackEvent(language, phraseIdx, currentScriptIndex, "grammar_open");
+        // ITER 18: Track grammar deep dive
+        setGrammarOpened((prev) => prev + 1);
       }
     },
     [language, currentScriptIndex, trackEvent],
@@ -689,6 +727,10 @@ export default function LanguageLearningView({
               completedPhrases={completedPhrases.size}
               totalDuration={currentContent?.total_duration_seconds}
               language={language}
+              // ITER 18: Enhanced tracking
+              sentencesViewed={sentencesViewed.size}
+              grammarOpened={grammarOpened}
+              startTime={lessonStartTime}
             />
 
             {/* Action buttons */}
