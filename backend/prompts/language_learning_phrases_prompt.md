@@ -22,7 +22,7 @@ Select exactly {phrase_count} phrases from the briefing item. Each phrase must b
 2. **Phonetically interesting** in {target_language} — contains sounds, stress patterns, or phoneme clusters worth learning.
 3. **Culturally or linguistically significant** — teaches something beyond the literal meaning.
 4. **Varied in grammatical structure** — at least 1 noun phrase, 1 verb phrase, 1 idiomatic/compound expression.
-5. **Progressively ordered** — phrase_0 most accessible, phrase_{phrase_count-1} most challenging.
+5. **Progressively ordered** — phrase_0 most accessible, phrase_{{phrase_count-1}} most challenging.
 
 ## Per Phrase — Generate 4 Scripts
 
@@ -44,7 +44,7 @@ Select exactly {phrase_count} phrases from the briefing item. Each phrase must b
 - **Length**: 15-45 characters
 - **Language**: English
 - **Purpose**: A short bridge from the teacher's explanation to the native utterance.
-- **Vary per phrase**: "Now hear it in {language}:", "Listen:", "In {language}:", "As a native speaker says it:", "Here it is:"
+- **Vary per phrase**: "Now hear it in {{language}}:", "Listen:", "In {{language}}:", "As a native speaker says it:", "Here it is:"
 
 ### script3 (The phrase in the target language)
 - **Length**: 5-70 characters
