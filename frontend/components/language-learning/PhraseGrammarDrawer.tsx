@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import { ChevronUp, Play, Pause } from "lucide-react";
+import { useRef, useEffect, useState, useCallback } from "react";
+import { Play, Pause, X } from "lucide-react";
 import type { PhraseGrammar } from "@/lib/types/brief";
 
 interface PhraseGrammarDrawerProps {
@@ -16,6 +16,7 @@ interface PhraseGrammarDrawerProps {
 export default function PhraseGrammarDrawer({
   grammar,
   script4AudioUrl,
+  script4Text,
   isOpen,
   onToggle,
   language,
@@ -51,7 +52,7 @@ export default function PhraseGrammarDrawer({
     };
   }, [script4AudioUrl]);
 
-  const togglePlay = () => {
+  const togglePlay = useCallback(() => {
     if (!audioRef.current) return;
     if (isPlaying) {
       audioRef.current.pause();
@@ -60,19 +61,17 @@ export default function PhraseGrammarDrawer({
       audioRef.current.play();
       setIsPlaying(true);
     }
-  };
+  }, [isPlaying]);
 
-  if (!isOpen) {
-    return null;
-  }
+  if (!isOpen) return null;
 
-  const grammarFields: { key: keyof PhraseGrammar; label: string }[] = [
-    { key: "morphology", label: "Morphology" },
-    { key: "etymology", label: "Etymology" },
-    { key: "conjugation", label: "Conjugation" },
-    { key: "register", label: "Register" },
-    { key: "phonetic_guide", label: "Pronunciation" },
-    { key: "usage_notes", label: "Usage Notes" },
+  const grammarFields: { key: keyof PhraseGrammar; label: string; icon: string }[] = [
+    { key: "morphology", label: "Morphology", icon: "🔤" },
+    { key: "etymology", label: "Etymology", icon: "📜" },
+    { key: "conjugation", label: "Conjugation", icon: "🔀" },
+    { key: "register", label: "Register", icon: "🎯" },
+    { key: "phonetic_guide", label: "Pronunciation", icon: "🔊" },
+    { key: "usage_notes", label: "Usage Notes", icon: "💡" },
   ];
 
   const activeFields = grammarFields.filter(
@@ -80,66 +79,112 @@ export default function PhraseGrammarDrawer({
   );
 
   return (
-    <div className="mt-6 animate-slide-up">
-      {/* Audio playback for Script4 */}
-      {script4AudioUrl && (
-        <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border-subtle">
-          <button
-            onClick={togglePlay}
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer"
-          >
-            {isPlaying ? (
-              <Pause className="w-4 h-4" />
-            ) : (
-              <Play className="w-4 h-4" />
-            )}
-          </button>
-          <div className="flex-1 h-1 bg-border-subtle rounded-full overflow-hidden">
-            <div
-              className="h-full bg-accent-primary transition-all duration-200"
-              style={{
-                width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
-              }}
-            />
+    <div className="mt-6 sm:mt-8 animate-in slide-in-from-bottom-4 duration-500">
+      {/* Card container */}
+      <div className="rounded-2xl border border-rule/50 bg-bg-surface/30 backdrop-blur-sm overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-rule/20">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-accent-primary animate-pulse" />
+            <h3 className="font-ui text-sm font-semibold text-text-primary uppercase tracking-wide">
+              Deep Dive
+            </h3>
           </div>
-          <span className="text-xs text-text-secondary/60 font-mono">
-            {formatTime(currentTime)} / {formatTime(duration)}
-          </span>
-        </div>
-      )}
-
-      {/* Grammar metadata cards */}
-      <div className="space-y-3">
-        {activeFields.map(({ key, label }, idx) => (
-          <div
-            key={key}
-            className="rounded-xl border border-border-subtle bg-surface/40 p-4"
-            style={{ animationDelay: `${idx * 150}ms` }}
+          <button
+            onClick={onToggle}
+            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-bg-surface/50 transition-colors"
+            aria-label="Close grammar panel"
           >
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary/60 shrink-0 w-24">
-                {label}
-              </span>
-              <span
-                dir={language === "ar" ? "rtl" : "ltr"}
-                className="font-body text-[15px] text-text-primary"
+            <X className="w-4 h-4 text-text-secondary" />
+          </button>
+        </div>
+
+        {/* Audio playback for Script4 */}
+        {script4AudioUrl && (
+          <div className="px-4 sm:px-5 py-3 border-b border-rule/20">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={togglePlay}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer shrink-0"
+                aria-label={isPlaying ? "Pause" : "Play"}
               >
-                {grammar[key]}
-              </span>
+                {isPlaying ? (
+                  <Pause className="w-4 h-4" />
+                ) : (
+                  <Play className="w-4 h-4" />
+                )}
+              </button>
+              <div className="flex-1">
+                <div className="h-1.5 bg-rule/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-accent-primary transition-all duration-200 rounded-full"
+                    style={{
+                      width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span className="text-[10px] text-text-muted font-mono">
+                    {formatTime(currentTime)}
+                  </span>
+                  <span className="text-[10px] text-text-muted font-mono">
+                    {formatTime(duration)}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
+        )}
 
-      {/* Collapse button */}
-      <div className="flex justify-center mt-4">
-        <button
-          onClick={onToggle}
-          className="flex items-center gap-1 text-sm text-text-secondary/60 hover:text-text-primary transition-colors cursor-pointer"
-        >
-          <ChevronUp className="w-4 h-4" />
-          Collapse
-        </button>
+        {/* Script4 text (if available) */}
+        {script4Text && (
+          <div className="px-4 sm:px-5 py-3 border-b border-rule/20">
+            <p className="font-body text-[13px] sm:text-[14px] text-text-secondary leading-relaxed italic">
+              {script4Text}
+            </p>
+          </div>
+        )}
+
+        {/* Grammar metadata cards */}
+        <div className="divide-y divide-rule/10 max-h-[40vh] sm:max-h-[50vh] overflow-y-auto">
+          {activeFields.map(({ key, label, icon }, idx) => (
+            <div
+              key={key}
+              className="px-4 sm:px-5 py-3.5 animate-in fade-in duration-300"
+              style={{ animationDelay: `${idx * 100}ms` }}
+            >
+              <div className="flex items-start gap-3">
+                <span className="text-sm shrink-0 mt-0.5" role="img" aria-hidden>
+                  {icon}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-1">
+                    {label}
+                  </span>
+                  <p
+                    dir={language === "ar" ? "rtl" : "ltr"}
+                    className="font-body text-[13px] sm:text-[14px] text-text-primary leading-relaxed"
+                  >
+                    {grammar[key]}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-center px-4 py-3 border-t border-rule/10">
+          <button
+            onClick={onToggle}
+            className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-text-muted">
+              <path d="M3 5L7 9L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Close deep dive
+          </button>
+        </div>
       </div>
     </div>
   );

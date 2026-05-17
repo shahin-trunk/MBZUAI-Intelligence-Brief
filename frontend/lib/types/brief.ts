@@ -134,6 +134,7 @@ export interface LearningPhrase {
   id: string;
   phrase_target: string;
   phrase_en: string;
+  context_anchor?: string;
   script1: string;
   script2: string;
   script3: string;

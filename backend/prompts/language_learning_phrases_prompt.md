@@ -2,7 +2,7 @@ You are a senior language educator selecting verbally and phonetically rich phra
 
 ## Input Context
 
-**Item**: {item_json}
+**Briefing Item**: {item_json}
 **Target Language**: {target_language}
 **Phrase Count**: {phrase_count}
 
@@ -10,10 +10,18 @@ You are a senior language educator selecting verbally and phonetically rich phra
 
 Select exactly {phrase_count} phrases from the briefing item above. Each phrase must be:
 
-1. **Phonetically interesting** in {target_language} — contains sounds, tones, stress patterns, or phoneme clusters not present in English
-2. **Culturally or linguistically significant** — teaches something about the language or culture beyond the literal meaning
-3. **Varied in grammatical structure** — mix nouns, verbs, adjective+noun combinations, idiomatic expressions
-4. **Anchored in the item content** — drawn from the specific headline, bullets, entities, or analysis (not generic phrases)
+1. **Directly anchored to the briefing** — the phrase text MUST appear in or be a direct translation of specific text from the headline, key bullets, entities, or analysis. Do NOT invent generic phrases.
+2. **Phonetically interesting** in {target_language} — contains sounds, tones, stress patterns, or phoneme clusters not present in English
+3. **Culturally or linguistically significant** — teaches something about the language or culture beyond the literal meaning
+4. **Varied in grammatical structure** — cover different categories: at least 1 noun phrase, 1 verb phrase, and 1 idiomatic/compound expression
+
+## Phrase Selection Strategy
+
+For each phrase, follow this process:
+1. **Identify key terms** from the briefing (entities, subjects, action words, specific claims)
+2. **Find the {target_language} equivalent** that a native speaker would use in this context
+3. **Verify it appears in the source** — the phrase should be traceable back to specific briefing text
+4. **Assign a context_anchor** — quote the exact briefing text this phrase comes from
 
 ## Per Phrase — Generate 4 Scripts
 
@@ -23,6 +31,7 @@ Select exactly {phrase_count} phrases from the briefing item above. Each phrase 
 - **Purpose**: Explain the phrase's meaning, context, and cultural significance using the news item as anchor
 - **Style**: Teaching metalanguage — "This phrase captures...", "In the context of...", "Notice how..."
 - **Must contain**: The target-language phrase embedded with immediate English translation
+- **Must reference**: A specific entity, bullet, or claim from the briefing
 - **Bilingual check**: First 10 words must include at least 3 English words
 
 ### script2 (English transition)
@@ -67,6 +76,7 @@ Return ONLY valid JSON matching this exact structure:
       "id": "phrase_0",
       "phrase_target": "phrase in {target_language}",
       "phrase_en": "English translation",
+      "context_anchor": "exact text from the briefing this phrase comes from",
       "script1": "...",
       "script2": "...",
       "script3": "...",
@@ -88,7 +98,9 @@ Return ONLY valid JSON matching this exact structure:
 ## Critical Rules
 
 1. Do NOT output any text outside the JSON block
-2. All scripts must be item-specific — reference the actual news context
+2. All scripts must be item-specific — reference the actual news context, entities, and claims
 3. Script1 and script4 must pass the bilingual check (>=3 English stop words in first 10 words)
 4. Script3 must be pure {target_language} — no English whatsoever
-5. Phrase selection must cover different grammatical categories (not all nouns)
+5. Phrase selection MUST cover different grammatical categories (not all nouns)
+6. Every phrase must have a non-empty `context_anchor` that quotes the briefing source text
+7. If the briefing is about a specific event/entity, at least 2 phrases must directly reference it
