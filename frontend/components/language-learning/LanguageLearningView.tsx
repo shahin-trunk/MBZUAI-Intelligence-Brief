@@ -351,6 +351,10 @@ export default function LanguageLearningView({
       <ImmersiveAudioController
         overallProgress={audio.overallProgress}
         isLessonComplete={isLessonComplete}
+        currentScriptIndex={currentScriptIndex}
+        speed={audio.speed}
+        onSpeedChange={audio.cycleSpeed}
+        isLoading={audio.isLoading}
       />
 
       {/* Header: back + counter + language toggle */}
