@@ -123,6 +123,7 @@ jobs:
             GITHUB_WORKFLOW_FILE=daily-brief.yml
             GITHUB_REF=main
             PREVENT_DUPLICATE_SAME_DAY=1
+            DISPATCH_TOKEN=${{ secrets.DISPATCH_TOKEN }}
             DEPLOYEOF
             echo "✓ deploy.env written"
 

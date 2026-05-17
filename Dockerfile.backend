@@ -11,6 +11,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ ./backend/
 
+# Copy celery_app.py to root so `celery -A celery_app` can find it
+COPY backend/celery_app.py ./celery_app.py
+
 ENV PYTHONPATH=/app
 
 # Default command (overridden in docker-compose.yml for each worker type)
