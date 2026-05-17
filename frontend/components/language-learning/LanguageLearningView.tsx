@@ -351,7 +351,17 @@ export default function LanguageLearningView({
   /* ------------------------------------------------------------------ */
   const handleLanguageChange = useCallback(
     (lang: LearnLang) => {
+      // CRITICAL: Kill ALL audio (main player + grammar drawer) before switching language
       audio.pause();
+      // Import and call killAllPageAudio to stop any grammar drawer audio
+      if (typeof window !== 'undefined') {
+        // Direct DOM audio cleanup for any lingering elements
+        document.querySelectorAll("audio").forEach((el) => {
+          el.pause();
+          el.removeAttribute("src");
+          el.load();
+        });
+      }
       setLanguage(lang);
       setCompletedPhrases(new Set());
       setIsLessonComplete(false);

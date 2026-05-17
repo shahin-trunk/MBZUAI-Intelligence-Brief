@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { Play, Pause, X, Loader2, AlertCircle } from "lucide-react";
 import type { PhraseGrammar } from "@/lib/types/brief";
+import { registerAudio, unregisterAudio, killAllPageAudio } from "@/hooks/useSectionAudio";
 
 interface PhraseGrammarDrawerProps {
   grammar: PhraseGrammar;
@@ -35,12 +36,18 @@ export default function PhraseGrammarDrawer({
   useEffect(() => {
     if (!script4AudioUrl) return;
 
+    // CRITICAL: Kill all other audio before creating new one
+    killAllPageAudio();
+
     setIsLoading(true);
     setHasError(false);
 
     const audio = new Audio(script4AudioUrl);
-    audioRef.current = audio;
     audio.preload = "auto";
+
+    // Register to global audio registry for coordination with main player
+    registerAudio(audio);
+    audioRef.current = audio;
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleLoadedMetadata = () => {
@@ -50,11 +57,15 @@ export default function PhraseGrammarDrawer({
     const handleCanPlayThrough = () => {
       setIsLoading(false);
     };
-    const handleEnded = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      unregisterAudio(audio);
+    };
     const handleError = () => {
       setIsPlaying(false);
       setIsLoading(false);
       setHasError(true);
+      unregisterAudio(audio);
     };
     const handleLoadStart = () => {
       setIsLoading(true);
@@ -69,8 +80,11 @@ export default function PhraseGrammarDrawer({
     audio.addEventListener("loadstart", handleLoadStart);
 
     return () => {
+      // Complete cleanup: pause, unregister, clear src, and load
       audio.pause();
+      unregisterAudio(audio);
       audio.removeAttribute("src");
+      audio.load(); // CRITICAL: forces audio element to fully reset
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("canplaythrough", handleCanPlayThrough);
@@ -86,6 +100,10 @@ export default function PhraseGrammarDrawer({
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      // Kill any other audio that might be playing elsewhere
+      killAllPageAudio();
+      // Re-register this audio since killAllPageAudio unregisters everything
+      registerAudio(audioRef.current);
       audioRef.current.play();
       setIsPlaying(true);
     }

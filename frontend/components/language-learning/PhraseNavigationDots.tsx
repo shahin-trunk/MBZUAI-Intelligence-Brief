@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useRef, useCallback } from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,8 @@ interface PhraseNavigationDotsProps {
   onPhraseSelect: (index: number) => void;
 }
 
+const DEBOUNCE_MS = 300;
+
 const PhraseNavigationDots = memo(function PhraseNavigationDots({
   totalPhrases,
   currentPhraseIndex,
@@ -21,6 +23,17 @@ const PhraseNavigationDots = memo(function PhraseNavigationDots({
   scriptProgress,
   onPhraseSelect,
 }: PhraseNavigationDotsProps) {
+  const lastClickRef = useRef(0);
+
+  const handlePhraseSelect = useCallback((index: number) => {
+    const now = Date.now();
+    if (now - lastClickRef.current < DEBOUNCE_MS) {
+      return; // Ignore rapid clicks
+    }
+    lastClickRef.current = now;
+    onPhraseSelect(index);
+  }, [onPhraseSelect]);
+
   if (totalPhrases <= 1) return null;
 
   return (
@@ -33,11 +46,11 @@ const PhraseNavigationDots = memo(function PhraseNavigationDots({
           <button
             key={i}
             type="button"
-            onClick={() => onPhraseSelect(i)}
+            onClick={() => handlePhraseSelect(i)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                onPhraseSelect(i);
+                handlePhraseSelect(i);
               }
             }}
             className="group relative flex flex-col items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent-primary/50 focus:ring-offset-2 rounded-full"
