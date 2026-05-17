@@ -44,7 +44,7 @@ export function unregisterAudio(el: HTMLAudioElement) {
  * Kill every <audio> and Audio object on the page.
  * Prevents echo from brief-page audio bleeding through client-side navigation.
  */
-function killAllPageAudio() {
+export function killAllPageAudio() {
   if (typeof document === "undefined") return;
   // Kill DOM-attached audio elements
   document.querySelectorAll("audio").forEach((el) => {
