@@ -119,8 +119,44 @@ export type EntityCategory =
   | "country"
   | "other";
 
-// ─── Language Learning Types ─────────────────────────────────────────────────
+// ─── Language Learning Types (V3 Phrase-Based) ──────────────────────────────
 
+export interface PhraseGrammar {
+  morphology?: string;
+  etymology?: string;
+  conjugation?: string;
+  register?: string;
+  phonetic_guide?: string;
+  usage_notes?: string;
+}
+
+export interface LearningPhrase {
+  id: string;
+  phrase_target: string;
+  phrase_en: string;
+  script1: string;
+  script2: string;
+  script3: string;
+  script4: string;
+  audio_url_1?: string;
+  audio_url_2?: string;
+  audio_url_3?: string;
+  audio_url_4?: string;
+  grammar: PhraseGrammar;
+  estimated_duration_seconds?: number;
+}
+
+/** V3 phrase-based learning content. */
+export interface ItemLearningContent {
+  version: 3;
+  phrases: LearningPhrase[];
+  difficulty: "beginner" | "intermediate" | "advanced";
+  total_duration_seconds?: number;
+}
+
+// ─── V2 Legacy Types (backward compatibility) ───────────────────────────────
+
+/** V2 legacy: Learning vocabulary item. */
 export interface LearningVocabulary {
   term: string;
   translation: string;
@@ -132,7 +168,8 @@ export interface LearningVocabulary {
   example_sentences?: string[];
 }
 
-export interface LearningPhrase {
+/** V2 legacy: Learning phrase within a section. */
+export interface LearningPhraseV2 {
   phrase: string;
   translation: string;
   context_note?: string;
@@ -154,13 +191,13 @@ export interface LearningSection {
   title: string;
   title_en: string;
   script: string;
-  key_phrases?: LearningPhrase[];
+  key_phrases?: LearningPhraseV2[];
   audio_url?: string;
   estimated_duration_seconds?: number;
 }
 
-/** V2 multi-section learning content (preferred). */
-export interface ItemLearningContent {
+/** V2 multi-section learning content (legacy). */
+export interface ItemLearningContentV2 {
   sections: LearningSection[];
   vocabulary: LearningVocabulary[];
   difficulty: "beginner" | "intermediate" | "advanced";
@@ -175,8 +212,8 @@ export interface ItemLearningContentLegacy {
   audio_url?: string;
 }
 
-/** Raw learning content from DB — can be either v1 or v2. */
-export type ItemLearningContentRaw = ItemLearningContent | ItemLearningContentLegacy;
+/** Raw learning content from DB — v1, v2, or v3. */
+export type ItemLearningContentRaw = ItemLearningContent | ItemLearningContentV2 | ItemLearningContentLegacy;
 
 export interface AudioSegment {
   item_id: string;

@@ -1,16 +1,102 @@
 import json
+import logging
 import os
 from datetime import datetime, timezone
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
-from flask import Flask, jsonify, request
+import httpx
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.security import APIKeyHeader
+from pydantic import BaseModel, Field
 
-
-app = Flask(__name__)
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
 DUBAI_TZ = ZoneInfo("Asia/Dubai")
 
+# ---------------------------------------------------------------------------
+# Structured JSON logging
+# ---------------------------------------------------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+)
+logger = logging.getLogger("dispatcher")
+
+
+class JSONFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        log_entry = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "level": record.levelname,
+            "message": record.getMessage(),
+            "logger": record.name,
+        }
+        if record.exc_info:
+            log_entry["exception"] = self.formatException(record.exc_info)
+        return json.dumps(log_entry)
+
+
+for handler in logger.handlers:
+    handler.setFormatter(JSONFormatter())
+
+# ---------------------------------------------------------------------------
+# FastAPI app
+# ---------------------------------------------------------------------------
+app = FastAPI(
+    title="GitHub Workflow Dispatcher",
+    description="Service for triggering GitHub Actions workflows via API",
+    version="1.0.0",
+)
+
+# ---------------------------------------------------------------------------
+# Auth
+# ---------------------------------------------------------------------------
+API_KEY_HEADER = APIKeyHeader(name="X-Dispatch-Token", auto_error=False)
+
+
+def get_api_key(api_key: str | None = Depends(API_KEY_HEADER)) -> str:
+    expected = os.getenv("DISPATCH_TOKEN")
+    if not expected:
+        # If no token configured, allow all (relies on network isolation)
+        return "unconfigured"
+    if api_key != expected:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing dispatch token",
+        )
+    return api_key
+
+# ---------------------------------------------------------------------------
+# Pydantic models
+# ---------------------------------------------------------------------------
+
+class HealthResponse(BaseModel):
+    ok: bool
+    service: str
+
+class DispatchResponse(BaseModel):
+    ok: bool
+    dispatched: bool
+    reason: str | None = None
+    existing_run: dict | None = None
+    ref: str | None = None
+    prevent_duplicate_same_day: bool | None = None
+    error: str | None = None
+    status_code: int | None = None
+    response: dict | None = None
+
+class WorkflowRunSummary(BaseModel):
+    id: int | None = None
+    status: str | None = None
+    conclusion: str | None = None
+    html_url: str | None = None
+    event: str | None = None
+    created_at: str | None = None
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 def _env(name: str, default: str | None = None) -> str:
     value = os.getenv(name, default)
@@ -49,25 +135,15 @@ def _list_runs_url(page: int = 1, per_page: int = 100) -> str:
     )
 
 
-def _request_json(url: str, method: str = "GET", payload: dict | None = None) -> tuple[int, dict]:
-    data = None
-    if payload is not None:
-        data = json.dumps(payload).encode("utf-8")
-
-    req = Request(url, data=data, method=method, headers=_github_headers())
-    try:
-        with urlopen(req, timeout=20) as response:
-            body = response.read().decode("utf-8") or "{}"
-            return response.status, json.loads(body)
-    except HTTPError as exc:
-        body = exc.read().decode("utf-8") or "{}"
-        try:
-            parsed = json.loads(body)
-        except json.JSONDecodeError:
-            parsed = {"raw": body}
-        return exc.code, parsed
-    except URLError as exc:
-        raise RuntimeError(f"GitHub request failed: {exc}") from exc
+async def _request_json(
+    client: httpx.AsyncClient,
+    url: str,
+    method: str = "GET",
+    payload: dict | None = None,
+) -> tuple[int, dict]:
+    json_payload = json.dumps(payload) if payload is not None else None
+    response = await client.request(method, url, content=json_payload, headers=_github_headers(), timeout=20.0)
+    return response.status_code, response.json() if response.content else {}
 
 
 def _parse_iso_datetime(value: str) -> datetime | None:
@@ -94,12 +170,12 @@ def _workflow_run_summary(run: dict) -> dict:
     }
 
 
-def _run_exists_today(ref: str) -> dict | None:
+async def _run_exists_today(client: httpx.AsyncClient, ref: str) -> dict | None:
     today_dubai = datetime.now(DUBAI_TZ).date()
     page = 1
 
     while True:
-        status_code, payload = _request_json(_list_runs_url(page=page))
+        status_code, payload = await _request_json(client, _list_runs_url(page=page))
         if status_code != 200:
             raise RuntimeError(f"Failed to list workflow runs: {status_code} {payload}")
 
@@ -129,56 +205,55 @@ def _run_exists_today(ref: str) -> dict | None:
     return None
 
 
-@app.get("/")
-def healthcheck():
-    return jsonify({"ok": True, "service": "github-workflow-dispatcher"})
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+@app.get("/", response_model=HealthResponse)
+async def healthcheck():
+    return HealthResponse(ok=True, service="github-workflow-dispatcher")
 
 
-@app.post("/dispatch")
-def dispatch():
+@app.post("/dispatch", response_model=DispatchResponse)
+async def dispatch(token: str = Depends(get_api_key)):
     ref = os.getenv("GITHUB_REF", "main")
     prevent_duplicates = os.getenv("PREVENT_DUPLICATE_SAME_DAY", "1") == "1"
 
-    if prevent_duplicates:
-        existing = _run_exists_today(ref)
-        if existing:
-            return jsonify(
-                {
-                    "ok": True,
-                    "dispatched": False,
-                    "reason": "run_already_exists_today",
-                    "existing_run": existing,
-                }
+    logger.info("dispatch_request", extra={"ref": ref, "prevent_duplicates": prevent_duplicates})
+
+    async with httpx.AsyncClient() as client:
+        if prevent_duplicates:
+            existing = await _run_exists_today(client, ref)
+            if existing:
+                logger.info("dispatch_skipped_duplicate", extra={"ref": ref})
+                return DispatchResponse(
+                    ok=True,
+                    dispatched=False,
+                    reason="run_already_exists_today",
+                    existing_run=existing,
+                )
+
+        payload = {"ref": ref}
+        status_code, response = await _request_json(
+            client,
+            _workflow_dispatch_url(),
+            method="POST",
+            payload=payload,
+        )
+        if status_code not in (200, 201, 204):
+            logger.error("dispatch_failed", extra={"status_code": status_code, "response": response})
+            return DispatchResponse(
+                ok=False,
+                dispatched=False,
+                error="github_dispatch_failed",
+                status_code=status_code,
+                response=response,
             )
 
-    payload = {"ref": ref}
-    status_code, response = _request_json(
-        _workflow_dispatch_url(),
-        method="POST",
-        payload=payload,
-    )
-    if status_code not in (200, 201, 204):
-        return (
-            jsonify(
-                {
-                    "ok": False,
-                    "error": "github_dispatch_failed",
-                    "status_code": status_code,
-                    "response": response,
-                }
-            ),
-            502,
+        logger.info("dispatch_success", extra={"ref": ref})
+        return DispatchResponse(
+            ok=True,
+            dispatched=True,
+            ref=ref,
+            prevent_duplicate_same_day=prevent_duplicates,
         )
-
-    return jsonify(
-        {
-            "ok": True,
-            "dispatched": True,
-            "ref": ref,
-            "prevent_duplicate_same_day": prevent_duplicates,
-        }
-    )
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8080")))

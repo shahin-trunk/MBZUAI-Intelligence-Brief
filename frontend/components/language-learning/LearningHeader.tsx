@@ -46,9 +46,9 @@ export default function LearningHeader({
           />
         </a>
 
-        {/* Section counter */}
+        {/* Phrase counter */}
         <span className="font-ui text-[13px] font-medium text-text-secondary tabular-nums">
-          {currentSection} / {totalSections}
+          Phrase {currentSection} / {totalSections}
         </span>
 
         {/* Language toggle pill */}

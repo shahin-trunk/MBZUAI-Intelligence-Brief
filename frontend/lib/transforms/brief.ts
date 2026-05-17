@@ -7,6 +7,9 @@ import type {
   SectionName,
   ItemLearningContent,
   ItemLearningContentRaw,
+  ItemLearningContentV2,
+  ItemLearningContentLegacy,
+  LearningPhrase,
 } from "@/lib/types/brief";
 import { SECTION_ORDER } from "@/lib/types/brief";
 
@@ -224,35 +227,65 @@ export function getSectionShortName(name: string): string {
 
 /**
  * Normalize learning content from raw DB format.
- * V1 legacy (has `script`, no `sections`) → wrapped into a single-section v2 structure.
- * V2 (has `sections`) → passed through as-is.
+ * V3 (has `version === 3` and `phrases`) → passed through as-is.
+ * V2 (has `sections`) → converted to V3 phrase shim (degraded).
+ * V1 legacy (has `script`) → converted to V3 single-phrase shim.
  */
 function normalizeLearningContent(
   raw: ItemLearningContentRaw | null | undefined,
 ): ItemLearningContent | undefined {
   if (!raw) return undefined;
 
-  // V2 format: already has sections array
-  if ("sections" in raw && Array.isArray(raw.sections) && raw.sections.length > 0) {
+  // V3 format: phrase-based (current standard)
+  if (
+    "version" in raw &&
+    (raw as ItemLearningContent).version === 3 &&
+    Array.isArray((raw as ItemLearningContent).phrases)
+  ) {
     return raw as ItemLearningContent;
   }
 
-  // V1 legacy: has script field, no sections — wrap into single-section v2
-  if ("script" in raw && typeof raw.script === "string" && raw.script.length > 0) {
-    const legacy = raw as { script: string; vocabulary: any[]; difficulty: string; audio_url?: string };
+  // V2 format: sections-based → convert to V3 phrase shim
+  if ("sections" in raw && Array.isArray((raw as ItemLearningContentV2).sections) && (raw as ItemLearningContentV2).sections.length > 0) {
+    const v2 = raw as ItemLearningContentV2;
+    const phrases: LearningPhrase[] = v2.sections.map((section, idx) => ({
+      id: `phrase_${idx}`,
+      phrase_target: section.title,
+      phrase_en: section.title_en,
+      script1: section.script,
+      script2: "",
+      script3: section.title,
+      script4: "",
+      audio_url_1: section.audio_url,
+      grammar: {},
+      estimated_duration_seconds: section.estimated_duration_seconds,
+    }));
     return {
-      sections: [
+      version: 3,
+      phrases,
+      difficulty: v2.difficulty,
+      total_duration_seconds: v2.total_audio_duration_seconds,
+    };
+  }
+
+  // V1 legacy: single script → wrap into single-phrase V3
+  if ("script" in raw && typeof (raw as ItemLearningContentLegacy).script === "string" && (raw as ItemLearningContentLegacy).script.length > 0) {
+    const legacy = raw as ItemLearningContentLegacy;
+    return {
+      version: 3,
+      phrases: [
         {
-          id: "full",
-          type: "narrative",
-          title: "Lesson",
-          title_en: "Lesson",
-          script: legacy.script,
-          key_phrases: [],
-          audio_url: legacy.audio_url,
+          id: "phrase_0",
+          phrase_target: "Lesson",
+          phrase_en: "Lesson",
+          script1: legacy.script,
+          script2: "",
+          script3: "Lesson",
+          script4: "",
+          audio_url_1: legacy.audio_url,
+          grammar: {},
         },
       ],
-      vocabulary: Array.isArray(legacy.vocabulary) ? legacy.vocabulary : [],
       difficulty: (legacy.difficulty as ItemLearningContent["difficulty"]) || "intermediate",
     };
   }

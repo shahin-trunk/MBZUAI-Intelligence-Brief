@@ -1908,6 +1908,318 @@ def _generate_learning_content_v2(item: dict, lang: str) -> dict | None:
 
 
 # ---------------------------------------------------------------------------
+# V3: Phrase-based learning content (simplified)
+# ---------------------------------------------------------------------------
+
+LEARNING_PHRASES_PROMPT_FILE = "language_learning_phrases_prompt.md"
+LEARNING_PHRASES_MAX_TOKENS = 6144
+DEFAULT_PHRASE_COUNT = 3
+
+
+def _has_v3_learning(item: dict, lang: str) -> bool:
+    """Check if an item already has v3 (phrase-based) learning content."""
+    lc = item.get(f"learning_{lang}")
+    if not lc or not isinstance(lc, dict):
+        return False
+    return lc.get("version") == 3 and isinstance(lc.get("phrases"), list) and len(lc["phrases"]) >= 1
+
+
+def _load_learning_phrases_prompt(item: dict, lang: str, phrase_count: int = 3) -> str:
+    """Load and inject template vars into the phrases prompt."""
+    target_language = "French" if lang == "fr" else "Arabic"
+    item_json = json.dumps(_build_rich_item_summary(item, for_learning=True), indent=2, ensure_ascii=False)
+    item_id = item.get("id", "?")
+    item_headline = item.get("headline", "?")
+
+    prompt_path = PROMPTS_DIR / LEARNING_PHRASES_PROMPT_FILE
+    if not prompt_path.exists():
+        log.error("Phrases prompt not found: %s", prompt_path)
+        return ""
+
+    template = prompt_path.read_text(encoding="utf-8")
+    return template.format(
+        item_json=item_json,
+        target_language=target_language,
+        phrase_count=phrase_count,
+        item_id=item_id,
+        item_headline=item_headline,
+    )
+
+
+def _generate_learning_phrases(item: dict, lang: str, phrase_count: int = 3) -> dict | None:
+    """Generate phrase-based learning content via a single Claude call (v3 pipeline).
+
+    Returns dict {phrases, vocabulary, difficulty} or None on failure.
+    """
+    item_id = item.get("id", "?")
+    lang_label = "French" if lang == "fr" else "Arabic"
+    log.info("Generating v3 learning phrases for %s item %s: %s",
+             lang_label, item_id, item.get("headline", "?")[:80])
+
+    for attempt in range(LEARNING_SCRIPT_MAX_ATTEMPTS):
+        prompt = _load_learning_phrases_prompt(item, lang, phrase_count)
+        if not prompt:
+            return None
+
+        try:
+            result = _call_anthropic(prompt, LEARNING_PHRASES_MAX_TOKENS)
+            content = _parse_json_response(result)
+
+            # Validate structure
+            if not content or not isinstance(content, dict):
+                log.warning("v3 phrases: invalid response format (attempt %d)", attempt + 1)
+                continue
+
+            phrases = content.get("phrases")
+            if not phrases or not isinstance(phrases, list) or len(phrases) < 1:
+                log.warning("v3 phrases: missing or empty phrases array (attempt %d)", attempt + 1)
+                continue
+
+            # Validate each phrase has required fields
+            valid_phrases = []
+            for p in phrases:
+                if (
+                    isinstance(p, dict)
+                    and p.get("phrase_target")
+                    and p.get("phrase_en")
+                    and p.get("script1")
+                    and p.get("script2")
+                    and p.get("script3")
+                    and p.get("script4")
+                    and isinstance(p.get("grammar"), dict)
+                ):
+                    # Bilingual check on script1 and script4
+                    if not _is_bilingual_script(p.get("script1", "")):
+                        log.warning("v3 phrases: script1 failed bilingual check for '%s'", p["phrase_target"][:40])
+                        continue
+                    if not _is_bilingual_script(p.get("script4", "")):
+                        log.warning("v3 phrases: script4 failed bilingual check for '%s'", p["phrase_target"][:40])
+                        continue
+                    valid_phrases.append(p)
+
+            if len(valid_phrases) < 1:
+                log.warning("v3 phrases: no valid phrases after validation (attempt %d)", attempt + 1)
+                continue
+
+            difficulty = content.get("difficulty", "intermediate")
+            if difficulty not in ("beginner", "intermediate", "advanced"):
+                difficulty = "intermediate"
+
+            return {
+                "phrases": valid_phrases,
+                "difficulty": difficulty,
+            }
+
+        except Exception as exc:
+            log.warning("v3 phrases: generation error (attempt %d): %s", attempt + 1, exc)
+
+    log.warning("v3 phrases: all %d attempts failed for item %s", LEARNING_SCRIPT_MAX_ATTEMPTS, item_id)
+    return None
+
+
+def _generate_phrase_audio(
+    sb: Client,
+    script: str,
+    voice_id: str,
+    target_date: str,
+    item_id: str,
+    lang: str,
+    phrase_idx: int,
+    script_idx: int,
+) -> str | None:
+    """Generate TTS audio for a single phrase script and upload to Supabase.
+
+    Path: {target_date}/learning/{item_id}_{lang}_p{phrase_idx}_s{script_idx}.mp3
+    """
+    try:
+        audio_bytes = _generate_audio(script, voice_id, lang=lang)
+        file_path = f"{target_date}/learning/{item_id}_{lang}_p{phrase_idx}_s{script_idx}.mp3"
+        log.info("Uploading phrase audio to audio-briefs/%s...", file_path)
+        sb.storage.from_("audio-briefs").upload(
+            file_path,
+            audio_bytes,
+            file_options={"content-type": "audio/mpeg", "upsert": "true"},
+        )
+        public_url = sb.storage.from_("audio-briefs").get_public_url(file_path)
+        return public_url
+    except Exception as exc:
+        log.warning("Phrase audio failed for item %s p%s_s%s (%s): %s",
+                    item_id, phrase_idx, script_idx, lang, exc)
+        return None
+
+
+def _generate_learning_content_v3(
+    item: dict,
+    lang: str,
+    phrase_count: int = DEFAULT_PHRASE_COUNT,
+) -> dict | None:
+    """Generate phrase-based language learning content (v3 pipeline).
+
+    Single Claude call for phrase selection + scripts, then 4 TTS calls per phrase.
+    Returns dict {version, phrases, difficulty, total_duration_seconds} or None.
+    """
+    item_id = item.get("id", "?")
+    lang_label = "French" if lang == "fr" else "Arabic"
+    log.info("Generating v3 learning content for %s item %s", lang_label, item_id)
+
+    content = _generate_learning_phrases(item, lang, phrase_count)
+    if not content:
+        log.warning("v3 content: phrase generation failed for item %s — skipping", item_id)
+        return None
+
+    # Estimate durations per phrase (scripts 1-3 only; script4 is on-demand)
+    for p in content["phrases"]:
+        dur = sum(
+            _estimate_duration_seconds(p.get(f"script{s}", ""), lang)
+            for s in range(1, 4)
+        )
+        p["estimated_duration_seconds"] = round(dur, 1)
+
+    total_duration = sum(p.get("estimated_duration_seconds", 0) for p in content["phrases"])
+
+    return {
+        "version": 3,
+        "phrases": content["phrases"],
+        "difficulty": content["difficulty"],
+        "total_duration_seconds": round(total_duration, 1),
+    }
+
+
+def _generate_learning_content_sync(
+    sb: Client,
+    target_date: str,
+    active_items: list[dict],
+    languages: list[str],
+    brief_json: dict,
+    force: bool = False,
+) -> None:
+    """Generate v3 learning content synchronously (non-Celery mode)."""
+    voice_config = _get_voice_config()
+
+    for lang in languages:
+        lang_display = "French" if lang == "fr" else "Arabic"
+        learning_count = 0
+        phrase_audio_count = 0
+
+        pending_items = [
+            item for item in active_items
+            if force or not _has_v3_learning(item, lang)
+        ]
+
+        for item in pending_items:
+            item_id = item.get("id", "?")
+            try:
+                learning = _generate_learning_content_v3(item, lang)
+                if not learning:
+                    continue
+
+                item[f"learning_{lang}"] = learning
+                learning_count += 1
+
+                # Generate per-phrase audio: scripts 1,2,4 use EN voice; script3 uses target-lang voice
+                en_voice = voice_config.get("en", {}).get("voice_id", "")
+                target_voice = voice_config.get(lang, {}).get("voice_id", "")
+
+                for p_idx, phrase in enumerate(learning.get("phrases", [])):
+                    for s_idx in range(1, 5):
+                        script_text = phrase.get(f"script{s_idx}", "")
+                        if not script_text or len(script_text) < 10:
+                            continue
+
+                        # Script3 uses target language voice; others use EN voice
+                        voice = target_voice if s_idx == 3 else en_voice
+                        script_lang = lang if s_idx == 3 else "en"
+
+                        audio_url = _generate_phrase_audio(
+                            sb, script_text, voice, target_date,
+                            item_id, lang, p_idx, s_idx,
+                        )
+                        if audio_url:
+                            phrase[f"audio_url_{s_idx}"] = audio_url
+                            phrase_audio_count += 1
+
+            except Exception as exc:
+                log.warning("%s v3 learning content failed for item %s: %s", lang_display, item_id, exc)
+
+        log.info("%s v3 learning content: %d items, %d phrase audio files", lang_display, learning_count, phrase_audio_count)
+
+    # Save updated raw_json
+    if any(
+        item.get(f"learning_{lang}")
+        for item in active_items
+        for lang in languages
+    ):
+        try:
+            sb.table("briefs").update({"raw_json": brief_json}).eq(
+                "brief_date", target_date
+            ).execute()
+            log.info("Updated raw_json with v3 learning content")
+        except Exception as exc:
+            log.warning("Failed to update raw_json with learning content: %s", exc)
+
+
+def _submit_learning_tasks(
+    target_date: str,
+    active_items: list[dict],
+    languages: list[str],
+    brief_json: dict,
+    sb: Client,
+) -> None:
+    """Submit Celery tasks for v3 learning content generation."""
+    try:
+        from tasks.learning_tasks import generate_learning_content
+
+        task_ids = []
+        for lang in languages:
+            pending_items = [
+                item for item in active_items
+                if not _has_v3_learning(item, lang)
+            ]
+            for item in pending_items:
+                item_id = item.get("id", "")
+                if not item_id:
+                    continue
+
+                task = generate_learning_content.apply_async(
+                    args=[target_date, item_id, lang, DEFAULT_PHRASE_COUNT],
+                    queue="learning",
+                )
+                task_ids.append({
+                    "item_id": item_id,
+                    "lang": lang,
+                    "task_id": task.id,
+                })
+
+        # Update generation status
+        gen_status = brief_json.get("generation_status", {}) if isinstance(brief_json, dict) else {}
+        for entry in task_ids:
+            lang_key = f"learning_{entry['lang']}"
+            gen_status[lang_key] = {
+                "status": "running",
+                "task_id": entry["task_id"],
+                "item_id": entry["item_id"],
+                "submitted_at": _now_iso(),
+            }
+
+        sb.table("briefs").update({"generation_status": gen_status}).eq(
+            "brief_date", target_date
+        ).execute()
+
+        log.info("Submitted %d learning tasks for %s", len(task_ids), target_date)
+    except ImportError:
+        log.warning("Celery not available — falling back to sync generation")
+        _generate_learning_content_sync(sb, target_date, active_items, languages, brief_json)
+    except Exception as exc:
+        log.warning("Celery task submission failed: %s — falling back to sync", exc)
+        _generate_learning_content_sync(sb, target_date, active_items, languages, brief_json)
+
+
+def _now_iso() -> str:
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat()
+
+
+# ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
 
@@ -2000,6 +2312,7 @@ def generate_audio_brief(
     script_only: bool = False,
     from_db: bool = False,
     force: bool = False,
+    async_mode: bool = False,
 ) -> bool:
     """Full pipeline: read brief -> generate transcript script -> generate per-item audio -> upload -> update DB.
 
@@ -2165,7 +2478,7 @@ def generate_audio_brief(
                     log.info("Item audio generated for %s (%d chars): %s",
                              item_id, chars, url)
 
-    # 3b. Generate language learning content (FR + AR) — v2 multi-section pipeline
+    # 3b. Generate language learning content (FR + AR) — v3 phrase-based pipeline
     if _learning_content_enabled():
         _update_audio_status(sb, target_date, "generating_learning_content")
         LEARNING_LANGS = []
@@ -2175,104 +2488,18 @@ def generate_audio_brief(
             LEARNING_LANGS.append("ar")
 
         if LEARNING_LANGS:
-            log.info(
-                "Generating v2 language learning content for %s (languages: %s)",
-                target_date, ", ".join(LEARNING_LANGS),
-            )
-
-            for lang in LEARNING_LANGS:
-                lang_display = "French" if lang == "fr" else "Arabic"
-                voice_config = _get_voice_config()
-                voice_id = voice_config.get(lang, {}).get("voice_id", "")
-
-                learning_count = 0
-                section_audio_count = 0
-
-                # Determine which items need learning content
-                # With --force, regenerate all items; otherwise only those without v2 sections
-                learning_pending_items = [
-                    item for item in active_items
-                    if force or not _has_v2_learning(item, lang)
-                ]
-
-                for item in learning_pending_items:
-                    item_id = item.get("id", "?")
-                    try:
-                        learning = _generate_learning_content_v2(item, lang)
-                        if learning:
-                            item[f"learning_{lang}"] = learning
-                            learning_count += 1
-
-                            # Generate per-section audio
-                            # Bilingual learning scripts are narrated in English with embedded target language
-                            learning_voice_id = voice_config.get("en", {}).get("voice_id", voice_id)
-                            if learning_voice_id:
-                                for section in learning.get("sections", []):
-                                    script = section.get("script", "")
-                                    sid = section.get("id", "unknown")
-                                    if script and len(script) > 20:
-                                        audio_url = _generate_section_audio(
-                                            sb, script, learning_voice_id, target_date,
-                                            item_id, lang, sid,
-                                        )
-                                        if audio_url:
-                                            section["audio_url"] = audio_url
-                                            section_audio_count += 1
-                    except Exception as exc:
-                        log.warning(
-                            "%s v2 learning content failed for item %s: %s",
-                            lang_display, item_id, exc,
-                        )
-
-                # Backfill: items with v2 sections but missing audio on some sections
-                # Use English voice for bilingual learning scripts
-                backfill_voice_id = voice_config.get("en", {}).get("voice_id", voice_id)
-                if backfill_voice_id and not force:
-                    for item in active_items:
-                        lc = item.get(f"learning_{lang}")
-                        if not lc or not isinstance(lc.get("sections"), list):
-                            continue
-                        item_id = item.get("id", "?")
-                        for section in lc["sections"]:
-                            if section.get("audio_url"):
-                                continue
-                            script = section.get("script", "")
-                            sid = section.get("id", "unknown")
-                            if script and len(script) > 20:
-                                try:
-                                    audio_url = _generate_section_audio(
-                                        sb, script, backfill_voice_id, target_date,
-                                        item_id, lang, sid,
-                                    )
-                                    if audio_url:
-                                        section["audio_url"] = audio_url
-                                        section_audio_count += 1
-                                        log.info("Backfilled %s section audio %s for item %s",
-                                                 lang_display, sid, item_id)
-                                except Exception as exc:
-                                    log.warning(
-                                        "%s section audio backfill failed for item %s section %s: %s",
-                                        lang_display, item_id, sid, exc,
-                                    )
-
+            if async_mode:
                 log.info(
-                    "%s learning content: %d new items, %d section audio files",
-                    lang_display, learning_count, section_audio_count,
+                    "Submitting v3 learning content tasks for %s (languages: %s)",
+                    target_date, ", ".join(LEARNING_LANGS),
                 )
-
-            # Save updated raw_json with learning content
-            if any(
-                item.get(f"learning_{lang}")
-                for item in active_items
-                for lang in LEARNING_LANGS
-            ):
-                try:
-                    sb.table("briefs").update({"raw_json": brief_json}).eq(
-                        "brief_date", target_date
-                    ).execute()
-                    log.info("Updated raw_json with language learning content")
-                except Exception as exc:
-                    log.warning("Failed to update raw_json with learning content: %s", exc)
+                _submit_learning_tasks(target_date, active_items, LEARNING_LANGS, brief_json, sb)
+            else:
+                log.info(
+                    "Generating v3 language learning content for %s (languages: %s)",
+                    target_date, ", ".join(LEARNING_LANGS),
+                )
+                _generate_learning_content_sync(sb, target_date, active_items, LEARNING_LANGS, brief_json, force)
 
     # Save updated raw_json with per-item audio URLs to DB
     if en_item_audio_count > 0:
@@ -2337,6 +2564,12 @@ def main() -> None:
         action="store_true",
         help="Force regeneration of audio even for items that already have audio_url.",
     )
+    parser.add_argument(
+        "--async",
+        dest="async_mode",
+        action="store_true",
+        help="Submit generation tasks to Celery workers instead of running synchronously.",
+    )
     args = parser.parse_args()
 
     _load_env()
@@ -2400,6 +2633,7 @@ def main() -> None:
             script_only=args.script_only,
             from_db=args.from_db,
             force=args.force,
+            async_mode=args.async_mode,
         )
         if not ok:
             sys.exit(1)

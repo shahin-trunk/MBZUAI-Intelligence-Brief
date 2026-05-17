@@ -2,18 +2,15 @@
 
 import { useMemo } from "react";
 
-interface SectionNarrativeTextProps {
+interface PhraseHighlightTextProps {
   script: string;
   language: "fr" | "ar";
   currentTime: number;
   duration: number;
   isPlaying: boolean;
+  /** "word" for Script3 target-language highlight, "group" for explanation scripts */
+  highlightMode?: "word" | "group";
 }
-
-/**
- * Splits the script into word-groups and highlights the active group
- * with smooth karaoke-style transitions for cinematic reading flow.
- */
 
 /** Estimate speaking time weight using syllable approximation */
 function estimateWeight(text: string, isArabic: boolean): number {
@@ -21,11 +18,9 @@ function estimateWeight(text: string, isArabic: boolean): number {
   if (words.length === 0) return 1;
 
   if (isArabic) {
-    // Arabic: roughly 2 syllables per word, plus pauses at punctuation
     const punctuationPauses = (text.match(/[،.؟!؛:]/g) || []).length * 0.3;
     return words.length * 2 + punctuationPauses;
   } else {
-    // Bilingual English + target language: count vowel clusters as syllable proxy
     let syllables = 0;
     for (const word of words) {
       const vowelGroups =
@@ -37,13 +32,18 @@ function estimateWeight(text: string, isArabic: boolean): number {
   }
 }
 
-function splitIntoWordGroups(script: string, language: "fr" | "ar"): string[] {
+function splitIntoChunks(
+  script: string,
+  language: "fr" | "ar",
+  mode: "word" | "group",
+): string[] {
   if (!script) return [];
 
   const isArabic = language === "ar";
-  const chunkSize = isArabic ? 2 : 4;
+  // Word mode: individual words (or 1-2 for Arabic which is more compact)
+  // Group mode: multi-word phrases (original behavior)
+  const chunkSize = mode === "word" ? (isArabic ? 1 : 1) : (isArabic ? 2 : 4);
 
-  // Split on sentence-level punctuation first
   const punctPattern = isArabic
     ? /([^،.؟!؛:]+[،.؟!؛:]?)/g
     : /([^.!?;:,]+[.!?;:,]?)/g;
@@ -60,13 +60,10 @@ function splitIntoWordGroups(script: string, language: "fr" | "ar"): string[] {
     const words = trimmed.split(/\s+/).filter((w) => w.length > 0);
 
     if (words.length <= chunkSize + 1) {
-      // Keep small clauses as a single group
       groups.push(trimmed);
     } else {
-      // Split into chunks of chunkSize words
       for (let i = 0; i < words.length; i += chunkSize) {
         const chunk = words.slice(i, i + chunkSize);
-        // If remainder is only 1-2 words, merge with current chunk
         const remaining = words.length - (i + chunkSize);
         if (remaining > 0 && remaining <= 2) {
           chunk.push(...words.slice(i + chunkSize));
@@ -78,66 +75,67 @@ function splitIntoWordGroups(script: string, language: "fr" | "ar"): string[] {
     }
   }
 
-  // Merge very short groups (<2 words) with their neighbor
-  const merged: string[] = [];
-  for (let i = 0; i < groups.length; i++) {
-    const wordCount = groups[i].trim().split(/\s+/).length;
-    if (wordCount < 2 && merged.length > 0) {
-      merged[merged.length - 1] += " " + groups[i];
-    } else {
-      merged.push(groups[i]);
+  // In group mode, merge very short groups with neighbor
+  if (mode === "group") {
+    const merged: string[] = [];
+    for (let i = 0; i < groups.length; i++) {
+      const wordCount = groups[i].trim().split(/\s+/).length;
+      if (wordCount < 2 && merged.length > 0) {
+        merged[merged.length - 1] += " " + groups[i];
+      } else {
+        merged.push(groups[i]);
+      }
     }
+    return merged;
   }
 
-  return merged;
+  return groups;
 }
 
-export default function SectionNarrativeText({
+export default function PhraseHighlightText({
   script,
   language,
   currentTime,
   duration,
   isPlaying,
-}: SectionNarrativeTextProps) {
+  highlightMode = "group",
+}: PhraseHighlightTextProps) {
   const isArabic = language === "ar";
 
-  // Split script into word-groups
-  const groups = useMemo(
-    () => splitIntoWordGroups(script, language),
-    [script, language]
+  const chunks = useMemo(
+    () => splitIntoChunks(script, language, highlightMode),
+    [script, language, highlightMode],
   );
 
-  // Compute time ranges for each group based on syllable-weighted proportion
-  const groupRanges = useMemo(() => {
-    if (groups.length === 0 || duration <= 0) return [];
+  const chunkRanges = useMemo(() => {
+    if (chunks.length === 0 || duration <= 0) return [];
 
-    const weights = groups.map((g) => estimateWeight(g, isArabic));
+    const weights = chunks.map((c) => estimateWeight(c, isArabic));
     const totalWeight = weights.reduce((a, b) => a + b, 0);
 
     let cumulative = 0;
-    return groups.map((_, idx) => {
+    return chunks.map((_, idx) => {
       const weight = weights[idx] / totalWeight;
       const start = cumulative * duration;
       cumulative += weight;
       const end = cumulative * duration;
       return { start, end };
     });
-  }, [groups, duration, isArabic]);
+  }, [chunks, duration, isArabic]);
 
-  // Determine which group is active
   const activeIndex = useMemo(() => {
     if (!isPlaying && currentTime === 0) return -1;
-    if (groupRanges.length === 0) return -1;
-    for (let i = 0; i < groupRanges.length; i++) {
-      if (currentTime < groupRanges[i].end) return i;
+    if (chunkRanges.length === 0) return -1;
+    for (let i = 0; i < chunkRanges.length; i++) {
+      if (currentTime < chunkRanges[i].end) return i;
     }
-    return groupRanges.length - 1;
-  }, [currentTime, groupRanges, isPlaying]);
+    return chunkRanges.length - 1;
+  }, [currentTime, chunkRanges, isPlaying]);
 
-  if (groups.length === 0) {
+  if (chunks.length === 0) {
     return (
       <p
-        className={`font-body text-[22px] sm:text-[26px] lg:text-[28px] text-text-primary text-center`}
+        className="font-body text-[22px] sm:text-[26px] lg:text-[28px] text-text-primary text-center"
         style={{ lineHeight: 1.8 }}
       >
         {script}
@@ -150,15 +148,18 @@ export default function SectionNarrativeText({
   return (
     <div
       dir={isArabic ? "rtl" : "ltr"}
-      className={`font-body text-center text-[22px] sm:text-[26px] lg:text-[28px]`}
+      className={`font-body text-center ${
+        highlightMode === "word"
+          ? "text-[28px] sm:text-[32px] lg:text-[36px]"
+          : "text-[22px] sm:text-[26px] lg:text-[28px]"
+      }`}
       style={{ lineHeight: 1.8 }}
     >
-      {groups.map((group, idx) => {
+      {chunks.map((chunk, idx) => {
         const isActive = idx === activeIndex;
         const isPast = activeIndex >= 0 && idx < activeIndex;
 
-        let className =
-          "transition-colors duration-300 ease-out inline ";
+        let className = "transition-colors duration-300 ease-out inline ";
 
         if (idle) {
           className += "text-text-primary opacity-60";
@@ -172,8 +173,8 @@ export default function SectionNarrativeText({
 
         return (
           <span key={idx} className={className}>
-            {group}
-            {idx < groups.length - 1 ? " " : ""}
+            {chunk}
+            {idx < chunks.length - 1 ? " " : ""}
           </span>
         );
       })}

@@ -13,3 +13,5 @@ json-repair
 pydub
 trafilatura
 elevenlabs
+celery[redis]>=5.4
+redis>=5.0

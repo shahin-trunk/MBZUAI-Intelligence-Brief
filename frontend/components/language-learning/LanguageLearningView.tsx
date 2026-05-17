@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { Pause } from "lucide-react";
-import type { BriefItem, LearningSection } from "@/lib/types/brief";
+import { Pause, Loader2 } from "lucide-react";
+import type { BriefItem, LearningPhrase } from "@/lib/types/brief";
 import { useSectionAudio } from "@/hooks/useSectionAudio";
 import LearningHeader from "./LearningHeader";
-import AutoFlowSection from "./AutoFlowSection";
-import SectionNarrativeText from "./SectionNarrativeText";
+import PhraseCard from "./PhraseCard";
+import PhraseGrammarDrawer from "./PhraseGrammarDrawer";
+import PhraseNavigationDots from "./PhraseNavigationDots";
 import ImmersiveAudioController from "./ImmersiveAudioController";
-import LearningVocabularyPanel from "./LearningVocabularyPanel";
 
 type LearnLang = "fr" | "ar";
 
@@ -31,7 +31,8 @@ export default function LanguageLearningView({
   );
   const [isPaused, setIsPaused] = useState(false);
   const [isLessonComplete, setIsLessonComplete] = useState(false);
-  const [, setCompletedSections] = useState<Set<number>>(new Set());
+  const [completedPhrases, setCompletedPhrases] = useState<Set<number>>(new Set());
+  const [expandedPhraseGrammar, setExpandedPhraseGrammar] = useState<number | null>(null);
 
   const hasFr = Boolean(item.learning_fr);
   const hasAr = Boolean(item.learning_ar);
@@ -39,23 +40,39 @@ export default function LanguageLearningView({
   const currentContent =
     language === "fr" ? item.learning_fr : item.learning_ar;
 
-  const sections: LearningSection[] = currentContent?.sections ?? [];
+  const phrases: LearningPhrase[] = currentContent?.phrases ?? [];
 
-  // Serialize URLs to a stable string for comparison
-  const urlsKey = sections.map((s) => s.audio_url ?? "").join("|");
-  const sectionAudioUrls = useMemo(
-    () => sections.map((s) => s.audio_url),
+  /* ------------------------------------------------------------------ */
+  /*  Flatten phrases into script-level audio URLs for useSectionAudio   */
+  /*  Order: [p0.s1, p0.s2, p0.s3, p1.s1, p1.s2, p1.s3, ...]          */
+  /* ------------------------------------------------------------------ */
+  const scriptUrls = useMemo(
+    () =>
+      phrases.flatMap((p) => [p.audio_url_1, p.audio_url_2, p.audio_url_3]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [urlsKey],
+    [phrases.map((p) => `${p.audio_url_1}|${p.audio_url_2}|${p.audio_url_3}`).join("|")],
+  );
+
+  const scriptDurations = useMemo(
+    () => {
+      const totalScripts = phrases.length * 3;
+      const perScript = phrases.length > 0
+        ? (phrases.reduce((sum, p) => sum + (p.estimated_duration_seconds ?? 30), 0) / phrases.length)
+        : 30;
+      return Array(totalScripts).fill(perScript / 3);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [phrases.map((p) => p.estimated_duration_seconds).join("|")],
   );
 
   /* ------------------------------------------------------------------ */
   /*  Audio callbacks                                                    */
   /* ------------------------------------------------------------------ */
-  const handleSectionComplete = useCallback((_index: number) => {
-    setCompletedSections((prev) => {
+  const handleSectionComplete = useCallback((index: number) => {
+    const phraseIdx = Math.floor(index / 3);
+    setCompletedPhrases((prev) => {
       const next = new Set(prev);
-      next.add(_index);
+      next.add(phraseIdx);
       return next;
     });
   }, []);
@@ -67,32 +84,36 @@ export default function LanguageLearningView({
   /* ------------------------------------------------------------------ */
   /*  Audio hook                                                         */
   /* ------------------------------------------------------------------ */
-  const hasAnyAudio = sectionAudioUrls.some((u) => !!u);
-  const audio = useSectionAudio(sectionAudioUrls, {
+  const hasAnyAudio = scriptUrls.some((u) => !!u);
+  const audio = useSectionAudio(scriptUrls, {
     autoAdvance: true,
-    estimatedDurations: sections.map(
-      (s) => s.estimated_duration_seconds ?? 30,
-    ),
+    estimatedDurations: scriptDurations,
     onSectionComplete: handleSectionComplete,
     onAllComplete: handleAllComplete,
   });
 
   /* ------------------------------------------------------------------ */
+  /*  Derive current phrase and script from audio index                  */
+  /* ------------------------------------------------------------------ */
+  const currentPhraseIndex = Math.floor(audio.currentSectionIndex / 3);
+  const currentScriptIndex = (audio.currentSectionIndex % 3) + 1; // 1, 2, or 3
+  const activePhrase = phrases[currentPhraseIndex];
+
+  /* ------------------------------------------------------------------ */
   /*  One-shot auto-play on mount                                        */
   /* ------------------------------------------------------------------ */
   const hasStartedRef = useRef(false);
-  // Stable ref so we never close over a stale audio object
   const audioRef = useRef(audio);
   audioRef.current = audio;
   useEffect(() => {
-    if (!hasStartedRef.current && hasAnyAudio && sections.length > 0) {
+    if (!hasStartedRef.current && hasAnyAudio && phrases.length > 0) {
       hasStartedRef.current = true;
       const t = setTimeout(() => {
         audioRef.current.playSection(0);
       }, 1200);
       return () => clearTimeout(t);
     }
-  }, [hasAnyAudio, sections.length, language]);
+  }, [hasAnyAudio, phrases.length, language]);
 
   /* ------------------------------------------------------------------ */
   /*  WakeLock                                                           */
@@ -161,12 +182,13 @@ export default function LanguageLearningView({
   /* ------------------------------------------------------------------ */
   const handleLanguageChange = useCallback(
     (lang: LearnLang) => {
-      audio.pause(); // STOP CURRENT AUDIO BEFORE SWITCHING
+      audio.pause();
       setLanguage(lang);
-      setCompletedSections(new Set());
+      setCompletedPhrases(new Set());
       setIsLessonComplete(false);
       setIsPaused(false);
-      hasStartedRef.current = false; // Allow auto-play for new language
+      setExpandedPhraseGrammar(null);
+      hasStartedRef.current = false;
     },
     [audio],
   );
@@ -176,10 +198,41 @@ export default function LanguageLearningView({
   /* ------------------------------------------------------------------ */
   const handleReplay = useCallback(() => {
     setIsLessonComplete(false);
-    setCompletedSections(new Set());
+    setCompletedPhrases(new Set());
     setIsPaused(false);
+    setExpandedPhraseGrammar(null);
     audio.playSection(0);
   }, [audio]);
+
+  /* ------------------------------------------------------------------ */
+  /*  Phrase navigation                                                   */
+  /* ------------------------------------------------------------------ */
+  const handlePhraseSelect = useCallback(
+    (phraseIdx: number) => {
+      const scriptIdx = phraseIdx * 3; // Start at script 1 of that phrase
+      audio.playSection(scriptIdx);
+      setIsPaused(false);
+      setExpandedPhraseGrammar(null);
+    },
+    [audio],
+  );
+
+  /* ------------------------------------------------------------------ */
+  /*  Grammar drawer toggle                                               */
+  /* ------------------------------------------------------------------ */
+  const handleGrammarToggle = useCallback(
+    (phraseIdx: number | null) => {
+      if (phraseIdx !== null) {
+        // Play script 4 audio if available
+        const phrase = phrases[phraseIdx];
+        if (phrase?.audio_url_4) {
+          // Grammar drawer plays its own audio, not through main sequence
+        }
+      }
+      setExpandedPhraseGrammar(phraseIdx);
+    },
+    [phrases],
+  );
 
   /* ------------------------------------------------------------------ */
   /*  Derived                                                            */
@@ -187,9 +240,35 @@ export default function LanguageLearningView({
   const backHref = `/brief/${briefDate}?slideIndex=${slideIndex}`;
 
   /* ------------------------------------------------------------------ */
+  /*  Loading: generation in progress                                    */
+  /* ------------------------------------------------------------------ */
+  const isGenerating = !hasAnyAudio && phrases.length === 0;
+  if (isGenerating) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-bg-primary px-6">
+        <div className="mx-auto max-w-md text-center">
+          <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-accent-primary" />
+          <h1 className="font-display text-xl text-text-primary">
+            Generating learning content...
+          </h1>
+          <p className="mt-3 font-body text-sm text-text-secondary">
+            Phrases and audio are being generated in the background. Please check back shortly.
+          </p>
+          <a
+            href={backHref}
+            className="mt-6 inline-block rounded-full border border-rule bg-bg-surface px-5 py-2.5 font-ui text-sm text-accent-primary transition-colors hover:bg-bg-surface-2"
+          >
+            Back to briefing
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  /* ------------------------------------------------------------------ */
   /*  Fallback: no content                                               */
   /* ------------------------------------------------------------------ */
-  if (!currentContent || sections.length === 0) {
+  if (!currentContent || phrases.length === 0) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center bg-bg-primary px-6">
         <div className="mx-auto max-w-md text-center">
@@ -213,36 +292,6 @@ export default function LanguageLearningView({
   }
 
   /* ------------------------------------------------------------------ */
-  /*  Fallback: sections exist but no audio yet                          */
-  /* ------------------------------------------------------------------ */
-  if (sections.length > 0 && !hasAnyAudio) {
-    return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-bg-primary px-6">
-        <div className="mx-auto max-w-md text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-accent-primary border-t-transparent" />
-          <h1 className="font-display text-xl text-text-primary">
-            Generating audio...
-          </h1>
-          <p className="mt-3 font-body text-sm text-text-secondary">
-            Audio for this lesson is still being generated. Please check back shortly.
-          </p>
-          <a
-            href={backHref}
-            className="mt-6 inline-block rounded-full border border-rule bg-bg-surface px-5 py-2.5 font-ui text-sm text-accent-primary transition-colors hover:bg-bg-surface-2"
-          >
-            Back to briefing
-          </a>
-        </div>
-      </div>
-    );
-  }
-
-  /* ------------------------------------------------------------------ */
-  /*  Active section                                                     */
-  /* ------------------------------------------------------------------ */
-  const activeSection = sections[audio.currentSectionIndex];
-
-  /* ------------------------------------------------------------------ */
   /*  Main render                                                        */
   /* ------------------------------------------------------------------ */
   return (
@@ -264,13 +313,23 @@ export default function LanguageLearningView({
         onLanguageChange={handleLanguageChange}
         hasFr={hasFr}
         hasAr={hasAr}
-        currentSection={audio.currentSectionIndex + 1}
-        totalSections={sections.length}
+        currentSection={currentPhraseIndex + 1}
+        totalSections={phrases.length}
       />
+
+      {/* Phrase navigation dots */}
+      <div className="flex justify-center py-3">
+        <PhraseNavigationDots
+          totalPhrases={phrases.length}
+          currentPhraseIndex={currentPhraseIndex}
+          completedPhrases={completedPhrases}
+          onPhraseSelect={handlePhraseSelect}
+        />
+      </div>
 
       {/* Main content — tap to pause zone */}
       <div
-        className="relative flex-1 flex flex-col items-center justify-center px-6 sm:px-10 lg:px-0 py-16 sm:py-20 lg:py-24 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] cursor-default select-none"
+        className="relative flex-1 flex flex-col items-center justify-start px-6 sm:px-10 lg:px-0 py-8 sm:py-12 lg:py-16 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] cursor-default select-none"
         onClick={handleTapToggle}
         role="button"
         tabIndex={-1}
@@ -283,32 +342,65 @@ export default function LanguageLearningView({
             </div>
           </div>
         )}
-        {/* Single active section with crossfade */}
-        {!isLessonComplete && activeSection && (
-          <AutoFlowSection
-            key={`${activeSection.id}-${audio.currentSectionIndex}`}
-            section={activeSection}
-            sectionProgress={audio.sectionProgress}
+
+        {/* Active phrase card */}
+        {!isLessonComplete && activePhrase && (
+          <PhraseCard
+            key={`${activePhrase.id}-${currentScriptIndex}`}
+            phrase={activePhrase}
             language={language}
-          >
-            <SectionNarrativeText
-              script={activeSection.script}
-              language={language}
-              currentTime={audio.currentTime}
-              duration={audio.duration}
-              isPlaying={audio.isPlaying}
-            />
-          </AutoFlowSection>
+            scriptIndex={currentScriptIndex as 1 | 2 | 3}
+            currentTime={audio.currentTime}
+            duration={audio.duration}
+            isPlaying={audio.isPlaying}
+            onExpandGrammar={() =>
+              handleGrammarToggle(
+                expandedPhraseGrammar === currentPhraseIndex
+                  ? null
+                  : currentPhraseIndex
+              )
+            }
+            showGrammarTrigger={
+              currentScriptIndex === 3 && !!activePhrase.script4
+            }
+          />
         )}
 
-        {/* Vocabulary reveal after completion */}
-        <LearningVocabularyPanel
-          vocabulary={currentContent?.vocabulary ?? []}
-          language={language}
-          isRevealed={isLessonComplete}
-          onReplayLesson={handleReplay}
-          backHref={backHref}
-        />
+        {/* Grammar drawer for expanded phrase */}
+        {expandedPhraseGrammar !== null && phrases[expandedPhraseGrammar] && (
+          <PhraseGrammarDrawer
+            grammar={phrases[expandedPhraseGrammar].grammar}
+            script4AudioUrl={phrases[expandedPhraseGrammar].audio_url_4}
+            script4Text={phrases[expandedPhraseGrammar].script4}
+            isOpen={true}
+            onToggle={() => handleGrammarToggle(null)}
+            language={language}
+          />
+        )}
+
+        {/* Completion state */}
+        {isLessonComplete && (
+          <div className="text-center">
+            <h2 className="font-display text-2xl text-text-primary mb-4">
+              Lesson Complete!
+            </h2>
+            <p className="font-body text-sm text-text-secondary mb-6">
+              You&apos;ve practiced all {phrases.length} phrases.
+            </p>
+            <button
+              onClick={handleReplay}
+              className="rounded-full bg-accent-primary px-6 py-3 font-ui text-sm text-white transition-colors hover:bg-accent-primary/90"
+            >
+              Replay Lesson
+            </button>
+            <a
+              href={backHref}
+              className="mt-4 ml-4 inline-block rounded-full border border-rule bg-bg-surface px-5 py-2.5 font-ui text-sm text-accent-primary transition-colors hover:bg-bg-surface-2"
+            >
+              Back to briefing
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

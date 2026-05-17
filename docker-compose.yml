@@ -5,7 +5,9 @@
 # Services:
 #   traefik    - Reverse proxy with automatic HTTPS (Let's Encrypt)
 #   frontend   - Next.js 16 web application
-#   dispatcher - Flask service for triggering GitHub Actions workflows
+#   dispatcher - FastAPI service for triggering GitHub Actions workflows
+#   redis      - Celery message broker and result backend
+#   celery-worker-* - Background task workers (llm, audio, learning)
 #
 # Usage:
 #   docker compose up -d                  # start all services
@@ -75,6 +77,11 @@ services:
         max-file: "3"
     networks:
       - proxy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
 
   # ---------------------------------------------------------------------------
   # Frontend — Next.js 16 Web Application
@@ -121,9 +128,14 @@ services:
         max-file: "3"
     networks:
       - proxy
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
 
   # ---------------------------------------------------------------------------
-  # Dispatcher — Flask service that triggers GitHub Actions workflows
+  # Dispatcher — FastAPI service that triggers GitHub Actions workflows
   # ---------------------------------------------------------------------------
   dispatcher:
     build:
@@ -140,6 +152,7 @@ services:
       - GITHUB_WORKFLOW_FILE=${GITHUB_WORKFLOW_FILE:-daily-brief.yml}
       - GITHUB_REF=${GITHUB_REF:-main}
       - PREVENT_DUPLICATE_SAME_DAY=${PREVENT_DUPLICATE_SAME_DAY:-1}
+      - DISPATCH_TOKEN=${DISPATCH_TOKEN:-}
       - PORT=8080
     labels:
       - "traefik.enable=true"
@@ -147,6 +160,12 @@ services:
       - "traefik.http.routers.dispatcher.entrypoints=websecure"
       - "traefik.http.routers.dispatcher.tls.certresolver=letsencrypt"
       - "traefik.http.services.dispatcher.loadbalancer.server.port=8080"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import httpx; httpx.get('http://localhost:8080/', timeout=5)\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     logging:
       driver: json-file
       options:
@@ -154,9 +173,153 @@ services:
         max-file: "3"
     networks:
       - proxy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # Redis — Celery message broker and result backend
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: brief-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - proxy
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Celery Worker — LLM/Claude script generation queue
+  # ---------------------------------------------------------------------------
+  celery-worker-llm:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: brief-celery-llm
+    restart: unless-stopped
+    command: celery -A celery_app worker -Q llm -c 5 --loglevel=info --prefetch-multiplier=1
+    working_dir: /app
+    env_file:
+      - deploy.env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - CELERY_BEAT_SCHEDULE={}
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A celery_app inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - proxy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+
+  # ---------------------------------------------------------------------------
+  # Celery Worker — Argent TTS audio generation queue
+  # ---------------------------------------------------------------------------
+  celery-worker-audio:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: brief-celery-audio
+    restart: unless-stopped
+    command: celery -A celery_app worker -Q audio -c 10 --loglevel=info --prefetch-multiplier=1
+    working_dir: /app
+    env_file:
+      - deploy.env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A celery_app inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - proxy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 4G
+
+  # ---------------------------------------------------------------------------
+  # Celery Worker — Learning content orchestration queue
+  # ---------------------------------------------------------------------------
+  celery-worker-learning:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: brief-celery-learning
+    restart: unless-stopped
+    command: celery -A celery_app worker -Q learning -c 5 --loglevel=info --prefetch-multiplier=1
+    working_dir: /app
+    env_file:
+      - deploy.env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A celery_app inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - proxy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
 
 volumes:
   letsencrypt-data:
+  redis-data:
     name: brief-letsencrypt-data
 
 networks:
