@@ -34,6 +34,7 @@ export default function LanguageLearningView({
   const [completedPhrases, setCompletedPhrases] = useState<Set<number>>(new Set());
   const [expandedPhraseGrammar, setExpandedPhraseGrammar] = useState<number | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
 
   const hasFr = Boolean(item.learning_fr);
   const hasAr = Boolean(item.learning_ar);
@@ -147,13 +148,18 @@ export default function LanguageLearningView({
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD) {
       if (deltaX < 0) {
         // Swipe left -> next phrase
+        setSwipeDirection("left");
         const nextIdx = Math.min(currentPhraseIndex + 1, phrases.length - 1);
         handlePhraseSelect(nextIdx);
       } else {
         // Swipe right -> previous phrase
+        setSwipeDirection("right");
         const prevIdx = Math.max(currentPhraseIndex - 1, 0);
         handlePhraseSelect(prevIdx);
       }
+
+      // Clear swipe feedback after animation
+      setTimeout(() => setSwipeDirection(null), 300);
     }
 
     touchStartRef.current = null;
@@ -404,6 +410,27 @@ export default function LanguageLearningView({
           </div>
         )}
 
+        {/* Swipe direction feedback */}
+        {swipeDirection && !isLessonComplete && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-15 animate-in fade-out duration-300">
+            <div className={`flex h-16 w-16 items-center justify-center rounded-full bg-bg-surface/40 backdrop-blur-sm border border-rule/20 ${
+              swipeDirection === "left" ? "animate-in slide-in-from-right duration-200" : "animate-in slide-in-from-left duration-200"
+            }`}>
+              {swipeDirection === "left" ? (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-muted/60">
+                  <path d="M9 6L3 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-muted/60">
+                  <path d="M15 6L21 12L15 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M21 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Pause indicator */}
         {isPaused && !isLessonComplete && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
@@ -418,6 +445,8 @@ export default function LanguageLearningView({
           <PhraseCard
             key={`${activePhrase.id}-${currentScriptIndex}`}
             phrase={activePhrase}
+            phraseNumber={currentPhraseIndex + 1}
+            totalPhrases={phrases.length}
             language={language}
             scriptIndex={currentScriptIndex as 1 | 2 | 3}
             currentTime={audio.currentTime}

@@ -100,10 +100,96 @@
 
 ---
 
-## PHASE 2: Backend Pipeline Improvements
-*(To be filled during execution)*
+## PHASE 2: Mobile UX Enhancement & Visual Feedback
 
-## PHASE 3: Frontend UX & Visual Polish
+### Iteration 2.1 - Phrase Card Enhancements
+**Date:** 2026-05-17
+**Status:** Completed
+
+#### Changes Made
+
+**PhraseCard.tsx** - Enhanced with:
+- Added `phraseNumber` and `totalPhrases` props for context
+- Script1 now shows phrase number badge (e.g., "1/3") in accent-colored pill
+- Script3 context anchor text made more prominent with constrained max-width (280px mobile, 400px desktop)
+- Improved spacing and visual hierarchy across all scripts
+- Refined pronunciation guide styling with smaller font and better padding
+- English translation dividers made more subtle (wider spacing, lighter color)
+
+#### Test Results
+- TypeScript compilation: PASSED (0 errors)
+- Build: PASSED (✓ Compiled successfully)
+- ESLint: PASSED (0 new warnings in our components)
+
+---
+
+### Iteration 2.2 - Mobile Bottom Sheet for GrammarDrawer
+**Date:** 2026-05-17
+**Status:** Completed
+
+#### Changes Made
+
+**PhraseGrammarDrawer.tsx** - Complete rewrite with mobile-first bottom sheet:
+- **Mobile (< 640px)**: Full bottom sheet behavior with:
+  - Drag handle indicator at top (rounded pill)
+  - Swipe-to-dismiss gesture (touch start/move/end with 100px threshold)
+  - Smooth transform animation during drag
+  - Snap-back if swipe distance < threshold
+  - Backdrop overlay with tap-to-close
+  - Max height 85vh with scrollable content area
+  - Safe area padding at bottom for notch devices
+  - Shadow elevation for visual depth
+
+- **Desktop (>= 640px)**: Card-based inline design:
+  - Rounded card with backdrop blur
+  - Slide-in animation from bottom
+  - Max width 560px centered
+  - 50vh max height for content area
+
+- **Shared features**:
+  - Audio playback controls with progress bar
+  - Emoji icons for grammar categories
+  - Staggered fade-in animations (100ms delay per field)
+  - Close button in header and footer
+
+#### Technical Implementation
+- Touch event handlers: `handleTouchStart`, `handleTouchMove`, `handleTouchEnd`
+- Transform state with conditional transition (none during drag, ease-out on release)
+- Backdrop overlay with `onClick={onToggle}` for quick dismissal
+- `role="dialog"` and `aria-modal="true"` for accessibility
+
+#### Test Results
+- TypeScript compilation: PASSED
+- Build: PASSED
+- No new lint warnings
+
+---
+
+### Iteration 2.3 - Swipe Visual Feedback
+**Date:** 2026-05-17
+**Status:** Completed
+
+#### Changes Made
+
+**LanguageLearningView.tsx** - Added swipe direction feedback:
+- New `swipeDirection` state ("left" | "right" | null)
+- Visual feedback overlay appears on swipe:
+  - Circular backdrop with directional arrow icon
+  - Slide-in animation matching swipe direction
+  - Fade-out after 300ms
+  - Semi-transparent with blur effect
+- Left swipe shows left-pointing arrow (next phrase)
+- Right swipe shows right-pointing arrow (previous phrase)
+- Haptic-like visual confirmation improves UX
+
+#### Test Results
+- TypeScript compilation: PASSED
+- Build: PASSED (✓ Generating static pages using 7 workers)
+- ESLint: PASSED (pre-existing warning in unrelated file)
+
+---
+
+## PHASE 3: Backend Pipeline Improvements
 *(To be filled during execution)*
 
 ## PHASE 4: Audio & TTS Quality

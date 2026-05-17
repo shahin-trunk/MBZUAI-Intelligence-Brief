@@ -24,7 +24,11 @@ export default function PhraseGrammarDrawer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const [translateY, setTranslateY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!script4AudioUrl) return;
@@ -63,6 +67,42 @@ export default function PhraseGrammarDrawer({
     }
   }, [isPlaying]);
 
+  // Reset transform when opened
+  useEffect(() => {
+    if (isOpen) {
+      setTranslateY(0);
+      setIsDragging(false);
+    }
+  }, [isOpen]);
+
+  // Swipe-to-dismiss handlers for mobile bottom sheet
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    setTouchStartY(e.touches[0].clientY);
+    setIsDragging(true);
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging || touchStartY === null) return;
+
+    const deltaY = e.touches[0].clientY - touchStartY;
+    // Only allow downward swipe (positive delta)
+    if (deltaY > 0) {
+      setTranslateY(deltaY);
+    }
+  }, [isDragging, touchStartY]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (translateY > 100) {
+      // Swiped far enough - close
+      onToggle();
+    } else {
+      // Snap back to original position
+      setTranslateY(0);
+    }
+    setTouchStartY(null);
+    setIsDragging(false);
+  }, [translateY, onToggle]);
+
   if (!isOpen) return null;
 
   const grammarFields: { key: keyof PhraseGrammar; label: string; icon: string }[] = [
@@ -79,114 +119,239 @@ export default function PhraseGrammarDrawer({
   );
 
   return (
-    <div className="mt-6 sm:mt-8 animate-in slide-in-from-bottom-4 duration-500">
-      {/* Card container */}
-      <div className="rounded-2xl border border-rule/50 bg-bg-surface/30 backdrop-blur-sm overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-rule/20">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-accent-primary animate-pulse" />
-            <h3 className="font-ui text-sm font-semibold text-text-primary uppercase tracking-wide">
-              Deep Dive
-            </h3>
-          </div>
-          <button
-            onClick={onToggle}
-            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-bg-surface/50 transition-colors"
-            aria-label="Close grammar panel"
-          >
-            <X className="w-4 h-4 text-text-secondary" />
-          </button>
-        </div>
+    <>
+      {/* Backdrop overlay */}
+      <div
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 animate-in fade-in duration-300 sm:bg-black/20"
+        onClick={onToggle}
+        aria-hidden="true"
+      />
 
-        {/* Audio playback for Script4 */}
-        {script4AudioUrl && (
-          <div className="px-4 sm:px-5 py-3 border-b border-rule/20">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={togglePlay}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer shrink-0"
-                aria-label={isPlaying ? "Pause" : "Play"}
-              >
-                {isPlaying ? (
-                  <Pause className="w-4 h-4" />
-                ) : (
-                  <Play className="w-4 h-4" />
-                )}
-              </button>
-              <div className="flex-1">
-                <div className="h-1.5 bg-rule/20 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-accent-primary transition-all duration-200 rounded-full"
-                    style={{
-                      width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
-                    }}
-                  />
-                </div>
-                <div className="flex justify-between mt-1">
-                  <span className="text-[10px] text-text-muted font-mono">
-                    {formatTime(currentTime)}
-                  </span>
-                  <span className="text-[10px] text-text-muted font-mono">
-                    {formatTime(duration)}
-                  </span>
-                </div>
-              </div>
+      {/* Bottom sheet container */}
+      <div
+        ref={containerRef}
+        className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom duration-500 sm:relative sm:animate-in sm:slide-in-from-bottom-4 sm:duration-300 sm:mt-6 sm:mx-auto sm:max-w-[560px] sm:rounded-2xl"
+        style={{
+          transform: translateY > 0 ? `translateY(${translateY}px)` : undefined,
+          transition: isDragging ? "none" : "transform 0.3s ease-out",
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Grammar deep dive panel"
+      >
+        {/* Mobile bottom sheet card */}
+        <div className="sm:hidden bg-bg-surface border-t border-rule/30 rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl">
+          {/* Drag handle */}
+          <div className="flex justify-center py-3 border-b border-rule/10">
+            <div className="w-10 h-1 rounded-full bg-rule/40" />
+          </div>
+
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-rule/20">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-accent-primary animate-pulse" />
+              <h3 className="font-ui text-sm font-semibold text-text-primary uppercase tracking-wide">
+                Deep Dive
+              </h3>
             </div>
-          </div>
-        )}
-
-        {/* Script4 text (if available) */}
-        {script4Text && (
-          <div className="px-4 sm:px-5 py-3 border-b border-rule/20">
-            <p className="font-body text-[13px] sm:text-[14px] text-text-secondary leading-relaxed italic">
-              {script4Text}
-            </p>
-          </div>
-        )}
-
-        {/* Grammar metadata cards */}
-        <div className="divide-y divide-rule/10 max-h-[40vh] sm:max-h-[50vh] overflow-y-auto">
-          {activeFields.map(({ key, label, icon }, idx) => (
-            <div
-              key={key}
-              className="px-4 sm:px-5 py-3.5 animate-in fade-in duration-300"
-              style={{ animationDelay: `${idx * 100}ms` }}
+            <button
+              onClick={onToggle}
+              className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-bg-surface-2 transition-colors"
+              aria-label="Close grammar panel"
             >
-              <div className="flex items-start gap-3">
-                <span className="text-sm shrink-0 mt-0.5" role="img" aria-hidden>
-                  {icon}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-1">
-                    {label}
-                  </span>
-                  <p
-                    dir={language === "ar" ? "rtl" : "ltr"}
-                    className="font-body text-[13px] sm:text-[14px] text-text-primary leading-relaxed"
-                  >
-                    {grammar[key]}
-                  </p>
+              <X className="w-4 h-4 text-text-secondary" />
+            </button>
+          </div>
+
+          {/* Audio playback for Script4 */}
+          {script4AudioUrl && (
+            <div className="px-4 py-3 border-b border-rule/20">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={togglePlay}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer shrink-0"
+                  aria-label={isPlaying ? "Pause" : "Play"}
+                >
+                  {isPlaying ? (
+                    <Pause className="w-4 h-4" />
+                  ) : (
+                    <Play className="w-4 h-4" />
+                  )}
+                </button>
+                <div className="flex-1">
+                  <div className="h-1.5 bg-rule/20 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-accent-primary transition-all duration-200 rounded-full"
+                      style={{
+                        width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    <span className="text-[10px] text-text-muted font-mono">
+                      {formatTime(currentTime)}
+                    </span>
+                    <span className="text-[10px] text-text-muted font-mono">
+                      {formatTime(duration)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          ))}
+          )}
+
+          {/* Script4 text (if available) */}
+          {script4Text && (
+            <div className="px-4 py-3 border-b border-rule/20">
+              <p className="font-body text-[13px] text-text-secondary leading-relaxed italic">
+                {script4Text}
+              </p>
+            </div>
+          )}
+
+          {/* Grammar metadata cards - scrollable */}
+          <div className="divide-y divide-rule/10 overflow-y-auto flex-1" style={{ maxHeight: "calc(85vh - 200px)" }}>
+            {activeFields.map(({ key, label, icon }, idx) => (
+              <div
+                key={key}
+                className="px-4 py-3.5 animate-in fade-in duration-300"
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-sm shrink-0 mt-0.5" role="img" aria-hidden>
+                    {icon}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-1">
+                      {label}
+                    </span>
+                    <p
+                      dir={language === "ar" ? "rtl" : "ltr"}
+                      className="font-body text-[13px] text-text-primary leading-relaxed"
+                    >
+                      {grammar[key]}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Safe area padding for mobile */}
+          <div className="h-4 sm:h-0" />
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-center px-4 py-3 border-t border-rule/10">
-          <button
-            onClick={onToggle}
-            className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors cursor-pointer"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-text-muted">
-              <path d="M3 5L7 9L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Close deep dive
-          </button>
+        {/* Desktop card version */}
+        <div className="hidden sm:block rounded-2xl border border-rule/50 bg-bg-surface/30 backdrop-blur-sm overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-3 border-b border-rule/20">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-accent-primary animate-pulse" />
+              <h3 className="font-ui text-sm font-semibold text-text-primary uppercase tracking-wide">
+                Deep Dive
+              </h3>
+            </div>
+            <button
+              onClick={onToggle}
+              className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-bg-surface/50 transition-colors"
+              aria-label="Close grammar panel"
+            >
+              <X className="w-4 h-4 text-text-secondary" />
+            </button>
+          </div>
+
+          {/* Audio playback for Script4 */}
+          {script4AudioUrl && (
+            <div className="px-5 py-3 border-b border-rule/20">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={togglePlay}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer shrink-0"
+                  aria-label={isPlaying ? "Pause" : "Play"}
+                >
+                  {isPlaying ? (
+                    <Pause className="w-4 h-4" />
+                  ) : (
+                    <Play className="w-4 h-4" />
+                  )}
+                </button>
+                <div className="flex-1">
+                  <div className="h-1.5 bg-rule/20 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-accent-primary transition-all duration-200 rounded-full"
+                      style={{
+                        width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    <span className="text-[10px] text-text-muted font-mono">
+                      {formatTime(currentTime)}
+                    </span>
+                    <span className="text-[10px] text-text-muted font-mono">
+                      {formatTime(duration)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Script4 text (if available) */}
+          {script4Text && (
+            <div className="px-5 py-3 border-b border-rule/20">
+              <p className="font-body text-[14px] text-text-secondary leading-relaxed italic">
+                {script4Text}
+              </p>
+            </div>
+          )}
+
+          {/* Grammar metadata cards */}
+          <div className="divide-y divide-rule/10 max-h-[50vh] overflow-y-auto">
+            {activeFields.map(({ key, label, icon }, idx) => (
+              <div
+                key={key}
+                className="px-5 py-3.5 animate-in fade-in duration-300"
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-sm shrink-0 mt-0.5" role="img" aria-hidden>
+                    {icon}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted block mb-1">
+                      {label}
+                    </span>
+                    <p
+                      dir={language === "ar" ? "rtl" : "ltr"}
+                      className="font-body text-[14px] text-text-primary leading-relaxed"
+                    >
+                      {grammar[key]}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div className="flex justify-center px-5 py-3 border-t border-rule/10">
+            <button
+              onClick={onToggle}
+              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-text-muted">
+                <path d="M3 5L7 9L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Close deep dive
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
