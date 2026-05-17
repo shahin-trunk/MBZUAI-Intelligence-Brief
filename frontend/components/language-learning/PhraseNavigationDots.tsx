@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 
 interface PhraseNavigationDotsProps {
@@ -11,7 +12,7 @@ interface PhraseNavigationDotsProps {
   onPhraseSelect: (index: number) => void;
 }
 
-export default function PhraseNavigationDots({
+const PhraseNavigationDots = memo(function PhraseNavigationDots({
   totalPhrases,
   currentPhraseIndex,
   currentScriptIndex,
@@ -32,18 +33,26 @@ export default function PhraseNavigationDots({
             key={i}
             type="button"
             onClick={() => onPhraseSelect(i)}
-            className="relative flex items-center justify-center transition-all duration-300"
-            aria-label={`Phrase ${i + 1}`}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onPhraseSelect(i);
+              }
+            }}
+            className="relative flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent-primary/50 focus:ring-offset-2 rounded-full"
+            aria-label={`Phrase ${i + 1} of ${totalPhrases}${isCompleted ? ", completed" : ""}${isActive ? ", currently playing" : ""}`}
             aria-current={isActive ? "step" : undefined}
+            aria-posinset={i + 1}
+            aria-setsize={totalPhrases}
           >
             {/* Outer ring for active phrase */}
             {isActive && (
-              <div className="absolute inset-0 rounded-full border-2 border-accent-primary/30 scale-150" />
+              <div className="absolute inset-0 rounded-full border-2 border-accent-primary/30 scale-150" aria-hidden="true" />
             )}
 
             {/* Completed progress ring */}
             {isActive && scriptProgress > 0 && (
-              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 24 24">
+              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 24 24" aria-hidden="true">
                 <circle
                   cx="12"
                   cy="12"
@@ -76,11 +85,12 @@ export default function PhraseNavigationDots({
                 isCompleted && !isActive && "bg-accent-primary/50",
                 !isActive && !isCompleted && "bg-rule/40 hover:bg-rule/60"
               )}
+              aria-hidden="true"
             />
 
             {/* Script indicator pill (shown below active dot) */}
             {isActive && (
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex gap-0.5">
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex gap-0.5" aria-hidden="true">
                 {[1, 2, 3].map((s) => (
                   <div
                     key={s}
@@ -99,4 +109,6 @@ export default function PhraseNavigationDots({
       })}
     </div>
   );
-}
+});
+
+export default PhraseNavigationDots;

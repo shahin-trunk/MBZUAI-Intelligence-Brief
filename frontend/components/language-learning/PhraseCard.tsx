@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { LearningPhrase } from "@/lib/types/brief";
 import PhraseHighlightText from "./PhraseHighlightText";
 
@@ -16,7 +17,7 @@ interface PhraseCardProps {
   showGrammarTrigger: boolean;
 }
 
-export default function PhraseCard({
+const PhraseCard = memo(function PhraseCard({
   phrase,
   phraseNumber,
   totalPhrases,
@@ -36,7 +37,7 @@ export default function PhraseCard({
   if (scriptIndex === 2) {
     return (
       <div className="flex flex-col items-center justify-center py-10 sm:py-14 animate-in fade-in duration-500">
-        <div className="flex flex-col items-center space-y-3">
+        <div className="flex flex-col items-center space-y-3 transition-all duration-300 hover:scale-105">
           {/* Decorative divider */}
           <div className="flex items-center gap-3 mb-2">
             <div className="h-px w-8 bg-accent-primary/30" />
@@ -68,15 +69,15 @@ export default function PhraseCard({
     return (
       <div className="flex flex-col items-center justify-center py-8 sm:py-10 animate-in fade-in duration-500">
         {/* Phrase number badge + target phrase + English translation */}
-        <div className="mb-6 sm:mb-8 text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-primary/10 border border-accent-primary/20">
+        <div className="mb-6 sm:mb-8 text-center space-y-3 transition-all duration-300">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-primary/10 border border-accent-primary/20 hover:bg-accent-primary/15 transition-colors">
             <span className="text-xs font-ui font-semibold text-accent-primary">
               {phraseNumber}/{totalPhrases}
             </span>
           </div>
           <p
             dir={isArabic ? "rtl" : "ltr"}
-            className="font-body text-[24px] sm:text-[28px] lg:text-[32px] text-text-primary font-semibold leading-snug"
+            className="font-body text-[24px] sm:text-[28px] lg:text-[32px] text-text-primary font-semibold leading-snug transition-transform duration-200 hover:scale-105"
           >
             {phrase.phrase_target}
           </p>
@@ -101,7 +102,7 @@ export default function PhraseCard({
         {showGrammarTrigger && phrase.script4 && (
           <button
             onClick={onExpandGrammar}
-            className="mt-6 sm:mt-8 text-sm font-medium text-accent-primary/80 hover:text-accent-primary transition-colors cursor-pointer px-4 py-2 rounded-full border border-accent-primary/20 hover:border-accent-primary/40 hover:bg-accent-primary/5"
+            className="mt-6 sm:mt-8 text-sm font-medium text-accent-primary/80 hover:text-accent-primary transition-all duration-200 cursor-pointer px-4 py-2 rounded-full border border-accent-primary/20 hover:border-accent-primary/40 hover:bg-accent-primary/5 hover:scale-105 active:scale-95"
           >
             Explore grammar & linguistic details
           </button>
@@ -116,8 +117,8 @@ export default function PhraseCard({
   return (
     <div className="flex flex-col items-center justify-center py-8 sm:py-12 animate-in fade-in duration-500">
       {/* Context bridge: show this comes from the briefing */}
-      <div className="mb-4 sm:mb-6 flex flex-col items-center gap-2">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-bg-surface/50 border border-rule/30">
+      <div className="mb-4 sm:mb-6 flex flex-col items-center gap-2 transition-all duration-300 hover:scale-105">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-bg-surface/50 border border-rule/30 hover:border-accent-primary/30 transition-colors">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-text-muted">
             <path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9.5L3 11L3.5 7.5L1 5L4.5 4.5L6 1Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
           </svg>
@@ -157,7 +158,7 @@ export default function PhraseCard({
 
       {/* Pronunciation guide (if available) */}
       {phrase.grammar.phonetic_guide && (
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-surface/40 border border-rule/20 mb-4">
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-surface/40 border border-rule/20 mb-4 transition-all duration-200 hover:border-accent-primary/30 hover:bg-bg-surface/50">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-text-muted shrink-0">
             <path d="M3 5V9M5 3V11M7 2V12M9 4V10M11 6V8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
@@ -171,11 +172,13 @@ export default function PhraseCard({
       {showGrammarTrigger && phrase.script4 && (
         <button
           onClick={onExpandGrammar}
-          className="mt-2 text-sm font-medium text-accent-primary/80 hover:text-accent-primary transition-colors cursor-pointer px-4 py-2 rounded-full border border-accent-primary/20 hover:border-accent-primary/40 hover:bg-accent-primary/5"
+          className="mt-2 text-sm font-medium text-accent-primary/80 hover:text-accent-primary transition-all duration-200 cursor-pointer px-4 py-2 rounded-full border border-accent-primary/20 hover:border-accent-primary/40 hover:bg-accent-primary/5 hover:scale-105 active:scale-95"
         >
           Explore grammar & linguistic details
         </button>
       )}
     </div>
   );
-}
+});
+
+export default PhraseCard;
