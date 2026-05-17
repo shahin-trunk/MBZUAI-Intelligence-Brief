@@ -53,3 +53,9 @@ backend/keys/
 
 # Integration test artifacts (generated at runtime)
 /tmp/argent_test_*.mp3
+.vercel-tmp/
+backend/ant_key.txt
+backend/*.sql
+backend/restore_dump.py
+backend/scripts/transcribe_and_chunk.py
+podcast_tmp.m3u8

@@ -4,11 +4,15 @@ import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { Pause, Loader2, Sparkles } from "lucide-react";
 import type { BriefItem, LearningPhrase } from "@/lib/types/brief";
 import { useSectionAudio } from "@/hooks/useSectionAudio";
+import { useLearningAnalytics } from "@/hooks/useLearningAnalytics";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import LearningHeader from "./LearningHeader";
 import PhraseCard from "./PhraseCard";
 import PhraseGrammarDrawer from "./PhraseGrammarDrawer";
 import PhraseNavigationDots from "./PhraseNavigationDots";
 import ImmersiveAudioController from "./ImmersiveAudioController";
+import LanguageLearningErrorBoundary from "./LanguageLearningErrorBoundary";
+import LanguageLearningSkeleton from "./LanguageLearningSkeleton";
 
 type LearnLang = "fr" | "ar";
 
@@ -44,6 +48,11 @@ export default function LanguageLearningView({
     language === "fr" ? item.learning_fr : item.learning_ar;
 
   const phrases: LearningPhrase[] = currentContent?.phrases ?? [];
+
+  /* ------------------------------------------------------------------ */
+  /*  Analytics tracking                                                 */
+  /* ------------------------------------------------------------------ */
+  const { trackEvent } = useLearningAnalytics(item.id);
 
   /* ------------------------------------------------------------------ */
   /*  Progress persistence with localStorage                             */
@@ -144,6 +153,13 @@ export default function LanguageLearningView({
   const currentPhraseIndex = Math.floor(audio.currentSectionIndex / 3);
   const currentScriptIndex = (audio.currentSectionIndex % 3) + 1; // 1, 2, or 3
   const activePhrase = phrases[currentPhraseIndex];
+
+  // Track lesson completion
+  useEffect(() => {
+    if (isLessonComplete) {
+      trackEvent(language, currentPhraseIndex, currentScriptIndex, "lesson_complete");
+    }
+  }, [isLessonComplete, language, currentPhraseIndex, currentScriptIndex, trackEvent]);
 
   // Script-level progress within the phrase (0-1)
   const scriptProgress = useMemo(() => {
@@ -354,8 +370,9 @@ export default function LanguageLearningView({
     setIsPaused(false);
     setExpandedPhraseGrammar(null);
     setShowCelebration(false);
+    trackEvent(language, 0, 1, "replay");
     audio.playSection(0);
-  }, [audio]);
+  }, [audio, language, trackEvent]);
 
   /* ------------------------------------------------------------------ */
   /*  Reset progress (clear localStorage)                                */
@@ -377,8 +394,11 @@ export default function LanguageLearningView({
   const handleGrammarToggle = useCallback(
     (phraseIdx: number | null) => {
       setExpandedPhraseGrammar(phraseIdx);
+      if (phraseIdx !== null) {
+        trackEvent(language, phraseIdx, currentScriptIndex, "grammar_open");
+      }
     },
-    [],
+    [language, currentScriptIndex, trackEvent],
   );
 
   /* ------------------------------------------------------------------ */
@@ -395,30 +415,39 @@ export default function LanguageLearningView({
   const phrasesWithAudio = phrases.filter((p) => p.audio_url_1).length;
   const isPartialGeneration = phrases.length > 0 && phrasesWithAudio < phrases.length && phrasesWithAudio > 0;
 
+  /* ------------------------------------------------------------------ */
+  /*  Keyboard shortcuts                                                  */
+  /* ------------------------------------------------------------------ */
+  useKeyboardShortcuts({
+    onPrevious: () => {
+      if (!isLessonComplete && !isGenerating) {
+        const prevIdx = Math.max(currentPhraseIndex - 1, 0);
+        handlePhraseSelect(prevIdx);
+      }
+    },
+    onNext: () => {
+      if (!isLessonComplete && !isGenerating) {
+        const nextIdx = Math.min(currentPhraseIndex + 1, phrases.length - 1);
+        handlePhraseSelect(nextIdx);
+      }
+    },
+    onPlayPause: handleTapToggle,
+    onReplay: handleReplay,
+    onCloseGrammar: () => {
+      if (expandedPhraseGrammar !== null) {
+        handleGrammarToggle(null);
+      }
+    },
+    onToggleLanguage: () => {
+      if (hasFr && hasAr) {
+        handleLanguageChange(language === "fr" ? "ar" : "fr");
+      }
+    },
+    enabled: true,
+  });
+
   if (isGenerating) {
-    return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-bg-primary px-6">
-        <div className="mx-auto max-w-md text-center">
-          <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-accent-primary" />
-          <h1 className="font-display text-xl text-text-primary mb-2">
-            Generating learning content...
-          </h1>
-          <p className="font-body text-sm text-text-secondary mb-4">
-            Phrases and audio are being generated in the background.
-          </p>
-          <div className="flex items-center justify-center gap-2 text-xs text-text-muted mb-6">
-            <div className="w-2 h-2 rounded-full bg-accent-primary/40 animate-pulse" />
-            <span>This may take a minute</span>
-          </div>
-          <a
-            href={backHref}
-            className="inline-block rounded-full border border-rule bg-bg-surface px-5 py-2.5 font-ui text-sm text-accent-primary transition-colors hover:bg-bg-surface-2"
-          >
-            Back to briefing
-          </a>
-        </div>
-      </div>
-    );
+    return <LanguageLearningSkeleton />;
   }
 
   // Partial generation: show content but indicate some audio is pending
@@ -456,14 +485,15 @@ export default function LanguageLearningView({
   /*  Main render                                                        */
   /* ------------------------------------------------------------------ */
   return (
-    <div
-      className="min-h-[100dvh] flex flex-col bg-bg-primary"
-      dir={language === "ar" ? "rtl" : "ltr"}
-    >
-      {/* Top progress bar */}
-      <ImmersiveAudioController
-        overallProgress={audio.overallProgress}
-        isLessonComplete={isLessonComplete}
+    <LanguageLearningErrorBoundary>
+      <div
+        className="min-h-[100dvh] flex flex-col bg-bg-primary"
+        dir={language === "ar" ? "rtl" : "ltr"}
+      >
+        {/* Top progress bar */}
+        <ImmersiveAudioController
+          overallProgress={audio.overallProgress}
+          isLessonComplete={isLessonComplete}
         currentScriptIndex={currentScriptIndex}
         speed={audio.speed}
         onSpeedChange={audio.cycleSpeed}
@@ -668,5 +698,6 @@ export default function LanguageLearningView({
         )}
       </div>
     </div>
+    </LanguageLearningErrorBoundary>
   );
 }
