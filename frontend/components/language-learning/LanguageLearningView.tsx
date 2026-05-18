@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { Pause, Play, Loader2, Sparkles, SkipBack, SkipForward } from "lucide-react";
+import { Pause, Play, Loader2, Sparkles, SkipBack, SkipForward, ChevronLeft, ChevronRight } from "lucide-react";
 import type { BriefItem, LearningPhrase } from "@/lib/types/brief";
 import { useSectionAudio } from "@/hooks/useSectionAudio";
 import { useLearningAnalytics } from "@/hooks/useLearningAnalytics";
@@ -40,13 +40,9 @@ export default function LanguageLearningView({
   const [completedPhrases, setCompletedPhrases] = useState<Set<number>>(new Set());
   const [expandedPhraseGrammar, setExpandedPhraseGrammar] = useState<number | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
-  const [isTapFeedback, setIsTapFeedback] = useState(false);
-  // ITER 18: Enhanced progress tracking
   const [sentencesViewed, setSentencesViewed] = useState<Set<number>>(new Set());
   const [grammarOpened, setGrammarOpened] = useState(0);
   const [lessonStartTime] = useState(Date.now());
-  // Transition tracking between phrases
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [prevPhraseId, setPrevPhraseId] = useState<string | null>(null);
 
@@ -59,19 +55,18 @@ export default function LanguageLearningView({
   const phrases: LearningPhrase[] = currentContent?.phrases ?? [];
 
   /* ------------------------------------------------------------------ */
-  /*  Analytics tracking                                                 */
+  /*  Analytics                                                          */
   /* ------------------------------------------------------------------ */
   const { trackEvent } = useLearningAnalytics(item.id);
 
   /* ------------------------------------------------------------------ */
-  /*  Progress persistence with localStorage                             */
+  /*  Progress persistence                                               */
   /* ------------------------------------------------------------------ */
   const progressKey = useMemo(() => {
     if (!item.id) return null;
     return `ll-progress-${item.id}-${language}`;
   }, [item.id, language]);
 
-  // Load saved progress on mount
   useEffect(() => {
     if (!progressKey) return;
     try {
@@ -84,7 +79,6 @@ export default function LanguageLearningView({
         if (data.isLessonComplete) {
           setIsLessonComplete(true);
         }
-        // ITER 18: Load enhanced tracking data
         if (data.sentencesViewed?.length > 0) {
           setSentencesViewed(new Set(data.sentencesViewed));
         }
@@ -92,43 +86,35 @@ export default function LanguageLearningView({
           setGrammarOpened(data.grammarOpened);
         }
       }
-    } catch {
-      // Ignore localStorage errors
-    }
+    } catch { /* ignore */ }
   }, [progressKey]);
 
-  // Save progress when completed phrases change
   useEffect(() => {
     if (!progressKey) return;
     try {
       localStorage.setItem(progressKey, JSON.stringify({
         completedPhrases: Array.from(completedPhrases),
         isLessonComplete,
-        // ITER 18: Enhanced tracking data
         sentencesViewed: Array.from(sentencesViewed),
         grammarOpened,
         lessonStartTime,
         timestamp: Date.now(),
       }));
-    } catch {
-      // Ignore localStorage errors
-    }
+    } catch { /* ignore */ }
   }, [progressKey, completedPhrases, isLessonComplete, sentencesViewed, grammarOpened, lessonStartTime]);
 
   /* ------------------------------------------------------------------ */
-  /*  Handle audio URL missing gracefully                                */
+  /*  Missing audio check                                                */
   /* ------------------------------------------------------------------ */
   const hasMissingAudio = useMemo(() => {
     return phrases.some((p) => !p.audio_url_1 && !p.audio_url_2 && !p.audio_url_3);
   }, [phrases]);
 
   /* ------------------------------------------------------------------ */
-  /*  Flatten phrases into script-level audio URLs for useSectionAudio   */
-  /*  Order: [p0.s1, p0.s2, p0.s3, p1.s1, p1.s2, p1.s3, ...]          */
+  /*  Flatten script URLs                                                */
   /* ------------------------------------------------------------------ */
   const scriptUrls = useMemo(
-    () =>
-      phrases.flatMap((p) => [p.audio_url_1, p.audio_url_2, p.audio_url_3]),
+    () => phrases.flatMap((p) => [p.audio_url_1, p.audio_url_2, p.audio_url_3]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [phrases.map((p) => `${p.audio_url_1}|${p.audio_url_2}|${p.audio_url_3}`).join("|")],
   );
@@ -175,13 +161,15 @@ export default function LanguageLearningView({
   });
 
   /* ------------------------------------------------------------------ */
-  /*  Derive current phrase and script from audio index                  */
+  /*  Derive current phrase and script                                   */
   /* ------------------------------------------------------------------ */
   const currentPhraseIndex = Math.floor(audio.currentSectionIndex / 3);
-  const currentScriptIndex = (audio.currentSectionIndex % 3) + 1; // 1, 2, or 3
+  const currentScriptIndex = (audio.currentSectionIndex % 3) + 1;
   const activePhrase = phrases[currentPhraseIndex];
 
-  // Track phrase transitions for animation
+  /* ------------------------------------------------------------------ */
+  /*  Phrase transition tracking                                         */
+  /* ------------------------------------------------------------------ */
   useEffect(() => {
     if (activePhrase) {
       if (prevPhraseId && prevPhraseId !== activePhrase.id) {
@@ -193,14 +181,12 @@ export default function LanguageLearningView({
     }
   }, [activePhrase?.id, prevPhraseId]);
 
-  // Track lesson completion
   useEffect(() => {
     if (isLessonComplete) {
       trackEvent(language, currentPhraseIndex, currentScriptIndex, "lesson_complete");
     }
   }, [isLessonComplete, language, currentPhraseIndex, currentScriptIndex, trackEvent]);
 
-  // ITER 18: Track sentences viewed as user navigates
   useEffect(() => {
     if (phrases.length > 0 && currentPhraseIndex >= 0 && currentPhraseIndex < phrases.length) {
       setSentencesViewed((prev) => {
@@ -212,7 +198,6 @@ export default function LanguageLearningView({
     }
   }, [currentPhraseIndex, phrases.length]);
 
-  // Script-level progress within the phrase (0-1)
   const scriptProgress = useMemo(() => {
     const scriptStartIndex = currentPhraseIndex * 3;
     const scriptsInPhrase = 3;
@@ -222,15 +207,14 @@ export default function LanguageLearningView({
   }, [currentPhraseIndex, audio.currentSectionIndex, audio.sectionProgress]);
 
   /* ------------------------------------------------------------------ */
-  /*  Phrase navigation                                                   */
+  /*  Navigation                                                         */
   /* ------------------------------------------------------------------ */
   const handlePhraseSelect = useCallback(
     (phraseIdx: number) => {
-      const scriptIdx = phraseIdx * 3; // Start at script 1 of that phrase
+      const scriptIdx = phraseIdx * 3;
       audio.playSection(scriptIdx);
       setIsPaused(false);
       setExpandedPhraseGrammar(null);
-      // ITER 18: Track sentence viewed
       setSentencesViewed((prev) => {
         const next = new Set(prev);
         next.add(phraseIdx);
@@ -241,55 +225,10 @@ export default function LanguageLearningView({
   );
 
   /* ------------------------------------------------------------------ */
-  /*  Swipe gesture handling                                             */
-  /* ------------------------------------------------------------------ */
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const SWIPE_THRESHOLD = 50;
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
-    };
-  }, []);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (!touchStartRef.current) return;
-
-    const deltaX = e.changedTouches[0].clientX - touchStartRef.current.x;
-    const deltaY = e.changedTouches[0].clientY - touchStartRef.current.y;
-
-    // Only handle horizontal swipes (more horizontal than vertical movement)
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD) {
-      if (deltaX < 0) {
-        // Swipe left -> next phrase
-        setSwipeDirection("left");
-        const nextIdx = Math.min(currentPhraseIndex + 1, phrases.length - 1);
-        handlePhraseSelect(nextIdx);
-      } else {
-        // Swipe right -> previous phrase
-        setSwipeDirection("right");
-        const prevIdx = Math.max(currentPhraseIndex - 1, 0);
-        handlePhraseSelect(prevIdx);
-      }
-
-      // Clear swipe feedback after animation
-      setTimeout(() => setSwipeDirection(null), 300);
-    }
-
-    touchStartRef.current = null;
-  }, [currentPhraseIndex, phrases.length, handlePhraseSelect]);
-
-  /* ------------------------------------------------------------------ */
-  /*  Tap-to-pause with haptic feedback                                  */
+  /*  Tap-to-pause                                                       */
   /* ------------------------------------------------------------------ */
   const handleTapToggle = useCallback(() => {
     if (isLessonComplete) return;
-
-    // Visual tap feedback
-    setIsTapFeedback(true);
-    setTimeout(() => setIsTapFeedback(false), 150);
-
     if (audio.isPlaying && !isPaused) {
       audio.pause();
       setIsPaused(true);
@@ -300,46 +239,7 @@ export default function LanguageLearningView({
   }, [audio, isPaused, isLessonComplete]);
 
   /* ------------------------------------------------------------------ */
-  /*  Keyboard navigation for desktop                                    */
-  /* ------------------------------------------------------------------ */
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isLessonComplete) return;
-
-      switch (e.key) {
-        case "ArrowLeft":
-          e.preventDefault();
-          setSwipeDirection("right");
-          const prevIdx = Math.max(currentPhraseIndex - 1, 0);
-          handlePhraseSelect(prevIdx);
-          setTimeout(() => setSwipeDirection(null), 300);
-          break;
-        case "ArrowRight":
-          e.preventDefault();
-          setSwipeDirection("left");
-          const nextIdx = Math.min(currentPhraseIndex + 1, phrases.length - 1);
-          handlePhraseSelect(nextIdx);
-          setTimeout(() => setSwipeDirection(null), 300);
-          break;
-        case " ":
-          e.preventDefault();
-          handleTapToggle();
-          break;
-        case "Escape":
-          e.preventDefault();
-          if (expandedPhraseGrammar !== null) {
-            handleGrammarToggle(null);
-          }
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPhraseIndex, phrases.length, handlePhraseSelect, handleTapToggle, isLessonComplete, expandedPhraseGrammar]);
-
-  /* ------------------------------------------------------------------ */
-  /*  One-shot auto-play on mount                                        */
+  /*  Auto-play on mount                                                 */
   /* ------------------------------------------------------------------ */
   const hasStartedRef = useRef(false);
   const audioRef = useRef(audio);
@@ -349,7 +249,7 @@ export default function LanguageLearningView({
       hasStartedRef.current = true;
       const t = setTimeout(() => {
         audioRef.current.playSection(0);
-      }, 1200);
+      }, 800);
       return () => clearTimeout(t);
     }
   }, [hasAnyAudio, phrases.length, language]);
@@ -358,57 +258,35 @@ export default function LanguageLearningView({
   /*  WakeLock                                                           */
   /* ------------------------------------------------------------------ */
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-
   useEffect(() => {
     let cancelled = false;
-
     async function acquire() {
       try {
         if ("wakeLock" in navigator && !wakeLockRef.current) {
           const sentinel = await navigator.wakeLock.request("screen");
-          if (cancelled) {
-            sentinel.release();
-            return;
-          }
+          if (cancelled) { sentinel.release(); return; }
           wakeLockRef.current = sentinel;
-          sentinel.addEventListener("release", () => {
-            wakeLockRef.current = null;
-          });
+          sentinel.addEventListener("release", () => { wakeLockRef.current = null; });
         }
-      } catch {
-        /* WakeLock not available or denied — safe to ignore */
-      }
+      } catch { /* ignore */ }
     }
-
     async function release() {
-      try {
-        await wakeLockRef.current?.release();
-        wakeLockRef.current = null;
-      } catch {
-        /* ignore */
-      }
+      try { await wakeLockRef.current?.release(); wakeLockRef.current = null; } catch { /* ignore */ }
     }
-
     if (audio.isPlaying && !isPaused && !isLessonComplete) {
       acquire();
     } else {
       release();
     }
-
-    return () => {
-      cancelled = true;
-      release();
-    };
+    return () => { cancelled = true; release(); };
   }, [audio.isPlaying, isPaused, isLessonComplete]);
 
   /* ------------------------------------------------------------------ */
-  /*  Language change                                                     */
+  /*  Language change                                                    */
   /* ------------------------------------------------------------------ */
   const handleLanguageChange = useCallback(
     (lang: LearnLang) => {
-      // CRITICAL: Kill ALL audio (main player + grammar drawer) before switching language
       audio.pause();
-      // Direct DOM audio cleanup for any lingering elements
       if (typeof window !== 'undefined') {
         document.querySelectorAll("audio").forEach((el) => {
           el.pause();
@@ -422,7 +300,6 @@ export default function LanguageLearningView({
       setIsPaused(false);
       setExpandedPhraseGrammar(null);
       setShowCelebration(false);
-      // ITER 18: Reset tracking states
       setSentencesViewed(new Set());
       setGrammarOpened(0);
       hasStartedRef.current = false;
@@ -430,9 +307,6 @@ export default function LanguageLearningView({
     [audio],
   );
 
-  /* ------------------------------------------------------------------ */
-  /*  Replay                                                             */
-  /* ------------------------------------------------------------------ */
   const handleReplay = useCallback(() => {
     setIsLessonComplete(false);
     setCompletedPhrases(new Set());
@@ -443,29 +317,18 @@ export default function LanguageLearningView({
     audio.playSection(0);
   }, [audio, language, trackEvent]);
 
-  /* ------------------------------------------------------------------ */
-  /*  Reset progress (clear localStorage)                                */
-  /* ------------------------------------------------------------------ */
   const handleResetProgress = useCallback(() => {
     if (progressKey) {
-      try {
-        localStorage.removeItem(progressKey);
-      } catch {
-        // Ignore
-      }
+      try { localStorage.removeItem(progressKey); } catch { /* ignore */ }
     }
     handleReplay();
   }, [progressKey, handleReplay]);
 
-  /* ------------------------------------------------------------------ */
-  /*  Grammar drawer toggle                                               */
-  /* ------------------------------------------------------------------ */
   const handleGrammarToggle = useCallback(
     (phraseIdx: number | null) => {
       setExpandedPhraseGrammar(phraseIdx);
       if (phraseIdx !== null) {
         trackEvent(language, phraseIdx, currentScriptIndex, "grammar_open");
-        // ITER 18: Track grammar deep dive
         setGrammarOpened((prev) => prev + 1);
       }
     },
@@ -476,70 +339,45 @@ export default function LanguageLearningView({
   /*  Derived                                                            */
   /* ------------------------------------------------------------------ */
   const backHref = `/brief/${briefDate}?slideIndex=${slideIndex}`;
-
-  /* ------------------------------------------------------------------ */
-  /*  Loading: generation in progress                                    */
-  /* ------------------------------------------------------------------ */
   const isGenerating = !hasAnyAudio && phrases.length === 0;
-
-  // Check for partial generation (some phrases have audio, others don't)
   const phrasesWithAudio = phrases.filter((p) => p.audio_url_1).length;
   const isPartialGeneration = phrases.length > 0 && phrasesWithAudio < phrases.length && phrasesWithAudio > 0;
 
   /* ------------------------------------------------------------------ */
-  /*  Keyboard shortcuts                                                  */
+  /*  Keyboard shortcuts                                                 */
   /* ------------------------------------------------------------------ */
   useKeyboardShortcuts({
     onPrevious: () => {
       if (!isLessonComplete && !isGenerating) {
-        const prevIdx = Math.max(currentPhraseIndex - 1, 0);
-        handlePhraseSelect(prevIdx);
+        handlePhraseSelect(Math.max(currentPhraseIndex - 1, 0));
       }
     },
     onNext: () => {
       if (!isLessonComplete && !isGenerating) {
-        const nextIdx = Math.min(currentPhraseIndex + 1, phrases.length - 1);
-        handlePhraseSelect(nextIdx);
+        handlePhraseSelect(Math.min(currentPhraseIndex + 1, phrases.length - 1));
       }
     },
     onPlayPause: handleTapToggle,
     onReplay: handleReplay,
-    onCloseGrammar: () => {
-      if (expandedPhraseGrammar !== null) {
-        handleGrammarToggle(null);
-      }
-    },
-    onToggleLanguage: () => {
-      if (hasFr && hasAr) {
-        handleLanguageChange(language === "fr" ? "ar" : "fr");
-      }
-    },
+    onCloseGrammar: () => { if (expandedPhraseGrammar !== null) handleGrammarToggle(null); },
+    onToggleLanguage: () => { if (hasFr && hasAr) handleLanguageChange(language === "fr" ? "ar" : "fr"); },
     enabled: true,
   });
 
-  if (isGenerating) {
-    return <LanguageLearningSkeleton />;
-  }
+  /* ------------------------------------------------------------------ */
+  /*  Loading / Empty states                                             */
+  /* ------------------------------------------------------------------ */
+  if (isGenerating) return <LanguageLearningSkeleton />;
 
-  /* ------------------------------------------------------------------ */
-  /*  Fallback: no content                                               */
-  /* ------------------------------------------------------------------ */
   if (!currentContent || phrases.length === 0) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-bg-primary px-6">
+      <div className="flex min-h-screen items-center justify-center bg-gray-950 px-6">
         <div className="mx-auto max-w-md text-center">
-          <h1 className="font-display text-xl text-text-primary">
-            Content not available
-          </h1>
-          <p className="mt-3 font-body text-sm text-text-secondary">
-            Learning content for{" "}
-            {language === "fr" ? "French" : "Arabic"} is not available for
-            this item.
+          <h1 className="font-display text-xl text-gray-200">Content not available</h1>
+          <p className="mt-3 font-body text-sm text-gray-500">
+            Learning content for {language === "fr" ? "French" : "Arabic"} is not available for this item.
           </p>
-          <a
-            href={backHref}
-            className="mt-6 inline-block rounded-full border border-rule bg-bg-surface px-5 py-2.5 font-ui text-sm text-accent-primary transition-colors hover:bg-bg-surface-2"
-          >
+          <a href={backHref} className="mt-6 inline-block rounded-full border border-gray-700 bg-gray-900/50 px-5 py-2.5 font-ui text-sm text-indigo-400 transition-colors hover:bg-gray-800/50">
             Back to briefing
           </a>
         </div>
@@ -548,7 +386,7 @@ export default function LanguageLearningView({
   }
 
   /* ------------------------------------------------------------------ */
-  /*  Helper: format time                                                */
+  /*  Format time helper                                                 */
   /* ------------------------------------------------------------------ */
   const fmt = (seconds: number) => {
     if (!seconds || !isFinite(seconds)) return "0:00";
@@ -557,12 +395,9 @@ export default function LanguageLearningView({
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  /* ------------------------------------------------------------------ */
-  /*  SCRIPT_LABELS for display in controller                            */
-  /* ------------------------------------------------------------------ */
-  const SCRIPT_LABELS: Record<number, string> = {
-    1: "Teacher explains",
-    2: "Transition",
+  const scriptLabels: Record<number, string> = {
+    1: "Explanation",
+    2: "Bridge",
     3: "Listen",
   };
 
@@ -572,336 +407,232 @@ export default function LanguageLearningView({
   return (
     <LanguageLearningErrorBoundary>
       <div
-        className="min-h-[100dvh] flex flex-col bg-bg-primary"
+        className="min-h-screen flex flex-col bg-gray-950 text-gray-100"
         dir={language === "ar" ? "rtl" : "ltr"}
       >
         {/* Top progress bar */}
         <ImmersiveAudioController
           overallProgress={audio.overallProgress}
           isLessonComplete={isLessonComplete}
-        currentScriptIndex={currentScriptIndex}
-        speed={audio.speed}
-        onSpeedChange={audio.cycleSpeed}
-        isLoading={audio.isLoading}
-      />
+          isLoading={audio.isLoading}
+        />
 
-      {/* Header: back + counter + language toggle */}
-      <LearningHeader
-        backHref={backHref}
-        headline={item.headline}
-        language={language}
-        onLanguageChange={handleLanguageChange}
-        hasFr={hasFr}
-        hasAr={hasAr}
-        currentSection={currentPhraseIndex + 1}
-        totalSections={phrases.length}
-        difficulty={currentContent?.difficulty}
-        lessonSummary={currentContent?.lesson_summary}
-        totalDuration={currentContent?.total_duration_seconds}
-      />
+        {/* Minimal header */}
+        <LearningHeader
+          backHref={backHref}
+          language={language}
+          onLanguageChange={handleLanguageChange}
+          hasFr={hasFr}
+          hasAr={hasAr}
+        />
 
-      {/* Context banner: link to parent briefing slide */}
-      <div className="px-4 py-3">
+        {/* Context */}
         <ContextBanner
           headline={item.headline}
           briefDate={briefDate}
           slideIndex={slideIndex}
           category={item.section}
         />
-      </div>
 
-      {/* Missing audio warning banner */}
-      {hasMissingAudio && (
-        <div className="px-4 pb-2">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-amber-500 shrink-0">
-              <path d="M7 1C3.68629 1 1 3.68629 1 7C1 10.3137 3.68629 13 7 13C10.3137 13 13 10.3137 13 7C13 3.68629 10.3137 1 7 1Z" stroke="currentColor" strokeWidth="1.2" />
-              <path d="M7 4.5V7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-              <circle cx="7" cy="10" r="0.6" fill="currentColor" />
-            </svg>
-            <p className="font-body text-[11px] text-amber-700">
-              Audio is being generated. Text and grammar content available.
-            </p>
+        {/* Missing audio warning */}
+        {hasMissingAudio && (
+          <div className="px-5 py-2">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/5 border border-amber-500/15">
+              <span className="text-[10px] text-amber-400/70 font-ui">Audio is being generated. Text available.</span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* SPACER — push content area to center */}
-      <div className="flex-1 flex flex-col" style={{ paddingBottom: "140px" }}>
-        {/* Main content area — tap to pause zone, swipe for navigation */}
-        <div
-          className={`relative flex-1 flex flex-col items-center justify-start px-6 sm:px-10 lg:px-0 py-6 sm:py-10 lg:py-12 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] xl:max-w-[700px] cursor-default select-none touch-pan-y transition-transform duration-150 ${
-            isTapFeedback ? "scale-[0.98]" : "scale-100"
-          }`}
-          onClick={handleTapToggle}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          role="button"
-          tabIndex={-1}
-        >
-          {/* Celebration overlay */}
-          {showCelebration && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 animate-in fade-in duration-500">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center justify-center animate-in zoom-in-50 duration-700">
-                  <Sparkles className="w-16 h-16 sm:w-20 sm:h-20 text-accent-primary/30" />
-                </div>
-                <div className="absolute -top-4 -left-4 animate-in spin-in duration-700">
-                  <Sparkles className="w-6 h-6 text-yellow-400" />
-                </div>
-                <div className="absolute -top-2 -right-6 animate-in spin-in duration-700 delay-150">
-                  <Sparkles className="w-4 h-4 text-amber-400" />
-                </div>
-                <div className="absolute -bottom-4 -left-6 animate-in spin-in duration-700 delay-300">
-                  <Sparkles className="w-5 h-5 text-orange-400" />
-                </div>
-                <div className="absolute -bottom-2 -right-4 animate-in spin-in duration-700 delay-200">
-                  <Sparkles className="w-4 h-4 text-yellow-400" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Swipe direction feedback */}
-          {swipeDirection && !isLessonComplete && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-15 animate-in fade-out duration-300">
-              <div className={`flex h-16 w-16 items-center justify-center rounded-full bg-bg-surface/40 backdrop-blur-sm border border-rule/20 ${
-                swipeDirection === "left" ? "animate-in slide-in-from-right duration-200" : "animate-in slide-in-from-left duration-200"
-              }`}>
-                {swipeDirection === "left" ? (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-muted/60">
-                    <path d="M9 6L3 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-muted/60">
-                    <path d="M15 6L21 12L15 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M21 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Pause indicator */}
-          {isPaused && !isLessonComplete && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-bg-surface/60 border border-rule/20 animate-in fade-in duration-200 backdrop-blur-sm">
-                <Pause className="h-6 w-6 text-text-muted" />
-              </div>
-            </div>
-          )}
-
-          {/* Active phrase card with transition animation */}
-          {!isLessonComplete && activePhrase && (
-            <div className={`w-full transition-all duration-500 ease-out ${
-              isTransitioning ? "opacity-0 translate-y-4 scale-[0.97]" : "opacity-100 translate-y-0 scale-100"
-            }`}>
-              <PhraseCard
-                key={`${activePhrase.id}-${currentScriptIndex}`}
-                phrase={activePhrase}
-                phraseNumber={currentPhraseIndex + 1}
-                totalPhrases={phrases.length}
-                language={language}
-                scriptIndex={currentScriptIndex as 1 | 2 | 3}
-                currentTime={audio.currentTime}
-                duration={audio.duration}
-                isPlaying={audio.isPlaying}
-                onExpandGrammar={() =>
-                  handleGrammarToggle(
-                    expandedPhraseGrammar === currentPhraseIndex
-                      ? null
-                      : currentPhraseIndex
-                  )
-                }
-                showGrammarTrigger={
-                  currentScriptIndex === 3 && !!activePhrase.script4
-                }
-                difficulty={currentContent?.difficulty}
-              />
-            </div>
-          )}
-
-          {/* Grammar drawer for expanded phrase */}
-          {expandedPhraseGrammar !== null && phrases[expandedPhraseGrammar] && (
-            <PhraseGrammarDrawer
-              grammar={phrases[expandedPhraseGrammar].grammar}
-              script4AudioUrl={phrases[expandedPhraseGrammar].audio_url_4}
-              script4Text={phrases[expandedPhraseGrammar].script4}
-              isOpen={true}
-              onToggle={() => handleGrammarToggle(null)}
-              language={language}
-            />
-          )}
-
-          {/* Completion state */}
-          {isLessonComplete && (
-            <div className="text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
-              {/* Celebration icon */}
-              <div className="mb-6 flex justify-center">
+        {/* MAIN CONTENT */}
+        <div className="flex-1 flex flex-col" style={{ paddingBottom: "160px" }}>
+          <div
+            className="relative flex-1 flex flex-col items-center justify-start px-5 sm:px-8 lg:px-0 py-6 sm:py-8 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] xl:max-w-[700px] select-none"
+            onClick={handleTapToggle}
+            role="button"
+            tabIndex={-1}
+          >
+            {/* Celebration */}
+            {showCelebration && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 animate-in fade-in duration-500">
                 <div className="relative">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-accent-primary/10 flex items-center justify-center">
-                    <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-accent-primary" />
+                  <Sparkles className="w-16 h-16 text-indigo-400/20" />
+                  <div className="absolute -top-4 -left-4 animate-in spin-in duration-700">
+                    <Sparkles className="w-5 h-5 text-yellow-400/60" />
                   </div>
-                  <div className="absolute -top-1 -left-1 animate-bounce">
-                    <Sparkles className="w-4 h-4 text-yellow-400" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 animate-bounce delay-150">
-                    <Sparkles className="w-3 h-3 text-amber-400" />
-                  </div>
-                  <div className="absolute -bottom-1 -left-2 animate-bounce delay-300">
-                    <Sparkles className="w-4 h-4 text-orange-400" />
+                  <div className="absolute -bottom-2 -right-4 animate-in spin-in duration-700 delay-200">
+                    <Sparkles className="w-4 h-4 text-amber-400/60" />
                   </div>
                 </div>
               </div>
+            )}
 
-              <h2 className="font-display text-2xl sm:text-3xl text-text-primary mb-2">
-                Lesson Complete!
-              </h2>
-              <p className="font-body text-base sm:text-lg text-text-secondary/70 mb-2">
-                You&apos;ve practiced all {phrases.length} phrase{phrases.length > 1 ? "s" : ""}.
-              </p>
-              <p className="font-body text-sm text-text-muted mb-6">
-                {completedPhrases.size} / {phrases.length} phrases mastered
-              </p>
+            {/* Pause indicator */}
+            {isPaused && !isLessonComplete && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/5 border border-white/10 backdrop-blur-sm animate-in fade-in duration-150">
+                  <Pause className="h-6 w-6 text-gray-400" />
+                </div>
+              </div>
+            )}
 
-              {/* Learning stats */}
-              <LearningStats
-                totalPhrases={phrases.length}
-                completedPhrases={completedPhrases.size}
-                totalDuration={currentContent?.total_duration_seconds}
+            {/* Active phrase card */}
+            {!isLessonComplete && activePhrase && (
+              <div className={`w-full transition-all duration-500 ease-out ${
+                isTransitioning ? "opacity-0 translate-y-3" : "opacity-100 translate-y-0"
+              }`}>
+                <PhraseCard
+                  key={`${activePhrase.id}-${currentScriptIndex}`}
+                  phrase={activePhrase}
+                  phraseNumber={currentPhraseIndex + 1}
+                  totalPhrases={phrases.length}
+                  language={language}
+                  scriptIndex={currentScriptIndex as 1 | 2 | 3}
+                  currentTime={audio.currentTime}
+                  duration={audio.duration}
+                  isPlaying={audio.isPlaying}
+                  onExpandGrammar={() =>
+                    handleGrammarToggle(
+                      expandedPhraseGrammar === currentPhraseIndex ? null : currentPhraseIndex
+                    )
+                  }
+                  showGrammarTrigger={currentScriptIndex === 3 && !!activePhrase.script4}
+                />
+              </div>
+            )}
+
+            {/* Grammar drawer */}
+            {expandedPhraseGrammar !== null && phrases[expandedPhraseGrammar] && (
+              <PhraseGrammarDrawer
+                grammar={phrases[expandedPhraseGrammar].grammar}
+                script4AudioUrl={phrases[expandedPhraseGrammar].audio_url_4}
+                script4Text={phrases[expandedPhraseGrammar].script4}
+                isOpen={true}
+                onToggle={() => handleGrammarToggle(null)}
                 language={language}
-                // ITER 18: Enhanced tracking
-                sentencesViewed={sentencesViewed.size}
-                grammarOpened={grammarOpened}
-                startTime={lessonStartTime}
               />
+            )}
 
-              {/* Action buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            {/* Completion state */}
+            {isLessonComplete && (
+              <div className="text-center animate-in fade-in slide-in-from-bottom-8 duration-700 mt-12">
+                <div className="mb-6 flex justify-center">
+                  <div className="w-20 h-20 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                    <Sparkles className="w-10 h-10 text-indigo-400" />
+                  </div>
+                </div>
+                <h2 className="font-display text-2xl text-gray-100 mb-2 font-semibold">Lesson Complete</h2>
+                <p className="font-body text-base text-gray-500 mb-1">All {phrases.length} sentence{phrases.length > 1 ? "s" : ""} practiced.</p>
+                <p className="font-body text-sm text-gray-600 mb-6">{completedPhrases.size} / {phrases.length} mastered</p>
+
+                <LearningStats
+                  totalPhrases={phrases.length}
+                  completedPhrases={completedPhrases.size}
+                  totalDuration={currentContent?.total_duration_seconds}
+                  language={language}
+                  sentencesViewed={sentencesViewed.size}
+                  grammarOpened={grammarOpened}
+                  startTime={lessonStartTime}
+                />
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6">
+                  <button onClick={handleReplay} className="w-full sm:w-auto rounded-full bg-indigo-500 px-8 py-3 font-ui text-sm font-medium text-white hover:bg-indigo-400 transition-colors active:scale-95">
+                    Replay Lesson
+                  </button>
+                  <button onClick={handleResetProgress} className="w-full sm:w-auto rounded-full border border-gray-700 bg-gray-900/50 px-8 py-3 font-ui text-sm font-medium text-gray-300 hover:bg-gray-800/50 transition-colors active:scale-95">
+                    Reset Progress
+                  </button>
+                  <a href={backHref} className="w-full sm:w-auto rounded-full border border-gray-700 bg-gray-900/50 px-8 py-3 font-ui text-sm font-medium text-gray-300 hover:bg-gray-800/50 transition-colors active:scale-95 text-center">
+                    Back to briefing
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ================================================================ */}
+        {/*  ELEGANT BOTTOM CONTROLS: Counter + Nav Dots + Playback           */}
+        {/* ================================================================ */}
+        {!isLessonComplete && (
+          <div className="fixed bottom-0 left-0 right-0 z-40"
+               style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))" }}>
+            {/* Glass container */}
+            <div className="mx-3 sm:mx-auto sm:max-w-lg rounded-2xl bg-gray-900/80 backdrop-blur-xl border border-gray-800/40 shadow-2xl">
+              {/* Lesson counter + label row */}
+              <div className="flex items-center justify-between px-5 pt-2.5 pb-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="font-ui text-[11px] font-medium text-indigo-300 tabular-nums">
+                    {currentPhraseIndex + 1} / {phrases.length}
+                  </span>
+                  <span className="font-ui text-[9px] text-gray-500 uppercase tracking-wider">
+                    {scriptLabels[currentScriptIndex]}
+                  </span>
+                </div>
+                <span className="font-ui text-[10px] text-gray-500 tabular-nums">
+                  {fmt(audio.currentTime)} / {fmt(audio.duration > 0 ? audio.duration : (scriptDurations[audio.currentSectionIndex] || 0))}
+                </span>
+              </div>
+
+              {/* Navigation dots */}
+              <div className="flex justify-center py-1">
+                <PhraseNavigationDots
+                  totalPhrases={phrases.length}
+                  currentPhraseIndex={currentPhraseIndex}
+                  completedPhrases={completedPhrases}
+                  scriptProgress={scriptProgress}
+                  onPhraseSelect={handlePhraseSelect}
+                />
+              </div>
+
+              {/* Main playback bar */}
+              <div className="flex items-center justify-center gap-5 px-5 pb-3 pt-1">
+                {/* Previous */}
                 <button
-                  onClick={handleReplay}
-                  className="w-full sm:w-auto rounded-full bg-accent-primary px-8 py-3 font-ui text-sm font-medium text-white transition-colors hover:bg-accent-primary/90 active:scale-95"
+                  onClick={() => { if (currentPhraseIndex > 0) handlePhraseSelect(currentPhraseIndex - 1); }}
+                  disabled={currentPhraseIndex <= 0}
+                  className="flex items-center justify-center w-9 h-9 rounded-full text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  aria-label="Previous sentence"
                 >
-                  Replay Lesson
+                  <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
                 </button>
+
+                {/* Play/Pause */}
                 <button
-                  onClick={handleResetProgress}
-                  className="w-full sm:w-auto rounded-full border border-rule bg-bg-surface px-8 py-3 font-ui text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary active:scale-95"
+                  onClick={handleTapToggle}
+                  disabled={!hasAnyAudio}
+                  className="flex items-center justify-center w-13 h-13 rounded-full bg-indigo-500 text-white hover:bg-indigo-400 active:scale-95 transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ width: "52px", height: "52px" }}
+                  aria-label={isPaused || !audio.isPlaying ? "Play" : "Pause"}
                 >
-                  Reset Progress
+                  {audio.isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : isPaused || !audio.isPlaying ? (
+                    <Play className="w-5 h-5 ml-0.5" fill="white" strokeWidth={1.5} />
+                  ) : (
+                    <Pause className="w-5 h-5" fill="white" strokeWidth={1.5} />
+                  )}
                 </button>
-                <a
-                  href={backHref}
-                  className="w-full sm:w-auto rounded-full border border-rule bg-bg-surface px-8 py-3 font-ui text-sm font-medium text-text-primary transition-colors hover:bg-bg-surface-2 active:scale-95 text-center"
+
+                {/* Next */}
+                <button
+                  onClick={() => {
+                    if (currentPhraseIndex < phrases.length - 1) {
+                      handlePhraseSelect(currentPhraseIndex + 1);
+                    } else if (!audio.isPlaying && !isPaused) {
+                      handlePhraseSelect(0);
+                    }
+                  }}
+                  disabled={currentPhraseIndex >= phrases.length - 1 && !(!audio.isPlaying && !isPaused)}
+                  className="flex items-center justify-center w-9 h-9 rounded-full text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  aria-label="Next sentence"
                 >
-                  Back to briefing
-                </a>
+                  <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
+                </button>
               </div>
             </div>
-          )}
-
-          {/* Swipe hint for mobile (shown briefly on first interaction) */}
-          {!isLessonComplete && phrases.length > 1 && (
-            <div className="absolute bottom-2 sm:bottom-4 left-0 right-0 flex items-center justify-center gap-1 text-text-muted opacity-40">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="rotate-180">
-                <path d="M6 3L2 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              <span className="text-xs font-ui">swipe</span>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M6 3L2 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-
-      {/* ================================================================ */}
-      {/*  BOTTOM CONTROLS: Nav dots + Playback controls                    */}
-      {/* ================================================================ */}
-      {!isLessonComplete && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-bg-primary/95 backdrop-blur-xl border-t border-rule/20"
-             style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))" }}>
-          {/* Navigation dots row */}
-          <div className="flex justify-center py-2">
-            <PhraseNavigationDots
-              totalPhrases={phrases.length}
-              currentPhraseIndex={currentPhraseIndex}
-              currentScriptIndex={currentScriptIndex}
-              completedPhrases={completedPhrases}
-              scriptProgress={scriptProgress}
-              onPhraseSelect={handlePhraseSelect}
-            />
-          </div>
-
-          {/* Playback control bar */}
-          <div className="flex items-center justify-center gap-4 sm:gap-6 px-4 pb-2">
-            {/* Previous phrase */}
-            <button
-              onClick={() => {
-                if (currentPhraseIndex > 0) {
-                  handlePhraseSelect(currentPhraseIndex - 1);
-                }
-              }}
-              disabled={currentPhraseIndex <= 0}
-              className="flex items-center justify-center w-10 h-10 rounded-full text-text-muted hover:text-text-primary hover:bg-bg-surface transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-              aria-label="Previous phrase"
-            >
-              <SkipBack className="w-5 h-5" strokeWidth={1.5} />
-            </button>
-
-            {/* Script label */}
-            <div className="hidden sm:flex items-center min-w-[90px] justify-center">
-              <span className="font-ui text-[11px] text-text-muted tabular-nums">
-                {SCRIPT_LABELS[currentScriptIndex]}
-              </span>
-            </div>
-
-            {/* Play/Pause button — big and prominent */}
-            <button
-              onClick={handleTapToggle}
-              disabled={!hasAnyAudio}
-              className="flex items-center justify-center w-14 h-14 rounded-full bg-accent-primary text-white hover:bg-accent-primary/90 active:scale-95 transition-all shadow-lg shadow-accent-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label={isPaused || !audio.isPlaying ? "Play" : "Pause"}
-            >
-              {audio.isLoading ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : isPaused || !audio.isPlaying ? (
-                <Play className="w-6 h-6 ml-0.5" fill="white" strokeWidth={1.5} />
-              ) : (
-                <Pause className="w-6 h-6" fill="white" strokeWidth={1.5} />
-              )}
-            </button>
-
-            {/* Time display */}
-            <div className="min-w-[60px] text-center">
-              <span className="font-ui text-[11px] text-text-muted tabular-nums">
-                {fmt(audio.currentTime)} / {fmt(audio.duration > 0 ? audio.duration : (scriptDurations[audio.currentSectionIndex] || 0))}
-              </span>
-            </div>
-
-            {/* Next phrase */}
-            <button
-              onClick={() => {
-                if (currentPhraseIndex < phrases.length - 1) {
-                  handlePhraseSelect(currentPhraseIndex + 1);
-                } else if (!audio.isPlaying && !isPaused) {
-                  // If on last phrase and paused, go to start
-                  handlePhraseSelect(0);
-                }
-              }}
-              disabled={currentPhraseIndex >= phrases.length - 1 && !(!audio.isPlaying && !isPaused)}
-              className="flex items-center justify-center w-10 h-10 rounded-full text-text-muted hover:text-text-primary hover:bg-bg-surface transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-              aria-label="Next phrase"
-            >
-              <SkipForward className="w-5 h-5" strokeWidth={1.5} />
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
     </LanguageLearningErrorBoundary>
   );
 }
