@@ -40,8 +40,6 @@ function splitIntoChunks(
   if (!script) return [];
 
   const isArabic = language === "ar";
-  // Word mode: individual words (or 1-2 for Arabic which is more compact)
-  // Group mode: multi-word phrases (original behavior)
   const chunkSize = mode === "word" ? (isArabic ? 1 : 1) : (isArabic ? 2 : 4);
 
   const punctPattern = isArabic
@@ -107,8 +105,12 @@ export default function PhraseHighlightText({
     [script, language, highlightMode],
   );
 
+  // Determine if audio timing is reliable enough for highlighting
+  // Duration is considered unreliable if 0, NaN, Infinity, or very small (< 0.5s)
+  const isAudioTimingReliable = duration > 0.5 && isFinite(duration);
+
   const chunkRanges = useMemo(() => {
-    if (chunks.length === 0 || duration <= 0) return [];
+    if (chunks.length === 0 || !isAudioTimingReliable) return [];
 
     const weights = chunks.map((c) => estimateWeight(c, isArabic));
     const totalWeight = weights.reduce((a, b) => a + b, 0);
@@ -121,16 +123,20 @@ export default function PhraseHighlightText({
       const end = cumulative * duration;
       return { start, end };
     });
-  }, [chunks, duration, isArabic]);
+  }, [chunks, duration, isArabic, isAudioTimingReliable]);
 
   const activeIndex = useMemo(() => {
-    if (!isPlaying && currentTime === 0) return -1;
+    if (!isAudioTimingReliable) return -1;
     if (chunkRanges.length === 0) return -1;
+    // When paused but time has progressed, still show highlighting at current position
     for (let i = 0; i < chunkRanges.length; i++) {
       if (currentTime < chunkRanges[i].end) return i;
     }
     return chunkRanges.length - 1;
-  }, [currentTime, chunkRanges, isPlaying]);
+  }, [currentTime, chunkRanges, isAudioTimingReliable]);
+
+  // Determine overall state
+  const isInitial = currentTime === 0 && !isPlaying;
 
   if (chunks.length === 0) {
     return (
@@ -143,7 +149,29 @@ export default function PhraseHighlightText({
     );
   }
 
-  const idle = !isPlaying && currentTime === 0;
+  // When audio timing is unreliable (no audio, failed load), show all text uniformly
+  if (!isAudioTimingReliable) {
+    return (
+      <div
+        dir={isArabic ? "rtl" : "ltr"}
+        className={`font-body text-center ${
+          highlightMode === "word"
+            ? "text-[28px] sm:text-[32px] lg:text-[36px]"
+            : "text-[22px] sm:text-[26px] lg:text-[28px]"
+        }`}
+        style={{ lineHeight: 1.8 }}
+      >
+        <span className="text-text-primary">
+          {chunks.map((chunk, idx) => (
+            <span key={idx}>
+              {chunk}
+              {idx < chunks.length - 1 ? " " : ""}
+            </span>
+          ))}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -161,14 +189,18 @@ export default function PhraseHighlightText({
 
         let className = "transition-colors duration-300 ease-out inline ";
 
-        if (idle) {
+        if (isInitial) {
+          // Before any playback: neutral dimmed state
           className += "text-text-primary opacity-60";
         } else if (isActive) {
-          className += "text-accent-primary font-medium";
+          // Currently being spoken: bright, bold, colored
+          className += "text-accent-primary font-semibold";
         } else if (isPast) {
+          // Already spoken: regular color, fully visible
           className += "text-text-primary opacity-100";
         } else {
-          className += "text-text-secondary/50";
+          // Not yet spoken: dimmed, faded
+          className += "text-text-secondary/40";
         }
 
         return (

@@ -34,12 +34,21 @@ vi.mock("@/hooks/useSectionAudio", () => ({
 const mockBriefItem: BriefItem = {
   id: "test-item-001",
   headline: "France announces new climate initiative",
-  summary: "French government unveils comprehensive plan",
-  category: "politics",
-  date: "2026-05-17",
+  main_bullet: "France launches climate initiative",
+  source_name: "Le Monde",
+  significance: "high",
+  composite_score: 8.5,
+  topic_relevance: 7,
+  news_significance: 8,
+  is_continuity: false,
+  section: "politics",
+  rank: 1,
+  depth: "full",
+  entities: ["France"],
+  additional_sources: [],
+  is_model_release: false,
   learning_fr: {
     version: 3,
-    language: "fr",
     difficulty: "intermediate",
     phrases: [
       {
@@ -88,7 +97,7 @@ const mockBriefItem: BriefItem = {
       },
     ],
   },
-  learning_ar: null,
+  learning_ar: undefined,
 };
 
 describe("LanguageLearningView - Integration Tests", () => {

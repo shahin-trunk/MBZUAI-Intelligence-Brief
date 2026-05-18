@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { Pause, Loader2, Sparkles } from "lucide-react";
+import { Pause, Play, Loader2, Sparkles, SkipBack, SkipForward } from "lucide-react";
 import type { BriefItem, LearningPhrase } from "@/lib/types/brief";
 import { useSectionAudio } from "@/hooks/useSectionAudio";
 import { useLearningAnalytics } from "@/hooks/useLearningAnalytics";
@@ -46,6 +46,9 @@ export default function LanguageLearningView({
   const [sentencesViewed, setSentencesViewed] = useState<Set<number>>(new Set());
   const [grammarOpened, setGrammarOpened] = useState(0);
   const [lessonStartTime] = useState(Date.now());
+  // Transition tracking between phrases
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [prevPhraseId, setPrevPhraseId] = useState<string | null>(null);
 
   const hasFr = Boolean(item.learning_fr);
   const hasAr = Boolean(item.learning_ar);
@@ -113,6 +116,13 @@ export default function LanguageLearningView({
   }, [progressKey, completedPhrases, isLessonComplete, sentencesViewed, grammarOpened, lessonStartTime]);
 
   /* ------------------------------------------------------------------ */
+  /*  Handle audio URL missing gracefully                                */
+  /* ------------------------------------------------------------------ */
+  const hasMissingAudio = useMemo(() => {
+    return phrases.some((p) => !p.audio_url_1 && !p.audio_url_2 && !p.audio_url_3);
+  }, [phrases]);
+
+  /* ------------------------------------------------------------------ */
   /*  Flatten phrases into script-level audio URLs for useSectionAudio   */
   /*  Order: [p0.s1, p0.s2, p0.s3, p1.s1, p1.s2, p1.s3, ...]          */
   /* ------------------------------------------------------------------ */
@@ -170,6 +180,18 @@ export default function LanguageLearningView({
   const currentPhraseIndex = Math.floor(audio.currentSectionIndex / 3);
   const currentScriptIndex = (audio.currentSectionIndex % 3) + 1; // 1, 2, or 3
   const activePhrase = phrases[currentPhraseIndex];
+
+  // Track phrase transitions for animation
+  useEffect(() => {
+    if (activePhrase) {
+      if (prevPhraseId && prevPhraseId !== activePhrase.id) {
+        setIsTransitioning(true);
+        const t = setTimeout(() => setIsTransitioning(false), 600);
+        return () => clearTimeout(t);
+      }
+      setPrevPhraseId(activePhrase.id);
+    }
+  }, [activePhrase?.id, prevPhraseId]);
 
   // Track lesson completion
   useEffect(() => {
@@ -386,9 +408,8 @@ export default function LanguageLearningView({
     (lang: LearnLang) => {
       // CRITICAL: Kill ALL audio (main player + grammar drawer) before switching language
       audio.pause();
-      // Import and call killAllPageAudio to stop any grammar drawer audio
+      // Direct DOM audio cleanup for any lingering elements
       if (typeof window !== 'undefined') {
-        // Direct DOM audio cleanup for any lingering elements
         document.querySelectorAll("audio").forEach((el) => {
           el.pause();
           el.removeAttribute("src");
@@ -500,11 +521,6 @@ export default function LanguageLearningView({
     return <LanguageLearningSkeleton />;
   }
 
-  // Partial generation: show content but indicate some audio is pending
-  if (isPartialGeneration) {
-    // Continue rendering - the normal view will handle missing audio gracefully
-  }
-
   /* ------------------------------------------------------------------ */
   /*  Fallback: no content                                               */
   /* ------------------------------------------------------------------ */
@@ -530,6 +546,25 @@ export default function LanguageLearningView({
       </div>
     );
   }
+
+  /* ------------------------------------------------------------------ */
+  /*  Helper: format time                                                */
+  /* ------------------------------------------------------------------ */
+  const fmt = (seconds: number) => {
+    if (!seconds || !isFinite(seconds)) return "0:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  /* ------------------------------------------------------------------ */
+  /*  SCRIPT_LABELS for display in controller                            */
+  /* ------------------------------------------------------------------ */
+  const SCRIPT_LABELS: Record<number, string> = {
+    1: "Teacher explains",
+    2: "Transition",
+    3: "Listen",
+  };
 
   /* ------------------------------------------------------------------ */
   /*  Main render                                                        */
@@ -575,204 +610,297 @@ export default function LanguageLearningView({
         />
       </div>
 
-      {/* Phrase navigation dots */}
-      <div className="flex justify-center py-2 sm:py-4 px-4 overflow-x-auto">
-        <PhraseNavigationDots
-          totalPhrases={phrases.length}
-          currentPhraseIndex={currentPhraseIndex}
-          currentScriptIndex={currentScriptIndex}
-          completedPhrases={completedPhrases}
-          scriptProgress={scriptProgress}
-          onPhraseSelect={handlePhraseSelect}
-        />
-      </div>
-
-      {/* Main content — tap to pause zone, swipe for navigation */}
-      <div
-        className={`relative flex-1 flex flex-col items-center justify-start px-6 sm:px-10 lg:px-0 py-6 sm:py-10 lg:py-12 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] xl:max-w-[700px] cursor-default select-none touch-pan-y transition-transform duration-150 ${
-          isTapFeedback ? "scale-[0.98]" : "scale-100"
-        }`}
-        onClick={handleTapToggle}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        role="button"
-        tabIndex={-1}
-      >
-        {/* Celebration overlay */}
-        {showCelebration && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 animate-in fade-in duration-500">
-            <div className="relative">
-              {/* Sparkle burst effect */}
-              <div className="absolute inset-0 flex items-center justify-center animate-in zoom-in-50 duration-700">
-                <Sparkles className="w-16 h-16 sm:w-20 sm:h-20 text-accent-primary/30" />
-              </div>
-              <div className="absolute -top-4 -left-4 animate-in spin-in duration-700">
-                <Sparkles className="w-6 h-6 text-yellow-400" />
-              </div>
-              <div className="absolute -top-2 -right-6 animate-in spin-in duration-700 delay-150">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-              </div>
-              <div className="absolute -bottom-4 -left-6 animate-in spin-in duration-700 delay-300">
-                <Sparkles className="w-5 h-5 text-orange-400" />
-              </div>
-              <div className="absolute -bottom-2 -right-4 animate-in spin-in duration-700 delay-200">
-                <Sparkles className="w-4 h-4 text-yellow-400" />
-              </div>
-            </div>
+      {/* Missing audio warning banner */}
+      {hasMissingAudio && (
+        <div className="px-4 pb-2">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-amber-500 shrink-0">
+              <path d="M7 1C3.68629 1 1 3.68629 1 7C1 10.3137 3.68629 13 7 13C10.3137 13 13 10.3137 13 7C13 3.68629 10.3137 1 7 1Z" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M7 4.5V7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+              <circle cx="7" cy="10" r="0.6" fill="currentColor" />
+            </svg>
+            <p className="font-body text-[11px] text-amber-700">
+              Audio is being generated. Text and grammar content available.
+            </p>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Swipe direction feedback */}
-        {swipeDirection && !isLessonComplete && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-15 animate-in fade-out duration-300">
-            <div className={`flex h-16 w-16 items-center justify-center rounded-full bg-bg-surface/40 backdrop-blur-sm border border-rule/20 ${
-              swipeDirection === "left" ? "animate-in slide-in-from-right duration-200" : "animate-in slide-in-from-left duration-200"
-            }`}>
-              {swipeDirection === "left" ? (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-muted/60">
-                  <path d="M9 6L3 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-muted/60">
-                  <path d="M15 6L21 12L15 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M21 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Pause indicator */}
-        {isPaused && !isLessonComplete && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-bg-surface/60 border border-rule/20 animate-in fade-in duration-200 backdrop-blur-sm">
-              <Pause className="h-6 w-6 text-text-muted" />
-            </div>
-          </div>
-        )}
-
-        {/* Active phrase card */}
-        {!isLessonComplete && activePhrase && (
-          <PhraseCard
-            key={`${activePhrase.id}-${currentScriptIndex}`}
-            phrase={activePhrase}
-            phraseNumber={currentPhraseIndex + 1}
-            totalPhrases={phrases.length}
-            language={language}
-            scriptIndex={currentScriptIndex as 1 | 2 | 3}
-            currentTime={audio.currentTime}
-            duration={audio.duration}
-            isPlaying={audio.isPlaying}
-            onExpandGrammar={() =>
-              handleGrammarToggle(
-                expandedPhraseGrammar === currentPhraseIndex
-                  ? null
-                  : currentPhraseIndex
-              )
-            }
-            showGrammarTrigger={
-              currentScriptIndex === 3 && !!activePhrase.script4
-            }
-            difficulty={currentContent?.difficulty}
-          />
-        )}
-
-        {/* Grammar drawer for expanded phrase */}
-        {expandedPhraseGrammar !== null && phrases[expandedPhraseGrammar] && (
-          <PhraseGrammarDrawer
-            grammar={phrases[expandedPhraseGrammar].grammar}
-            script4AudioUrl={phrases[expandedPhraseGrammar].audio_url_4}
-            script4Text={phrases[expandedPhraseGrammar].script4}
-            isOpen={true}
-            onToggle={() => handleGrammarToggle(null)}
-            language={language}
-          />
-        )}
-
-        {/* Completion state */}
-        {isLessonComplete && (
-          <div className="text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
-            {/* Celebration icon */}
-            <div className="mb-6 flex justify-center">
+      {/* SPACER — push content area to center */}
+      <div className="flex-1 flex flex-col" style={{ paddingBottom: "140px" }}>
+        {/* Main content area — tap to pause zone, swipe for navigation */}
+        <div
+          className={`relative flex-1 flex flex-col items-center justify-start px-6 sm:px-10 lg:px-0 py-6 sm:py-10 lg:py-12 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] xl:max-w-[700px] cursor-default select-none touch-pan-y transition-transform duration-150 ${
+            isTapFeedback ? "scale-[0.98]" : "scale-100"
+          }`}
+          onClick={handleTapToggle}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          role="button"
+          tabIndex={-1}
+        >
+          {/* Celebration overlay */}
+          {showCelebration && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 animate-in fade-in duration-500">
               <div className="relative">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-accent-primary/10 flex items-center justify-center">
-                  <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-accent-primary" />
+                <div className="absolute inset-0 flex items-center justify-center animate-in zoom-in-50 duration-700">
+                  <Sparkles className="w-16 h-16 sm:w-20 sm:h-20 text-accent-primary/30" />
                 </div>
-                {/* Orbiting sparkles */}
-                <div className="absolute -top-1 -left-1 animate-bounce">
+                <div className="absolute -top-4 -left-4 animate-in spin-in duration-700">
+                  <Sparkles className="w-6 h-6 text-yellow-400" />
+                </div>
+                <div className="absolute -top-2 -right-6 animate-in spin-in duration-700 delay-150">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                </div>
+                <div className="absolute -bottom-4 -left-6 animate-in spin-in duration-700 delay-300">
+                  <Sparkles className="w-5 h-5 text-orange-400" />
+                </div>
+                <div className="absolute -bottom-2 -right-4 animate-in spin-in duration-700 delay-200">
                   <Sparkles className="w-4 h-4 text-yellow-400" />
                 </div>
-                <div className="absolute -top-1 -right-1 animate-bounce delay-150">
-                  <Sparkles className="w-3 h-3 text-amber-400" />
-                </div>
-                <div className="absolute -bottom-1 -left-2 animate-bounce delay-300">
-                  <Sparkles className="w-4 h-4 text-orange-400" />
-                </div>
               </div>
             </div>
+          )}
 
-            <h2 className="font-display text-2xl sm:text-3xl text-text-primary mb-2">
-              Lesson Complete!
-            </h2>
-            <p className="font-body text-base sm:text-lg text-text-secondary/70 mb-2">
-              You&apos;ve practiced all {phrases.length} phrase{phrases.length > 1 ? "s" : ""}.
-            </p>
-            <p className="font-body text-sm text-text-muted mb-6">
-              {completedPhrases.size} / {phrases.length} phrases mastered
-            </p>
-
-            {/* Learning stats */}
-            <LearningStats
-              totalPhrases={phrases.length}
-              completedPhrases={completedPhrases.size}
-              totalDuration={currentContent?.total_duration_seconds}
-              language={language}
-              // ITER 18: Enhanced tracking
-              sentencesViewed={sentencesViewed.size}
-              grammarOpened={grammarOpened}
-              startTime={lessonStartTime}
-            />
-
-            {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-              <button
-                onClick={handleReplay}
-                className="w-full sm:w-auto rounded-full bg-accent-primary px-8 py-3 font-ui text-sm font-medium text-white transition-colors hover:bg-accent-primary/90 active:scale-95"
-              >
-                Replay Lesson
-              </button>
-              <button
-                onClick={handleResetProgress}
-                className="w-full sm:w-auto rounded-full border border-rule bg-bg-surface px-8 py-3 font-ui text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary active:scale-95"
-              >
-                Reset Progress
-              </button>
-              <a
-                href={backHref}
-                className="w-full sm:w-auto rounded-full border border-rule bg-bg-surface px-8 py-3 font-ui text-sm font-medium text-text-primary transition-colors hover:bg-bg-surface-2 active:scale-95 text-center"
-              >
-                Back to briefing
-              </a>
+          {/* Swipe direction feedback */}
+          {swipeDirection && !isLessonComplete && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-15 animate-in fade-out duration-300">
+              <div className={`flex h-16 w-16 items-center justify-center rounded-full bg-bg-surface/40 backdrop-blur-sm border border-rule/20 ${
+                swipeDirection === "left" ? "animate-in slide-in-from-right duration-200" : "animate-in slide-in-from-left duration-200"
+              }`}>
+                {swipeDirection === "left" ? (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-muted/60">
+                    <path d="M9 6L3 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-muted/60">
+                    <path d="M15 6L21 12L15 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M21 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Swipe hint for mobile (shown briefly on first interaction) */}
-        {!isLessonComplete && phrases.length > 1 && (
-          <div className="absolute bottom-2 sm:bottom-4 left-0 right-0 flex items-center justify-center gap-1 text-text-muted opacity-40">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="rotate-180">
-              <path d="M6 3L2 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            <span className="text-xs font-ui">swipe</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M6 3L2 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </div>
-        )}
+          {/* Pause indicator */}
+          {isPaused && !isLessonComplete && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-bg-surface/60 border border-rule/20 animate-in fade-in duration-200 backdrop-blur-sm">
+                <Pause className="h-6 w-6 text-text-muted" />
+              </div>
+            </div>
+          )}
+
+          {/* Active phrase card with transition animation */}
+          {!isLessonComplete && activePhrase && (
+            <div className={`w-full transition-all duration-500 ease-out ${
+              isTransitioning ? "opacity-0 translate-y-4 scale-[0.97]" : "opacity-100 translate-y-0 scale-100"
+            }`}>
+              <PhraseCard
+                key={`${activePhrase.id}-${currentScriptIndex}`}
+                phrase={activePhrase}
+                phraseNumber={currentPhraseIndex + 1}
+                totalPhrases={phrases.length}
+                language={language}
+                scriptIndex={currentScriptIndex as 1 | 2 | 3}
+                currentTime={audio.currentTime}
+                duration={audio.duration}
+                isPlaying={audio.isPlaying}
+                onExpandGrammar={() =>
+                  handleGrammarToggle(
+                    expandedPhraseGrammar === currentPhraseIndex
+                      ? null
+                      : currentPhraseIndex
+                  )
+                }
+                showGrammarTrigger={
+                  currentScriptIndex === 3 && !!activePhrase.script4
+                }
+                difficulty={currentContent?.difficulty}
+              />
+            </div>
+          )}
+
+          {/* Grammar drawer for expanded phrase */}
+          {expandedPhraseGrammar !== null && phrases[expandedPhraseGrammar] && (
+            <PhraseGrammarDrawer
+              grammar={phrases[expandedPhraseGrammar].grammar}
+              script4AudioUrl={phrases[expandedPhraseGrammar].audio_url_4}
+              script4Text={phrases[expandedPhraseGrammar].script4}
+              isOpen={true}
+              onToggle={() => handleGrammarToggle(null)}
+              language={language}
+            />
+          )}
+
+          {/* Completion state */}
+          {isLessonComplete && (
+            <div className="text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
+              {/* Celebration icon */}
+              <div className="mb-6 flex justify-center">
+                <div className="relative">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-accent-primary/10 flex items-center justify-center">
+                    <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-accent-primary" />
+                  </div>
+                  <div className="absolute -top-1 -left-1 animate-bounce">
+                    <Sparkles className="w-4 h-4 text-yellow-400" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 animate-bounce delay-150">
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                  </div>
+                  <div className="absolute -bottom-1 -left-2 animate-bounce delay-300">
+                    <Sparkles className="w-4 h-4 text-orange-400" />
+                  </div>
+                </div>
+              </div>
+
+              <h2 className="font-display text-2xl sm:text-3xl text-text-primary mb-2">
+                Lesson Complete!
+              </h2>
+              <p className="font-body text-base sm:text-lg text-text-secondary/70 mb-2">
+                You&apos;ve practiced all {phrases.length} phrase{phrases.length > 1 ? "s" : ""}.
+              </p>
+              <p className="font-body text-sm text-text-muted mb-6">
+                {completedPhrases.size} / {phrases.length} phrases mastered
+              </p>
+
+              {/* Learning stats */}
+              <LearningStats
+                totalPhrases={phrases.length}
+                completedPhrases={completedPhrases.size}
+                totalDuration={currentContent?.total_duration_seconds}
+                language={language}
+                // ITER 18: Enhanced tracking
+                sentencesViewed={sentencesViewed.size}
+                grammarOpened={grammarOpened}
+                startTime={lessonStartTime}
+              />
+
+              {/* Action buttons */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                <button
+                  onClick={handleReplay}
+                  className="w-full sm:w-auto rounded-full bg-accent-primary px-8 py-3 font-ui text-sm font-medium text-white transition-colors hover:bg-accent-primary/90 active:scale-95"
+                >
+                  Replay Lesson
+                </button>
+                <button
+                  onClick={handleResetProgress}
+                  className="w-full sm:w-auto rounded-full border border-rule bg-bg-surface px-8 py-3 font-ui text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary active:scale-95"
+                >
+                  Reset Progress
+                </button>
+                <a
+                  href={backHref}
+                  className="w-full sm:w-auto rounded-full border border-rule bg-bg-surface px-8 py-3 font-ui text-sm font-medium text-text-primary transition-colors hover:bg-bg-surface-2 active:scale-95 text-center"
+                >
+                  Back to briefing
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Swipe hint for mobile (shown briefly on first interaction) */}
+          {!isLessonComplete && phrases.length > 1 && (
+            <div className="absolute bottom-2 sm:bottom-4 left-0 right-0 flex items-center justify-center gap-1 text-text-muted opacity-40">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="rotate-180">
+                <path d="M6 3L2 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <span className="text-xs font-ui">swipe</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M6 3L2 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* ================================================================ */}
+      {/*  BOTTOM CONTROLS: Nav dots + Playback controls                    */}
+      {/* ================================================================ */}
+      {!isLessonComplete && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-bg-primary/95 backdrop-blur-xl border-t border-rule/20"
+             style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))" }}>
+          {/* Navigation dots row */}
+          <div className="flex justify-center py-2">
+            <PhraseNavigationDots
+              totalPhrases={phrases.length}
+              currentPhraseIndex={currentPhraseIndex}
+              currentScriptIndex={currentScriptIndex}
+              completedPhrases={completedPhrases}
+              scriptProgress={scriptProgress}
+              onPhraseSelect={handlePhraseSelect}
+            />
+          </div>
+
+          {/* Playback control bar */}
+          <div className="flex items-center justify-center gap-4 sm:gap-6 px-4 pb-2">
+            {/* Previous phrase */}
+            <button
+              onClick={() => {
+                if (currentPhraseIndex > 0) {
+                  handlePhraseSelect(currentPhraseIndex - 1);
+                }
+              }}
+              disabled={currentPhraseIndex <= 0}
+              className="flex items-center justify-center w-10 h-10 rounded-full text-text-muted hover:text-text-primary hover:bg-bg-surface transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Previous phrase"
+            >
+              <SkipBack className="w-5 h-5" strokeWidth={1.5} />
+            </button>
+
+            {/* Script label */}
+            <div className="hidden sm:flex items-center min-w-[90px] justify-center">
+              <span className="font-ui text-[11px] text-text-muted tabular-nums">
+                {SCRIPT_LABELS[currentScriptIndex]}
+              </span>
+            </div>
+
+            {/* Play/Pause button — big and prominent */}
+            <button
+              onClick={handleTapToggle}
+              disabled={!hasAnyAudio}
+              className="flex items-center justify-center w-14 h-14 rounded-full bg-accent-primary text-white hover:bg-accent-primary/90 active:scale-95 transition-all shadow-lg shadow-accent-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={isPaused || !audio.isPlaying ? "Play" : "Pause"}
+            >
+              {audio.isLoading ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : isPaused || !audio.isPlaying ? (
+                <Play className="w-6 h-6 ml-0.5" fill="white" strokeWidth={1.5} />
+              ) : (
+                <Pause className="w-6 h-6" fill="white" strokeWidth={1.5} />
+              )}
+            </button>
+
+            {/* Time display */}
+            <div className="min-w-[60px] text-center">
+              <span className="font-ui text-[11px] text-text-muted tabular-nums">
+                {fmt(audio.currentTime)} / {fmt(audio.duration > 0 ? audio.duration : (scriptDurations[audio.currentSectionIndex] || 0))}
+              </span>
+            </div>
+
+            {/* Next phrase */}
+            <button
+              onClick={() => {
+                if (currentPhraseIndex < phrases.length - 1) {
+                  handlePhraseSelect(currentPhraseIndex + 1);
+                } else if (!audio.isPlaying && !isPaused) {
+                  // If on last phrase and paused, go to start
+                  handlePhraseSelect(0);
+                }
+              }}
+              disabled={currentPhraseIndex >= phrases.length - 1 && !(!audio.isPlaying && !isPaused)}
+              className="flex items-center justify-center w-10 h-10 rounded-full text-text-muted hover:text-text-primary hover:bg-bg-surface transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Next phrase"
+            >
+              <SkipForward className="w-5 h-5" strokeWidth={1.5} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
     </LanguageLearningErrorBoundary>
   );

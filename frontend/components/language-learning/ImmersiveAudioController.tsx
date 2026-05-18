@@ -1,7 +1,7 @@
 "use client";
 
-import { memo, useState, useCallback } from "react";
-import { Gauge } from "lucide-react";
+import { memo } from "react";
+import { Loader2 } from "lucide-react";
 
 interface ImmersiveAudioControllerProps {
   overallProgress: number; // 0-1, across all sections
@@ -12,8 +12,6 @@ interface ImmersiveAudioControllerProps {
   isLoading?: boolean;
 }
 
-const SCRIPT_LABELS = ["Explanation", "Transition", "In Context"];
-
 const ImmersiveAudioController = memo(function ImmersiveAudioController({
   overallProgress,
   isLessonComplete,
@@ -22,34 +20,17 @@ const ImmersiveAudioController = memo(function ImmersiveAudioController({
   onSpeedChange,
   isLoading = false,
 }: ImmersiveAudioControllerProps) {
-  const [showSpeed, setShowSpeed] = useState(false);
   const pct = isLessonComplete ? 100 : Math.min(overallProgress * 100, 100);
-
-  const handleBarClick = useCallback(() => {
-    if (onSpeedChange) {
-      onSpeedChange();
-      setShowSpeed(true);
-      setTimeout(() => setShowSpeed(false), 1000);
-    }
-  }, [onSpeedChange]);
 
   const speedLabel = speed === 0.75 ? "0.75x" : speed === 1 ? "1x" : "1.25x";
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50" role="banner" aria-label="Audio playback controls">
+    <div className="fixed top-0 left-0 right-0 z-50" role="banner" aria-label="Lesson progress">
       {/* Progress bar */}
       <div
-        className="h-[3px] bg-rule/20 cursor-pointer group"
-        onClick={handleBarClick}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleBarClick();
-          }
-        }}
-        role="slider"
-        tabIndex={0}
-        aria-label={`Lesson progress: ${Math.round(pct)}%. Click or press Enter to change playback speed.`}
+        className="h-[3px] bg-rule/20"
+        role="progressbar"
+        aria-label={`Lesson progress: ${Math.round(pct)}%`}
         aria-valuenow={Math.round(pct)}
         aria-valuemin={0}
         aria-valuemax={100}
@@ -68,33 +49,31 @@ const ImmersiveAudioController = memo(function ImmersiveAudioController({
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white/80 animate-pulse" aria-hidden="true" />
           )}
         </div>
-
-        {/* Hover tooltip */}
-        <div className="absolute top-1 left-0 right-0 flex items-center justify-between px-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" aria-hidden="true">
-          <span className="text-[10px] font-ui text-text-muted">
-            {currentScriptIndex && SCRIPT_LABELS[currentScriptIndex - 1]}
-          </span>
-          {onSpeedChange && (
-            <span className="text-[10px] font-ui text-text-muted flex items-center gap-1">
-              <Gauge className="w-3 h-3" />
-              {speedLabel}
-            </span>
-          )}
-        </div>
       </div>
 
-      {/* Speed change toast */}
-      {showSpeed && (
-        <div
-          className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-bg-surface/90 backdrop-blur-sm border border-rule/20 animate-in fade-in slide-in-from-top duration-200"
-          role="status"
-          aria-live="polite"
-        >
-          <span className="text-xs font-ui text-text-primary">
-            Speed: {speedLabel}
-          </span>
-        </div>
-      )}
+      {/* Meta row */}
+      <div className="flex items-center justify-between px-3 py-1">
+        <span className="text-[9px] font-ui text-text-muted/60">
+          {currentScriptIndex === 1 && "Explanation"}
+          {currentScriptIndex === 2 && "Transition"}
+          {currentScriptIndex === 3 && "Pronunciation"}
+        </span>
+
+        {/* Speed toggle */}
+        {onSpeedChange && (
+          <button
+            onClick={onSpeedChange}
+            className="text-[9px] font-ui text-text-muted/60 hover:text-text-muted transition-colors cursor-pointer"
+            aria-label={`Playback speed ${speedLabel}`}
+          >
+            {isLoading ? (
+              <Loader2 className="w-2.5 h-2.5 animate-spin inline" />
+            ) : (
+              speedLabel
+            )}
+          </button>
+        )}
+      </div>
     </div>
   );
 });
