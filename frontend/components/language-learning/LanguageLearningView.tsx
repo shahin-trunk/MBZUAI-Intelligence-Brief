@@ -674,6 +674,7 @@ export default function LanguageLearningView({
             showGrammarTrigger={
               currentScriptIndex === 3 && !!activePhrase.script4
             }
+            difficulty={currentContent?.difficulty}
           />
         )}
 

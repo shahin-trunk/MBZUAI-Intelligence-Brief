@@ -17,6 +17,7 @@ interface PhraseCardProps {
   isPlaying: boolean;
   onExpandGrammar: () => void;
   showGrammarTrigger: boolean;
+  difficulty?: "beginner" | "intermediate" | "advanced";
 }
 
 /** Get the target language text, preferring sentence fields when available (ITER 18). */
@@ -40,6 +41,7 @@ const PhraseCard = memo(function PhraseCard({
   isPlaying,
   onExpandGrammar,
   showGrammarTrigger,
+  difficulty,
 }: PhraseCardProps) {
   const isArabic = language === "ar";
   const targetText = getTargetText(phrase);
@@ -80,7 +82,7 @@ const PhraseCard = memo(function PhraseCard({
       <div className="flex flex-col items-center justify-center py-6 sm:py-8 lg:py-10 animate-in fade-in duration-500">
         {/* Phrase badge + target phrase + English translation */}
         <div className="mb-5 sm:mb-7 text-center space-y-3 transition-all duration-300">
-          {/* Progress badge + bookmark */}
+          {/* Progress badge + bookmark + difficulty indicator */}
           <div className="flex items-center justify-center gap-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent-primary/10 border border-accent-primary/20">
               <Languages className="h-3 w-3 text-accent-primary/70" />
@@ -88,6 +90,15 @@ const PhraseCard = memo(function PhraseCard({
                 {phraseNumber} / {totalPhrases}
               </span>
             </div>
+            {difficulty && (
+              <div className={`inline-flex items-center gap-0.5 px-2 py-1 rounded-full border text-[10px] font-ui font-medium ${
+                difficulty === 'beginner' ? 'bg-green-500/10 border-green-500/20 text-green-600' :
+                difficulty === 'intermediate' ? 'bg-amber-500/10 border-amber-500/20 text-amber-600' :
+                'bg-red-500/10 border-red-500/20 text-red-600'
+              }`}>
+                {difficulty === 'beginner' ? '●' : difficulty === 'intermediate' ? '●●' : '●●●'}
+              </div>
+            )}
             <PhraseBookmark
               phraseId={phrase.id}
               phraseText={targetText}
@@ -159,6 +170,15 @@ const PhraseCard = memo(function PhraseCard({
             </svg>
             <span className="text-xs font-ui text-text-secondary">From your briefing</span>
           </div>
+          {difficulty && (
+            <div className={`inline-flex items-center gap-0.5 px-2 py-1 rounded-full border text-[10px] font-ui font-medium ${
+              difficulty === 'beginner' ? 'bg-green-500/10 border-green-500/20 text-green-600' :
+              difficulty === 'intermediate' ? 'bg-amber-500/10 border-amber-500/20 text-amber-600' :
+              'bg-red-500/10 border-red-500/20 text-red-600'
+            }`}>
+              {difficulty === 'beginner' ? '● Easy' : difficulty === 'intermediate' ? '●● Medium' : '●●● Hard'}
+            </div>
+          )}
           <PhraseBookmark
             phraseId={phrase.id}
             phraseText={targetText}
