@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 
 interface PhraseHighlightTextProps {
   script: string;
@@ -8,7 +8,6 @@ interface PhraseHighlightTextProps {
   currentTime: number;
   duration: number;
   isPlaying: boolean;
-  /** "word" for Script3 target-language highlight, "group" for explanation scripts */
   highlightMode?: "word" | "group";
 }
 
@@ -40,7 +39,7 @@ function splitIntoChunks(
   if (!script) return [];
 
   const isArabic = language === "ar";
-  const chunkSize = mode === "word" ? (isArabic ? 1 : 1) : (isArabic ? 2 : 4);
+  const chunkSize = mode === "word" ? 1 : (isArabic ? 2 : 4);
 
   const punctPattern = isArabic
     ? /([^،.؟!؛:]+[،.؟!؛:]?)/g
@@ -90,6 +89,14 @@ function splitIntoChunks(
   return groups;
 }
 
+function useStableDuration(duration: number, threshold = 0.5): number {
+  const lastGoodRef = useRef(0);
+  if (duration > threshold && isFinite(duration)) {
+    lastGoodRef.current = duration;
+  }
+  return duration > threshold && isFinite(duration) ? duration : lastGoodRef.current;
+}
+
 export default function PhraseHighlightText({
   script,
   language,
@@ -105,9 +112,10 @@ export default function PhraseHighlightText({
     [script, language, highlightMode],
   );
 
-  // Determine if audio timing is reliable enough for highlighting
-  // Duration is considered unreliable if 0, NaN, Infinity, or very small (< 0.5s)
-  const isAudioTimingReliable = duration > 0.5 && isFinite(duration);
+  // Persist last reliable duration via ref so highlighting doesn't
+  // flash/break during audio transitions (when duration briefly drops to 0)
+  const stableDuration = useStableDuration(duration);
+  const isAudioTimingReliable = stableDuration > 0.5 && isFinite(stableDuration);
 
   const chunkRanges = useMemo(() => {
     if (chunks.length === 0 || !isAudioTimingReliable) return [];
@@ -118,30 +126,28 @@ export default function PhraseHighlightText({
     let cumulative = 0;
     return chunks.map((_, idx) => {
       const weight = weights[idx] / totalWeight;
-      const start = cumulative * duration;
+      const start = cumulative * stableDuration;
       cumulative += weight;
-      const end = cumulative * duration;
+      const end = cumulative * stableDuration;
       return { start, end };
     });
-  }, [chunks, duration, isArabic, isAudioTimingReliable]);
+  }, [chunks, stableDuration, isArabic, isAudioTimingReliable]);
 
   const activeIndex = useMemo(() => {
     if (!isAudioTimingReliable) return -1;
     if (chunkRanges.length === 0) return -1;
-    // When paused but time has progressed, still show highlighting at current position
     for (let i = 0; i < chunkRanges.length; i++) {
       if (currentTime < chunkRanges[i].end) return i;
     }
     return chunkRanges.length - 1;
   }, [currentTime, chunkRanges, isAudioTimingReliable]);
 
-  // Determine overall state
   const isInitial = currentTime === 0 && !isPlaying;
 
   if (chunks.length === 0) {
     return (
       <p
-        className="font-body text-[22px] sm:text-[26px] lg:text-[28px] text-text-primary text-center"
+        className="font-body text-[22px] sm:text-[26px] lg:text-[28px] text-gray-200 text-center"
         style={{ lineHeight: 1.8 }}
       >
         {script}
@@ -149,7 +155,6 @@ export default function PhraseHighlightText({
     );
   }
 
-  // When audio timing is unreliable (no audio, failed load), show all text uniformly
   if (!isAudioTimingReliable) {
     return (
       <div
@@ -161,7 +166,7 @@ export default function PhraseHighlightText({
         }`}
         style={{ lineHeight: 1.8 }}
       >
-        <span className="text-text-primary">
+        <span className="text-gray-200">
           {chunks.map((chunk, idx) => (
             <span key={idx}>
               {chunk}
@@ -190,17 +195,13 @@ export default function PhraseHighlightText({
         let className = "transition-colors duration-300 ease-out inline ";
 
         if (isInitial) {
-          // Before any playback: neutral dimmed state
-          className += "text-text-primary opacity-60";
+          className += "text-gray-400";
         } else if (isActive) {
-          // Currently being spoken: bright, bold, colored
-          className += "text-accent-primary font-semibold";
+          className += "text-indigo-300 font-semibold";
         } else if (isPast) {
-          // Already spoken: regular color, fully visible
-          className += "text-text-primary opacity-100";
+          className += "text-gray-200";
         } else {
-          // Not yet spoken: dimmed, faded
-          className += "text-text-secondary/40";
+          className += "text-gray-500";
         }
 
         return (

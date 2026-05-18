@@ -1,10 +1,9 @@
 "use client";
 
 import { memo } from "react";
-import { BookOpen, Mic } from "lucide-react";
+import { Mic } from "lucide-react";
 import type { LearningPhrase } from "@/lib/types/brief";
 import PhraseHighlightText from "./PhraseHighlightText";
-import PhraseBookmark from "./PhraseBookmark";
 
 interface PhraseCardProps {
   phrase: LearningPhrase;

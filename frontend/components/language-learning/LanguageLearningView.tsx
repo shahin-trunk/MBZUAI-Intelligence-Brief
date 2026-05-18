@@ -44,7 +44,7 @@ export default function LanguageLearningView({
   const [grammarOpened, setGrammarOpened] = useState(0);
   const [lessonStartTime] = useState(Date.now());
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [prevPhraseId, setPrevPhraseId] = useState<string | null>(null);
+  const [transitionMessage, setTransitionMessage] = useState<string | null>(null);
 
   const hasFr = Boolean(item.learning_fr);
   const hasAr = Boolean(item.learning_ar);
@@ -134,6 +134,29 @@ export default function LanguageLearningView({
   /* ------------------------------------------------------------------ */
   /*  Audio callbacks                                                    */
   /* ------------------------------------------------------------------ */
+
+  // Persistent refs for callbacks that need latest values
+  const scriptUrlsRef = useRef(scriptUrls);
+  scriptUrlsRef.current = scriptUrls;
+  const phrasesRef = useRef(phrases);
+  phrasesRef.current = phrases;
+  const audioRef = useRef<ReturnType<typeof useSectionAudio> | null>(null);
+  const advancerTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const advanceToNext = useCallback((fromIndex: number) => {
+    let target = fromIndex + 1;
+    while (target < scriptUrlsRef.current.length && !scriptUrlsRef.current[target]) {
+      target++;
+    }
+    if (target < scriptUrlsRef.current.length) {
+      audioRef.current?.playSection(target);
+    } else {
+      setIsLessonComplete(true);
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 3000);
+    }
+  }, []);
+
   const handleSectionComplete = useCallback((index: number) => {
     const phraseIdx = Math.floor(index / 3);
     setCompletedPhrases((prev) => {
@@ -141,12 +164,37 @@ export default function LanguageLearningView({
       next.add(phraseIdx);
       return next;
     });
-  }, []);
 
-  const handleAllComplete = useCallback(() => {
-    setIsLessonComplete(true);
-    setShowCelebration(true);
-    setTimeout(() => setShowCelebration(false), 3000);
+    // Phrase boundary detection: script 3 (last of phrase) just finished
+    const isPhraseBoundary = (index % 3 === 2) && phraseIdx < phrasesRef.current.length - 1;
+
+    if (isPhraseBoundary) {
+      // Add smooth narrative transition delay at phrase boundaries
+      const nextPhrase = phrasesRef.current[phraseIdx + 1];
+      const nextHint = nextPhrase?.sentence_en || nextPhrase?.phrase_en || "";
+      const preview = nextHint.length > 60 ? nextHint.slice(0, 57) + "..." : nextHint;
+      setTransitionMessage(preview);
+      setIsTransitioning(true);
+
+      // Clear any existing timers
+      advancerTimersRef.current.forEach(clearTimeout);
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+        setTransitionMessage(null);
+        advanceToNext(index);
+      }, 1200);
+      advancerTimersRef.current = [timer];
+    } else {
+      // Within-phrase script change — advance immediately for seamless flow
+      advanceToNext(index);
+    }
+  }, [advanceToNext]);
+
+  // Cleanup transition timers on unmount
+  useEffect(() => {
+    return () => {
+      advancerTimersRef.current.forEach(clearTimeout);
+    };
   }, []);
 
   /* ------------------------------------------------------------------ */
@@ -154,11 +202,13 @@ export default function LanguageLearningView({
   /* ------------------------------------------------------------------ */
   const hasAnyAudio = scriptUrls.some((u) => !!u);
   const audio = useSectionAudio(scriptUrls, {
-    autoAdvance: true,
+    autoAdvance: false,
     estimatedDurations: scriptDurations,
     onSectionComplete: handleSectionComplete,
-    onAllComplete: handleAllComplete,
+    onAllComplete: () => {},
   });
+  // Sync audio ref for callback usage
+  audioRef.current = audio;
 
   /* ------------------------------------------------------------------ */
   /*  Derive current phrase and script                                   */
@@ -168,18 +218,8 @@ export default function LanguageLearningView({
   const activePhrase = phrases[currentPhraseIndex];
 
   /* ------------------------------------------------------------------ */
-  /*  Phrase transition tracking                                         */
+  /*  Phrase transition tracking — (coordinated via handleSectionComplete) */
   /* ------------------------------------------------------------------ */
-  useEffect(() => {
-    if (activePhrase) {
-      if (prevPhraseId && prevPhraseId !== activePhrase.id) {
-        setIsTransitioning(true);
-        const t = setTimeout(() => setIsTransitioning(false), 600);
-        return () => clearTimeout(t);
-      }
-      setPrevPhraseId(activePhrase.id);
-    }
-  }, [activePhrase?.id, prevPhraseId]);
 
   useEffect(() => {
     if (isLessonComplete) {
@@ -242,13 +282,11 @@ export default function LanguageLearningView({
   /*  Auto-play on mount                                                 */
   /* ------------------------------------------------------------------ */
   const hasStartedRef = useRef(false);
-  const audioRef = useRef(audio);
-  audioRef.current = audio;
   useEffect(() => {
     if (!hasStartedRef.current && hasAnyAudio && phrases.length > 0) {
       hasStartedRef.current = true;
       const t = setTimeout(() => {
-        audioRef.current.playSection(0);
+        audioRef.current?.playSection(0);
       }, 800);
       return () => clearTimeout(t);
     }
@@ -471,6 +509,21 @@ export default function LanguageLearningView({
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/5 border border-white/10 backdrop-blur-sm animate-in fade-in duration-150">
                   <Pause className="h-6 w-6 text-gray-400" />
+                </div>
+              </div>
+            )}
+
+            {/* Transition overlay — shows upcoming sentence preview */}
+            {isTransitioning && transitionMessage && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20 animate-in fade-in duration-300">
+                <div className="text-center">
+                  <span className="font-ui text-[9px] uppercase tracking-[0.2em] text-indigo-400/60 block mb-3">
+                    Next sentence
+                  </span>
+                  <div className="w-16 h-px bg-gradient-to-r from-transparent via-indigo-400/30 to-transparent mb-4" />
+                  <p className="font-body text-[13px] text-gray-400 italic leading-relaxed max-w-xs mx-auto">
+                    {transitionMessage}
+                  </p>
                 </div>
               </div>
             )}
