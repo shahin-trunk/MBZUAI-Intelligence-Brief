@@ -1,0 +1,49 @@
+name: Fix Missing French V3 Audio
+
+on:
+  workflow_dispatch:
+    inputs:
+      brief_date:
+        description: "Brief date (YYYY-MM-DD), empty for auto-detect"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  fix-audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write .env
+        run: |
+          cat <<EOF > .env
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VOICE_API_KEY=${{ secrets.VOICE_API_KEY }}
+          VOICE_BASE_URL=${{ vars.VOICE_BASE_URL || 'https://api.elevenlabs.io' }}
+          VOICE_MODEL_ID=${{ vars.VOICE_MODEL_ID || 'eleven_multilingual_v2' }}
+          FRENCH_VOICE_ID=${{ secrets.FRENCH_VOICE_ID || '21m00Tcm4TlvDq8ikWAM' }}
+          ENGLISH_VOICE_ID=${{ secrets.ENGLISH_VOICE_ID || '21m00Tcm4TlvDq8ikWAM' }}
+          EOF
+
+      - name: Run fix script
+        run: |
+          cd backend
+          if [ -n "${{ inputs.brief_date }}" ]; then
+            python fix_french_audio.py --date "${{ inputs.brief_date }}"
+          else
+            python fix_french_audio.py
+          fi

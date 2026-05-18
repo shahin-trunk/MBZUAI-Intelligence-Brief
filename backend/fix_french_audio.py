@@ -12,7 +12,7 @@ content from `raw_json` in the `briefs` table and generates the missing audio.
 
 Usage:
     python3.11 fix_french_audio.py                          # Fix all missing French audio
-    python3.11 fix_french_audio.py --date 2026-05-07        # Single date
+    python3.11 fix_french_audio.py --date 2026-05-07        # Single date  
     python3.11 fix_french_audio.py --date 2026-05-07 --dry-run  # Preview only
 """
 
@@ -23,11 +23,13 @@ import logging
 import os
 import sys
 import time
-from datetime import date, datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
 from supabase import create_client, Client
+
+# Use the real audio generation from the shared module
+from generate_audio import _generate_audio, _get_voice_config
 
 # ---------------------------------------------------------------------------
 # Load env & paths
@@ -55,80 +57,6 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ---------------------------------------------------------------------------
-# TTS config
-# ---------------------------------------------------------------------------
-VOICE_API_KEY = os.getenv("VOICE_API_KEY")
-VOICE_BASE_URL = os.getenv("VOICE_BASE_URL", "https://api.elevenlabs.io")
-VOICE_MODEL_ID = os.getenv("VOICE_MODEL_ID", "eleven_multilingual_v2")
-VOICE_SETTINGS = {
-    "stability": 0.35,
-    "similarity_boost": 0.75,
-    "style": 0.15,
-    "use_speaker_boost": True,
-}
-VOICE_SPEED_EN = 1.05
-VOICE_SPEED_FR = 0.95
-VOICE_MAX_CHARS = 5000
-
-
-def _get_voice_config() -> dict:
-    """Load voice config from env or fallback to defaults."""
-    try:
-        voices = json.loads(os.getenv("VOICE_CONFIG", "{}"))
-        if voices:
-            return voices
-    except (json.JSONDecodeError, TypeError):
-        pass
-    return {
-        "en": {"voice_id": "21m00Tcm4TlvDq8ikWAM"},
-        "fr": {"voice_id": "21m00Tcm4TlvDq8ikWAM"},
-        "ar": {"voice_id": "21m00Tcm4TlvDq8ikWAM"},
-    }
-
-
-def _generate_audio(script: str, voice_id: str | None = None, lang: str = "en") -> bytes:
-    """Send script to ElevenLabs TTS API, return MP3 bytes."""
-    import httpx
-
-    if not VOICE_API_KEY:
-        raise RuntimeError("VOICE_API_KEY not set")
-
-    if voice_id is None:
-        voice_id = _get_voice_config()["en"]["voice_id"]
-
-    # Split if too long
-    words = script.split()
-    if len(words) > 1000:
-        # Take first 1000 words to stay within limits
-        script = " ".join(words[:1000])
-
-    url = f"{VOICE_BASE_URL}/v1/text-to-speech/{voice_id}"
-    payload = {
-        "text": script,
-        "model_id": VOICE_MODEL_ID,
-        "voice_settings": VOICE_SETTINGS,
-    }
-    if lang == "en":
-        payload["speed"] = VOICE_SPEED_EN
-    elif lang == "fr":
-        payload["speed"] = VOICE_SPEED_FR
-    else:
-        payload["speed"] = 1.0
-
-    headers = {
-        "Accept": "audio/mpeg",
-        "Content-Type": "application/json",
-        "xi-api-key": VOICE_API_KEY,
-    }
-
-    timeout = httpx.Timeout(connect=15.0, read=120.0, write=15.0, pool=60.0)
-    with httpx.Client(timeout=timeout) as client:
-        log.info("  TTS request for %d chars (%s, lang=%s)...", len(script), lang, lang)
-        resp = client.post(url, json=payload, headers=headers)
-        resp.raise_for_status()
-        return resp.content
-
 
 def _upload_audio(sb: Client, file_path: str, audio_bytes: bytes) -> str | None:
     """Upload MP3 bytes to Supabase storage and return public URL."""
@@ -149,24 +77,6 @@ def _upload_audio(sb: Client, file_path: str, audio_bytes: bytes) -> str | None:
 def _phrase_script_text(phrase: dict, script_idx: int) -> str:
     """Get the text for a given script index (1-4)."""
     return phrase.get(f"script{script_idx}", "").strip()
-
-
-def _check_audio_exists(sb: Client, file_path: str) -> bool:
-    """Check if audio file already exists in storage."""
-    try:
-        sb.storage.from_("audio-briefs").list(
-            str(Path(file_path).parent)
-        )
-        # Check specific file by trying to get its metadata
-        # Supabase doesn't have a direct exists check, so we try to get public URL
-        url = sb.storage.from_("audio-briefs").get_public_url(file_path)
-        # Attempt a HEAD request
-        import httpx
-        with httpx.Client() as client:
-            resp = client.head(url)
-            return resp.status_code == 200
-    except Exception:
-        return False
 
 
 def fix_french_audio_for_brief(brief_date: str, dry_run: bool = False) -> int:
@@ -199,6 +109,7 @@ def fix_french_audio_for_brief(brief_date: str, dry_run: bool = False) -> int:
     total_generated = 0
     total_skipped = 0
     total_errors = 0
+    items_updated = False
     
     for item in items:
         item_id = item.get("id", "")
@@ -226,7 +137,7 @@ def fix_french_audio_for_brief(brief_date: str, dry_run: bool = False) -> int:
                     log.info("    p%s_s%s: skipped (text too short)", p_idx, s_idx)
                     continue
                 
-                # Check if audio already exists (based on data)
+                # Check if audio URL already exists in the data
                 existing_url = phrase.get(f"audio_url_{s_idx}")
                 if existing_url:
                     log.info("    p%s_s%s: already has URL, skipping", p_idx, s_idx)
@@ -249,10 +160,10 @@ def fix_french_audio_for_brief(brief_date: str, dry_run: bool = False) -> int:
                     
                     url = _upload_audio(sb, file_path, audio_bytes)
                     if url:
-                        # Update the phrase's audio_url in the raw_json
                         phrase[f"audio_url_{s_idx}"] = url
                         item_generated += 1
                         total_generated += 1
+                        items_updated = True
                     else:
                         item_errors += 1
                         total_errors += 1
@@ -268,7 +179,7 @@ def fix_french_audio_for_brief(brief_date: str, dry_run: bool = False) -> int:
         log.info("    Item %s done: %d generated, %d errors", item_id, item_generated, item_errors)
     
     # Save updated raw_json back to Supabase
-    if not dry_run and total_generated > 0:
+    if not dry_run and items_updated:
         try:
             sb.table("briefs").update({"raw_json": raw_json}).eq("brief_date", brief_date).execute()
             log.info("Saved updated raw_json with %d new audio URLs", total_generated)
@@ -293,14 +204,12 @@ def main():
     else:
         # Find all briefs with V3 French content
         log.info("Scanning for briefs with French V3 learning content...")
-        # Fetch recent briefs (last 30 days)
         resp = sb.table("briefs").select("brief_date").order("brief_date", desc=True).limit(30).execute()
         brief_dates = []
         for row in resp.data:
-            brief_date = row["brief_date"]
-            # Check if it has French V3 content
+            bd = row["brief_date"]
             try:
-                brief_resp = sb.table("briefs").select("raw_json").eq("brief_date", brief_date).execute()
+                brief_resp = sb.table("briefs").select("raw_json").eq("brief_date", bd).execute()
                 if not brief_resp.data:
                     continue
                 rj = brief_resp.data[0].get("raw_json", {})
@@ -308,7 +217,7 @@ def main():
                 for item in items:
                     lf = item.get("learning_fr")
                     if lf and isinstance(lf, dict) and lf.get("version") == 3:
-                        brief_dates.append(brief_date)
+                        brief_dates.append(bd)
                         break
             except Exception:
                 continue
