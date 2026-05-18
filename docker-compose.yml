@@ -219,16 +219,17 @@ services:
           memory: 512M
 
   # ---------------------------------------------------------------------------
-  # Celery Worker — LLM/Claude script generation queue
+  # Celery Worker — LLM/Claude script generation queue (Replica 1 of 3)
   # Optimized: 8 workers, 4GB RAM, prefetch=2 for better throughput
+  # Total across 3 replicas: 24 concurrent LLM tasks
   # ---------------------------------------------------------------------------
   celery-worker-llm:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    container_name: brief-celery-llm
+    container_name: brief-celery-llm-1
     restart: unless-stopped
-    command: celery -A celery_app worker -Q llm -c 8 --loglevel=info --prefetch-multiplier=2 --max-tasks-per-child=500
+    command: celery -A celery_app worker -Q llm -c 8 --loglevel=info --prefetch-multiplier=2 --max-tasks-per-child=500 --hostname=llm-1@%h
     working_dir: /app
     env_file:
       - deploy.env
@@ -248,6 +249,84 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
+    networks:
+      - proxy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 4G
+        reservations:
+          cpus: "2.0"
+          memory: 2G
+
+  # ---------------------------------------------------------------------------
+  # Celery Worker — LLM/Claude script generation queue (Replica 2 of 3)
+  # ---------------------------------------------------------------------------
+  celery-worker-llm-2:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: brief-celery-llm-2
+    restart: unless-stopped
+    command: celery -A celery_app worker -Q llm -c 8 --loglevel=info --prefetch-multiplier=2 --max-tasks-per-child=500 --hostname=llm-2@%h
+    working_dir: /app
+    env_file:
+      - deploy.env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - CELERY_BEAT_SCHEDULE={}
+      - CELERYD_HIJACK_ROOT_LOGGER=False
+      - CELERYD_TASK_TIME_LIMIT=600
+      - CELERYD_TASK_SOFT_TIME_LIMIT=540
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - proxy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 4G
+        reservations:
+          cpus: "2.0"
+          memory: 2G
+
+  # ---------------------------------------------------------------------------
+  # Celery Worker — LLM/Claude script generation queue (Replica 3 of 3)
+  # ---------------------------------------------------------------------------
+  celery-worker-llm-3:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: brief-celery-llm-3
+    restart: unless-stopped
+    command: celery -A celery_app worker -Q llm -c 8 --loglevel=info --prefetch-multiplier=2 --max-tasks-per-child=500 --hostname=llm-3@%h
+    working_dir: /app
+    env_file:
+      - deploy.env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - CELERY_BEAT_SCHEDULE={}
+      - CELERYD_HIJACK_ROOT_LOGGER=False
+      - CELERYD_TASK_TIME_LIMIT=600
+      - CELERYD_TASK_SOFT_TIME_LIMIT=540
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - proxy
     logging:

@@ -243,13 +243,23 @@ def merge_learning_results(
     )
 
     try:
-        # Collect audio URLs back into phrases
-        for audio_info in audio_results:
+        # Collect audio URLs back into phrases and detect failures
+        failed_results = []
+        for i, audio_info in enumerate(audio_results):
             if isinstance(audio_info, dict) and "phrase_idx" in audio_info:
                 p_idx = audio_info["phrase_idx"]
                 s_idx = audio_info["script_idx"]
                 if 0 <= p_idx < len(phrases):
                     phrases[p_idx][f"audio_url_{s_idx}"] = audio_info["audio_url"]
+            else:
+                # This audio task failed (result is not the expected dict)
+                failed_results.append(i)
+
+        if failed_results:
+            log.warning(
+                "Partial audio failure for %s item %s lang %s: %d/%d tasks failed (indices: %s)",
+                target_date, item_id, lang, len(failed_results), len(audio_results), failed_results,
+            )
 
         # Calculate durations
         for phrase in phrases:
@@ -287,12 +297,15 @@ def merge_learning_results(
         if item:
             item[f"learning_{lang}"] = learning_data
 
-        # Update generation status
+        # Update generation status (partial vs completed)
         lang_key = f"learning_{lang}"
         from datetime import datetime, timezone
+        has_failures = len(failed_results) > 0
         gen_status[lang_key] = {
-            "status": "completed",
+            "status": "partial" if has_failures else "completed",
             "updated_at": datetime.now(timezone.utc).isoformat(),
+            "total_tasks": len(audio_results),
+            "failed_tasks": len(failed_results),
         }
 
         # Write back
@@ -302,17 +315,20 @@ def merge_learning_results(
         }).eq("brief_date", target_date).execute()
 
         log.info(
-            "Learning content completed for %s item %s lang %s (%d phrases, %.1fs total)",
-            target_date, item_id, lang, len(phrases), total_duration,
+            "Learning content %s for %s item %s lang %s (%d phrases, %.1fs total, %d failed)",
+            "completed (partial)" if has_failures else "completed",
+            target_date, item_id, lang, len(phrases), total_duration, len(failed_results),
         )
 
         return {
-            "status": "completed",
+            "status": "partial" if has_failures else "completed",
             "target_date": target_date,
             "item_id": item_id,
             "lang": lang,
             "phrase_count": len(phrases),
             "total_duration_seconds": round(total_duration, 1),
+            "failed_tasks": len(failed_results),
+            "total_tasks": len(audio_results),
         }
 
     except Exception as exc:

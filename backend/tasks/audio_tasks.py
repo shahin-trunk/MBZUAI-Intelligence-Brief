@@ -5,6 +5,7 @@ Queue: audio
 import logging
 import os
 import sys
+import traceback
 from pathlib import Path
 from threading import Lock
 
@@ -83,6 +84,24 @@ def generate_item_audio(
 
     except Exception as exc:
         log.warning("Item audio failed for %s: %s", item_id, exc)
+        if self.request.retries >= self.max_retries - 1:
+            from tasks.dlq import push_to_dlq
+            push_to_dlq(
+                task_name="generate_item_audio",
+                task_id=self.request.id,
+                target_date=target_date,
+                item_id=item_id,
+                lang=lang,
+                error_type=type(exc).__name__,
+                error_message=str(exc)[:2000],
+                task_args={
+                    "target_date": target_date,
+                    "item_id": item_id,
+                    "script": script,
+                    "voice_id": voice_id,
+                    "lang": lang,
+                },
+            )
         raise self.retry(exc=exc, countdown=exponential_backoff_with_jitter(self.request.retries, base_delay=30))
 
 
@@ -139,4 +158,27 @@ def generate_phrase_audio(
             "Phrase audio failed for item %s p%s_s%s (%s): %s",
             item_id, phrase_idx, script_idx, lang, exc,
         )
+        if self.request.retries >= self.max_retries - 1:
+            from tasks.dlq import push_to_dlq
+            push_to_dlq(
+                task_name="generate_phrase_audio",
+                task_id=self.request.id,
+                target_date=target_date,
+                item_id=item_id,
+                lang=lang,
+                phrase_idx=phrase_idx,
+                script_idx=script_idx,
+                error_type=type(exc).__name__,
+                error_message=str(exc)[:2000],
+                traceback=traceback.format_exc()[:5000],
+                task_args={
+                    "target_date": target_date,
+                    "item_id": item_id,
+                    "lang": lang,
+                    "phrase_idx": phrase_idx,
+                    "script_idx": script_idx,
+                    "script_text": script_text,
+                    "voice_id": voice_id,
+                },
+            )
         raise self.retry(exc=exc, countdown=exponential_backoff_with_jitter(self.request.retries, base_delay=30))

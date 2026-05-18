@@ -11,9 +11,10 @@ storage were never generated with the correct V3 names — only old V2 naming
 content from `raw_json` in the `briefs` table and generates the missing audio.
 
 Usage:
-    python3.11 fix_french_audio.py                          # Fix all missing French audio
-    python3.11 fix_french_audio.py --date 2026-05-07        # Single date  
+    python3.11 fix_french_audio.py                              # Fix all missing French audio
+    python3.11 fix_french_audio.py --date 2026-05-07            # Single date
     python3.11 fix_french_audio.py --date 2026-05-07 --dry-run  # Preview only
+    python3.11 fix_french_audio.py --force                      # Regenerate even if URL exists
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ import sys
 import time
 from pathlib import Path
 
+import httpx
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -58,6 +60,41 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+def _storage_url(file_path: str) -> str:
+    """Build the public storage URL for a given file path."""
+    base = SUPABASE_URL.rstrip("/")
+    return f"{base}/storage/v1/object/public/audio-briefs/{file_path}"
+
+
+def _file_exists_in_storage(file_path: str) -> bool:
+    """Check if a file exists in Supabase storage using an authenticated list call.
+
+    Uses the Supabase object list endpoint with service-role auth.
+    The prefix is set to the directory path and search looks for the exact filename.
+    """
+    try:
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+        }
+        # Extract directory prefix and filename
+        dir_prefix = file_path.rsplit("/", 1)[0] if "/" in file_path else ""
+        filename = file_path.rsplit("/", 1)[-1]
+        resp = httpx.post(
+            f"{SUPABASE_URL}/storage/v1/object/list/audio-briefs",
+            headers=headers,
+            json={"prefix": dir_prefix, "limit": 1, "search": filename},
+            timeout=10.0,
+        )
+        if resp.status_code == 200:
+            objects = resp.json()
+            return len(objects) > 0
+        return False
+    except Exception as exc:
+        log.debug("Storage check failed for %s: %s", file_path, exc)
+        return False
+
+
 def _upload_audio(sb: Client, file_path: str, audio_bytes: bytes) -> str | None:
     """Upload MP3 bytes to Supabase storage and return public URL."""
     try:
@@ -67,10 +104,10 @@ def _upload_audio(sb: Client, file_path: str, audio_bytes: bytes) -> str | None:
             file_options={"content-type": "audio/mpeg", "upsert": "true"},
         )
         url = sb.storage.from_("audio-briefs").get_public_url(file_path)
-        log.info("  ✓ Uploaded: %s", file_path)
+        log.info("  \u2713 Uploaded: %s", file_path)
         return url
     except Exception as exc:
-        log.warning("  ✗ Upload failed for %s: %s", file_path, exc)
+        log.warning("  \u2717 Upload failed for %s: %s", file_path, exc)
         return None
 
 
@@ -79,85 +116,133 @@ def _phrase_script_text(phrase: dict, script_idx: int) -> str:
     return phrase.get(f"script{script_idx}", "").strip()
 
 
-def fix_french_audio_for_brief(brief_date: str, dry_run: bool = False) -> int:
+def _build_file_path(brief_date: str, item_id: str, p_idx: int, s_idx: int) -> str:
+    """Build the storage file path for a phrase script."""
+    return f"{brief_date}/learning/{item_id}_fr_p{p_idx}_s{s_idx}.mp3"
+
+
+def _clear_stale_audio_urls(items: list[dict], brief_date: str) -> bool:
+    """Check all audio_url_* fields and clear any that point to non-existent storage files.
+
+    Returns True if any URLs were cleared.
+    """
+    cleared = False
+    for item in items:
+        item_id = item.get("id", "")
+        learning_fr = item.get("learning_fr")
+        if not learning_fr or not isinstance(learning_fr, dict):
+            continue
+        phrases = learning_fr.get("phrases", [])
+        for p_idx, phrase in enumerate(phrases):
+            for s_idx in range(1, 5):
+                existing_url = phrase.get(f"audio_url_{s_idx}")
+                if not existing_url:
+                    continue
+                file_path = _build_file_path(brief_date, item_id, p_idx, s_idx)
+                if not _file_exists_in_storage(file_path):
+                    log.info("  Clearing stale audio_url_%s for item %s p%s (storage file missing)", s_idx, item_id, p_idx)
+                    phrase[f"audio_url_{s_idx}"] = ""
+                    cleared = True
+                else:
+                    log.debug("    Storage file exists for %s: keeping URL", file_path)
+    return cleared
+
+
+def fix_french_audio_for_brief(
+    brief_date: str,
+    dry_run: bool = False,
+    force: bool = False,
+) -> int:
     """Fix missing French V3 audio for all items in a brief.
-    
+
     Returns count of audio files generated.
     """
-    log.info("Processing brief %s (dry_run=%s)", brief_date, dry_run)
-    
+    log.info("Processing brief %s (dry_run=%s, force=%s)", brief_date, dry_run, force)
+
     # Fetch the brief
     resp = sb.table("briefs").select("brief_date, raw_json").eq("brief_date", brief_date).execute()
     if not resp.data:
         log.warning("No brief found for %s", brief_date)
         return 0
-    
+
     raw_json = resp.data[0].get("raw_json", {})
     if not raw_json:
         log.warning("No raw_json for %s", brief_date)
         return 0
-    
+
     items = raw_json.get("items", [])
     if not items:
         log.warning("No items in brief %s", brief_date)
         return 0
-    
+
+    # Before generating, clear stale URLs that point to non-existent storage files
+    if not force:
+        cleared = _clear_stale_audio_urls(items, brief_date)
+        if cleared:
+            log.info("Cleared stale audio URLs — will regenerate those files")
+
     voice_config = _get_voice_config()
-    en_voice = voice_config.get("en", {}).get("voice_id", "21m00Tcm4TlvDq8ikWAM")
-    fr_voice = voice_config.get("fr", {}).get("voice_id", "21m00Tcm4TlvDq8ikWAM")
-    
+    en_voice = voice_config.get("en", {}).get("voice_id", "Isabella")
+    fr_voice = voice_config.get("fr", {}).get("voice_id", "84fe56fcc955")
+
     total_generated = 0
     total_skipped = 0
     total_errors = 0
     items_updated = False
-    
+
     for item in items:
         item_id = item.get("id", "")
         if not item_id:
             continue
-        
+
         learning_fr = item.get("learning_fr")
         if not learning_fr or not isinstance(learning_fr, dict):
             continue
-        
+
         phrases = learning_fr.get("phrases", [])
         if not phrases:
             log.info("  Item %s: no French phrases", item_id)
             continue
-        
+
         log.info("  Item %s: %d phrase(s)", item_id, len(phrases))
-        
+
         item_errors = 0
         item_generated = 0
-        
+
         for p_idx, phrase in enumerate(phrases):
             for s_idx in range(1, 5):
                 script_text = _phrase_script_text(phrase, s_idx)
                 if not script_text or len(script_text) < 10:
                     log.info("    p%s_s%s: skipped (text too short)", p_idx, s_idx)
-                    continue
-                
-                # Check if audio URL already exists in the data
-                existing_url = phrase.get(f"audio_url_{s_idx}")
-                if existing_url:
-                    log.info("    p%s_s%s: already has URL, skipping", p_idx, s_idx)
                     total_skipped += 1
                     continue
-                
-                file_path = f"{brief_date}/learning/{item_id}_fr_p{p_idx}_s{s_idx}.mp3"
-                
-                # Determine voice: script3 is French, others are English
+
+                file_path = _build_file_path(brief_date, item_id, p_idx, s_idx)
+
+                # Determine voice: script3 is French (the target language text),
+                # others are English (narrative/explanation/grammar)
                 voice = fr_voice if s_idx == 3 else en_voice
                 lang = "fr" if s_idx == 3 else "en"
-                
+
+                # Check if we already have a valid file in storage (unless --force)
+                existing_url = phrase.get(f"audio_url_{s_idx}")
+                if existing_url and not force:
+                    # URL exists in data AND file exists in storage -> skip
+                    if _file_exists_in_storage(file_path):
+                        log.info("    p%s_s%s: already has valid storage file, skipping", p_idx, s_idx)
+                        total_skipped += 1
+                        continue
+                    else:
+                        log.info("    p%s_s%s: URL exists but storage file missing — regenerating", p_idx, s_idx)
+
                 if dry_run:
-                    log.info("    p%s_s%s: would generate (path=%s, lang=%s)", p_idx, s_idx, file_path, lang)
+                    log.info("    p%s_s%s: would generate (path=%s, voice=%s, lang=%s)", p_idx, s_idx, file_path, voice, lang)
                     continue
-                
+
                 try:
-                    log.info("    p%s_s%s: generating audio (%d chars, lang=%s)...", p_idx, s_idx, len(script_text), lang)
+                    log.info("    p%s_s%s: generating audio (%d chars, voice=%s, lang=%s)...", p_idx, s_idx, len(script_text), voice, lang)
                     audio_bytes = _generate_audio(script_text, voice, lang=lang)
-                    
+
                     url = _upload_audio(sb, file_path, audio_bytes)
                     if url:
                         phrase[f"audio_url_{s_idx}"] = url
@@ -167,17 +252,17 @@ def fix_french_audio_for_brief(brief_date: str, dry_run: bool = False) -> int:
                     else:
                         item_errors += 1
                         total_errors += 1
-                    
+
                     # Rate limit: small delay between API calls
                     time.sleep(0.5)
-                    
+
                 except Exception as exc:
                     log.warning("    p%s_s%s: ERROR: %s", p_idx, s_idx, exc)
                     item_errors += 1
                     total_errors += 1
-        
+
         log.info("    Item %s done: %d generated, %d errors", item_id, item_generated, item_errors)
-    
+
     # Save updated raw_json back to Supabase
     if not dry_run and items_updated:
         try:
@@ -185,20 +270,22 @@ def fix_french_audio_for_brief(brief_date: str, dry_run: bool = False) -> int:
             log.info("Saved updated raw_json with %d new audio URLs", total_generated)
         except Exception as exc:
             log.warning("Failed to update raw_json: %s", exc)
-    
-    log.info("Brief %s complete: %d generated, %d skipped, %d errors", 
+
+    log.info("Brief %s complete: %d generated, %d skipped, %d errors",
               brief_date, total_generated, total_skipped, total_errors)
     return total_generated
 
 
 def main():
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Fix missing French V3 audio files")
     parser.add_argument("--date", type=str, default=None, help="Brief date (YYYY-MM-DD)")
     parser.add_argument("--dry-run", action="store_true", help="Preview only, no generation")
+    parser.add_argument("--force", action="store_true", help="Regenerate audio even if URL/file exists")
+    parser.add_argument("--clear-urls", action="store_true", help="Only clear stale audio_urls, don't generate")
     args = parser.parse_args()
-    
+
     if args.date:
         brief_dates = [args.date]
     else:
@@ -221,17 +308,37 @@ def main():
                         break
             except Exception:
                 continue
-    
+
     if not brief_dates:
         log.info("No briefs with French V3 content found")
         return
-    
+
     log.info("Found %d brief(s) with French V3 content: %s", len(brief_dates), brief_dates)
-    
+
+    # Handle --clear-urls mode: just clear stale entries without generating
+    if args.clear_urls:
+        cleared_any = False
+        for bd in brief_dates:
+            log.info("Scanning brief %s for stale audio URLs...", bd)
+            resp = sb.table("briefs").select("brief_date, raw_json").eq("brief_date", bd).execute()
+            if not resp.data:
+                continue
+            raw_json = resp.data[0].get("raw_json", {})
+            items = raw_json.get("items", [])
+            if _clear_stale_audio_urls(items, bd):
+                sb.table("briefs").update({"raw_json": raw_json}).eq("brief_date", bd).execute()
+                cleared_any = True
+                log.info("Cleared stale URLs for %s", bd)
+        if cleared_any:
+            log.info("Stale audio URL cleanup complete.")
+        else:
+            log.info("No stale audio URLs found.")
+        return
+
     total = 0
     for bd in brief_dates:
-        total += fix_french_audio_for_brief(bd, dry_run=args.dry_run)
-    
+        total += fix_french_audio_for_brief(bd, dry_run=args.dry_run, force=args.force)
+
     log.info("All done! Generated %d audio files total.", total)
 
 

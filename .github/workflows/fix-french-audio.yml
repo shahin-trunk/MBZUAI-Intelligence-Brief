@@ -33,10 +33,10 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           VOICE_API_KEY=${{ secrets.VOICE_API_KEY }}
-          VOICE_BASE_URL=${{ vars.VOICE_BASE_URL || 'https://api.elevenlabs.io' }}
+          VOICE_BASE_URL=${{ vars.VOICE_BASE_URL || 'https://txt2sph.audarai.com' }}
           VOICE_MODEL_ID=${{ vars.VOICE_MODEL_ID || 'eleven_multilingual_v2' }}
-          FRENCH_VOICE_ID=${{ secrets.FRENCH_VOICE_ID || '21m00Tcm4TlvDq8ikWAM' }}
-          ENGLISH_VOICE_ID=${{ secrets.ENGLISH_VOICE_ID || '21m00Tcm4TlvDq8ikWAM' }}
+          FRENCH_VOICE_ID=${{ secrets.FRENCH_VOICE_ID || '84fe56fcc955' }}
+          ENGLISH_VOICE_ID=${{ secrets.ENGLISH_VOICE_ID || 'Isabella' }}
           EOF
 
       - name: Run fix script
