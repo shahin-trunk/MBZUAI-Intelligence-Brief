@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { Pause, Play, Loader2, Sparkles, SkipBack, SkipForward, ChevronLeft, ChevronRight, RotateCw } from "lucide-react";
+import { Pause, Play, Loader2, Sparkles, ChevronLeft, ChevronRight, RotateCw } from "lucide-react";
 import type { BriefItem, LearningPhrase } from "@/lib/types/brief";
-import { useSectionAudio } from "@/hooks/useSectionAudio";
+import { useSectionAudio, killAllPageAudio } from "@/hooks/useSectionAudio";
 import { useLearningAnalytics } from "@/hooks/useLearningAnalytics";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import LearningHeader from "./LearningHeader";
@@ -12,7 +12,6 @@ import PhraseCard from "./PhraseCard";
 import PhraseGrammarDrawer from "./PhraseGrammarDrawer";
 import PhraseNavigationDots from "./PhraseNavigationDots";
 import ImmersiveAudioController from "./ImmersiveAudioController";
-import LearningStats from "./LearningStats";
 import LanguageLearningErrorBoundary from "./LanguageLearningErrorBoundary";
 import LanguageLearningSkeleton from "./LanguageLearningSkeleton";
 
@@ -40,18 +39,9 @@ export default function LanguageLearningView({
   const [completedPhrases, setCompletedPhrases] = useState<Set<number>>(new Set());
   const [expandedPhraseGrammar, setExpandedPhraseGrammar] = useState<number | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [sentencesViewed, setSentencesViewed] = useState<Set<number>>(new Set());
-  const [grammarOpened, setGrammarOpened] = useState(0);
-  const [lessonStartTime] = useState(Date.now());
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionMessage, setTransitionMessage] = useState<string | null>(null);
-  const [selectedSentenceCount, setSelectedSentenceCount] = useState<number>(() => {
-    if (typeof window === "undefined") return 3;
-    try {
-      const saved = localStorage.getItem("ll-sentence-count");
-      return saved ? parseInt(saved, 10) : 3;
-    } catch { return 3; }
-  });
+  const [selectedSentenceCount, setSelectedSentenceCount] = useState(3);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [regenerateMessage, setRegenerateMessage] = useState<string | null>(null);
 
@@ -67,50 +57,6 @@ export default function LanguageLearningView({
   /*  Analytics                                                          */
   /* ------------------------------------------------------------------ */
   const { trackEvent } = useLearningAnalytics(item.id);
-
-  /* ------------------------------------------------------------------ */
-  /*  Progress persistence                                               */
-  /* ------------------------------------------------------------------ */
-  const progressKey = useMemo(() => {
-    if (!item.id) return null;
-    return `ll-progress-${item.id}-${language}`;
-  }, [item.id, language]);
-
-  useEffect(() => {
-    if (!progressKey) return;
-    try {
-      const saved = localStorage.getItem(progressKey);
-      if (saved) {
-        const data = JSON.parse(saved);
-        if (data.completedPhrases?.length > 0) {
-          setCompletedPhrases(new Set(data.completedPhrases));
-        }
-        if (data.isLessonComplete) {
-          setIsLessonComplete(true);
-        }
-        if (data.sentencesViewed?.length > 0) {
-          setSentencesViewed(new Set(data.sentencesViewed));
-        }
-        if (data.grammarOpened) {
-          setGrammarOpened(data.grammarOpened);
-        }
-      }
-    } catch { /* ignore */ }
-  }, [progressKey]);
-
-  useEffect(() => {
-    if (!progressKey) return;
-    try {
-      localStorage.setItem(progressKey, JSON.stringify({
-        completedPhrases: Array.from(completedPhrases),
-        isLessonComplete,
-        sentencesViewed: Array.from(sentencesViewed),
-        grammarOpened,
-        lessonStartTime,
-        timestamp: Date.now(),
-      }));
-    } catch { /* ignore */ }
-  }, [progressKey, completedPhrases, isLessonComplete, sentencesViewed, grammarOpened, lessonStartTime]);
 
   /* ------------------------------------------------------------------ */
   /*  Missing audio check                                                */
@@ -227,7 +173,7 @@ export default function LanguageLearningView({
   const activePhrase = phrases[currentPhraseIndex];
 
   /* ------------------------------------------------------------------ */
-  /*  Phrase transition tracking — (coordinated via handleSectionComplete) */
+  /*  Lesson complete analytics                                          */
   /* ------------------------------------------------------------------ */
 
   useEffect(() => {
@@ -235,17 +181,6 @@ export default function LanguageLearningView({
       trackEvent(language, currentPhraseIndex, currentScriptIndex, "lesson_complete");
     }
   }, [isLessonComplete, language, currentPhraseIndex, currentScriptIndex, trackEvent]);
-
-  useEffect(() => {
-    if (phrases.length > 0 && currentPhraseIndex >= 0 && currentPhraseIndex < phrases.length) {
-      setSentencesViewed((prev) => {
-        if (prev.has(currentPhraseIndex)) return prev;
-        const next = new Set(prev);
-        next.add(currentPhraseIndex);
-        return next;
-      });
-    }
-  }, [currentPhraseIndex, phrases.length]);
 
   const scriptProgress = useMemo(() => {
     const scriptStartIndex = currentPhraseIndex * 3;
@@ -264,11 +199,6 @@ export default function LanguageLearningView({
       audio.playSection(scriptIdx);
       setIsPaused(false);
       setExpandedPhraseGrammar(null);
-      setSentencesViewed((prev) => {
-        const next = new Set(prev);
-        next.add(phraseIdx);
-        return next;
-      });
     },
     [audio],
   );
@@ -334,21 +264,13 @@ export default function LanguageLearningView({
   const handleLanguageChange = useCallback(
     (lang: LearnLang) => {
       audio.pause();
-      if (typeof window !== 'undefined') {
-        document.querySelectorAll("audio").forEach((el) => {
-          el.pause();
-          el.removeAttribute("src");
-          el.load();
-        });
-      }
+      killAllPageAudio();
       setLanguage(lang);
       setCompletedPhrases(new Set());
       setIsLessonComplete(false);
       setIsPaused(false);
       setExpandedPhraseGrammar(null);
       setShowCelebration(false);
-      setSentencesViewed(new Set());
-      setGrammarOpened(0);
       hasStartedRef.current = false;
     },
     [audio],
@@ -364,19 +286,11 @@ export default function LanguageLearningView({
     audio.playSection(0);
   }, [audio, language, trackEvent]);
 
-  const handleResetProgress = useCallback(() => {
-    if (progressKey) {
-      try { localStorage.removeItem(progressKey); } catch { /* ignore */ }
-    }
-    handleReplay();
-  }, [progressKey, handleReplay]);
-
   const handleGrammarToggle = useCallback(
     (phraseIdx: number | null) => {
       setExpandedPhraseGrammar(phraseIdx);
       if (phraseIdx !== null) {
         trackEvent(language, phraseIdx, currentScriptIndex, "grammar_open");
-        setGrammarOpened((prev) => prev + 1);
       }
     },
     [language, currentScriptIndex, trackEvent],
@@ -387,7 +301,6 @@ export default function LanguageLearningView({
   /* ------------------------------------------------------------------ */
   const handleSentenceCountChange = useCallback((count: number) => {
     setSelectedSentenceCount(count);
-    try { localStorage.setItem("ll-sentence-count", String(count)); } catch { /* ignore */ }
   }, []);
 
   const handleRegenerate = useCallback(async () => {
@@ -452,13 +365,13 @@ export default function LanguageLearningView({
 
   if (!currentContent || phrases.length === 0) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950 px-6">
+      <div className="flex min-h-screen items-center justify-center bg-bg-primary px-6">
         <div className="mx-auto max-w-md text-center">
-          <h1 className="font-display text-xl text-gray-200">Content not available</h1>
-          <p className="mt-3 font-body text-sm text-gray-500">
+          <h1 className="font-display text-xl text-text-primary">Content not available</h1>
+          <p className="mt-3 font-body text-sm text-text-secondary">
             Learning content for {language === "fr" ? "French" : "Arabic"} is not available for this item.
           </p>
-          <a href={backHref} className="mt-6 inline-block rounded-full border border-gray-700 bg-gray-900/50 px-5 py-2.5 font-ui text-sm text-indigo-400 transition-colors hover:bg-gray-800/50">
+          <a href={backHref} className="mt-6 inline-flex items-center rounded-full border border-rule bg-bg-surface px-5 py-2.5 font-ui text-sm text-accent-primary transition-colors hover:bg-bg-surface-2">
             Back to briefing
           </a>
         </div>
@@ -488,7 +401,7 @@ export default function LanguageLearningView({
   return (
     <LanguageLearningErrorBoundary>
       <div
-        className="min-h-screen flex flex-col bg-gray-950 text-gray-100"
+        className="min-h-screen flex flex-col bg-bg-primary text-text-primary"
         dir={language === "ar" ? "rtl" : "ltr"}
       >
         {/* Top progress bar */}
@@ -518,8 +431,8 @@ export default function LanguageLearningView({
         {/* Missing audio warning */}
         {hasMissingAudio && (
           <div className="px-5 py-2">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/5 border border-amber-500/15">
-              <span className="text-[10px] text-amber-400/70 font-ui">Audio is being generated. Text available.</span>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent-warning/5 border border-accent-warning/15">
+              <span className="text-[10px] text-accent-warning/70 font-ui">Audio is being generated. Text available.</span>
             </div>
           </div>
         )}
@@ -527,20 +440,20 @@ export default function LanguageLearningView({
         {/* Sentence count selector — visible when content exists but lesson hasn't started */}
         {!isLessonComplete && phrases.length > 0 && !hasStartedRef.current && (
           <div className="px-5 py-3">
-            <div className="flex flex-wrap items-center justify-center gap-3 rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-3">
-              <span className="font-ui text-[10px] uppercase tracking-wider text-gray-500">
+            <div className="flex flex-wrap items-center justify-center gap-3 rounded-xl bg-bg-surface border border-rule px-4 py-3">
+              <span className="font-ui text-[10px] uppercase tracking-wider text-text-muted">
                 Sentences
               </span>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 {[2, 3, 4, 5, 6].map((n) => (
                   <button
                     key={n}
                     type="button"
                     onClick={() => handleSentenceCountChange(n)}
-                    className={`flex h-7 w-7 items-center justify-center rounded-full font-ui text-[11px] font-medium transition-all ${
+                    className={`flex h-9 w-9 sm:h-7 sm:w-7 items-center justify-center rounded-full font-ui text-[13px] sm:text-[11px] font-medium transition-all ${
                       selectedSentenceCount === n
-                        ? "bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/30"
-                        : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
+                        ? "bg-accent/15 text-accent-primary ring-1 ring-accent/30"
+                        : "text-text-muted hover:text-text-secondary hover:bg-bg-surface-2"
                     }`}
                   >
                     {n}
@@ -549,12 +462,12 @@ export default function LanguageLearningView({
               </div>
               {selectedSentenceCount !== phrases.length && (
                 <>
-                  <div className="hidden sm:block h-4 w-px bg-white/10" />
+                  <div className="hidden sm:block h-4 w-px bg-rule" />
                   <button
                     type="button"
                     onClick={handleRegenerate}
                     disabled={isRegenerating}
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 font-ui text-[10px] font-medium text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-all disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 font-ui text-[10px] font-medium text-accent-primary hover:text-accent-primary hover:bg-accent/10 transition-all disabled:opacity-50"
                   >
                     {isRegenerating ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -568,7 +481,7 @@ export default function LanguageLearningView({
             </div>
             {regenerateMessage && (
               <div className="mt-2 text-center">
-                <span className="font-ui text-[10px] text-indigo-400/70">{regenerateMessage}</span>
+                <span className="font-ui text-[10px] text-accent-primary/70">{regenerateMessage}</span>
               </div>
             )}
           </div>
@@ -577,7 +490,7 @@ export default function LanguageLearningView({
         {/* MAIN CONTENT */}
         <div className="flex-1 flex flex-col" style={{ paddingBottom: "160px" }}>
           <div
-            className="relative flex-1 flex flex-col items-center justify-start px-5 sm:px-8 lg:px-0 py-6 sm:py-8 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] xl:max-w-[700px] select-none"
+            className="relative flex-1 flex flex-col items-center justify-start px-5 sm:px-8 lg:px-0 py-8 sm:py-12 w-full mx-auto sm:max-w-[560px] lg:max-w-[620px] xl:max-w-[700px] select-none"
             onClick={handleTapToggle}
             role="button"
             tabIndex={-1}
@@ -586,12 +499,12 @@ export default function LanguageLearningView({
             {showCelebration && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 animate-in fade-in duration-500">
                 <div className="relative">
-                  <Sparkles className="w-16 h-16 text-indigo-400/20" />
+                  <Sparkles className="w-16 h-16 text-accent-primary/15" />
                   <div className="absolute -top-4 -left-4 animate-in spin-in duration-700">
-                    <Sparkles className="w-5 h-5 text-yellow-400/60" />
+                    <Sparkles className="w-5 h-5 text-accent-warning/60" />
                   </div>
                   <div className="absolute -bottom-2 -right-4 animate-in spin-in duration-700 delay-200">
-                    <Sparkles className="w-4 h-4 text-amber-400/60" />
+                    <Sparkles className="w-4 h-4 text-accent-warning/60" />
                   </div>
                 </div>
               </div>
@@ -600,21 +513,21 @@ export default function LanguageLearningView({
             {/* Pause indicator */}
             {isPaused && !isLessonComplete && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/5 border border-white/10 backdrop-blur-sm animate-in fade-in duration-150">
-                  <Pause className="h-6 w-6 text-gray-400" />
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-bg-surface border border-rule shadow-lg animate-in fade-in zoom-in duration-200">
+                  <Pause className="h-7 w-7 text-text-secondary" />
                 </div>
               </div>
             )}
 
             {/* Transition overlay — shows upcoming sentence preview */}
             {isTransitioning && transitionMessage && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20 animate-in fade-in duration-300">
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20 animate-in fade-in duration-500">
                 <div className="text-center">
-                  <span className="font-ui text-[9px] uppercase tracking-[0.2em] text-indigo-400/60 block mb-3">
+                  <span className="font-ui text-[9px] uppercase tracking-[0.2em] text-accent-primary/60 block mb-4">
                     Next sentence
                   </span>
-                  <div className="w-16 h-px bg-gradient-to-r from-transparent via-indigo-400/30 to-transparent mb-4" />
-                  <p className="font-body text-[13px] text-gray-400 italic leading-relaxed max-w-xs mx-auto">
+                  <div className="w-20 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent mb-5 mx-auto" />
+                  <p className="font-body text-[13px] text-text-secondary italic leading-relaxed max-w-xs mx-auto px-4">
                     {transitionMessage}
                   </p>
                 </div>
@@ -658,36 +571,33 @@ export default function LanguageLearningView({
               />
             )}
 
-            {/* Completion state */}
+            {/* Completion state — simplified, no persistence */}
             {isLessonComplete && (
-              <div className="text-center animate-in fade-in slide-in-from-bottom-8 duration-700 mt-12">
-                <div className="mb-6 flex justify-center">
-                  <div className="w-20 h-20 rounded-full bg-indigo-500/10 flex items-center justify-center">
-                    <Sparkles className="w-10 h-10 text-indigo-400" />
+              <div className="text-center animate-in fade-in slide-in-from-bottom-8 duration-700 mt-16 w-full max-w-sm mx-auto">
+                <div className="mb-8 flex justify-center">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center animate-in zoom-in duration-500">
+                      <Sparkles className="w-9 h-9 text-accent-primary" strokeWidth={1.5} />
+                    </div>
+                    <div className="absolute -inset-1 rounded-full bg-accent/5 animate-in zoom-in duration-700" />
                   </div>
                 </div>
-                <h2 className="font-display text-2xl text-gray-100 mb-2 font-semibold">Lesson Complete</h2>
-                <p className="font-body text-base text-gray-500 mb-1">All {phrases.length} sentence{phrases.length > 1 ? "s" : ""} practiced.</p>
-                <p className="font-body text-sm text-gray-600 mb-6">{completedPhrases.size} / {phrases.length} mastered</p>
+                <h2 className="font-display text-[28px] text-text-primary mb-2 font-semibold tracking-tight">Lesson Complete</h2>
+                <p className="font-body text-sm text-text-muted mb-10 leading-relaxed" dir="ltr">
+                  {phrases.length} sentence{phrases.length > 1 ? "s" : ""} practiced in {language === "fr" ? "French" : "Arabic"}
+                </p>
 
-                <LearningStats
-                  totalPhrases={phrases.length}
-                  completedPhrases={completedPhrases.size}
-                  totalDuration={currentContent?.total_duration_seconds}
-                  language={language}
-                  sentencesViewed={sentencesViewed.size}
-                  grammarOpened={grammarOpened}
-                  startTime={lessonStartTime}
-                />
-
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6">
-                  <button onClick={handleReplay} className="w-full sm:w-auto rounded-full bg-indigo-500 px-8 py-3 font-ui text-sm font-medium text-white hover:bg-indigo-400 transition-colors active:scale-95">
+                <div className="flex flex-col gap-2.5">
+                  <button
+                    onClick={handleReplay}
+                    className="w-full rounded-full bg-accent-primary px-6 py-3 font-ui text-sm font-medium text-accent-foreground hover:bg-accent-hover transition-colors active:scale-[0.98]"
+                  >
                     Replay Lesson
                   </button>
-                  <button onClick={handleResetProgress} className="w-full sm:w-auto rounded-full border border-gray-700 bg-gray-900/50 px-8 py-3 font-ui text-sm font-medium text-gray-300 hover:bg-gray-800/50 transition-colors active:scale-95">
-                    Reset Progress
-                  </button>
-                  <a href={backHref} className="w-full sm:w-auto rounded-full border border-gray-700 bg-gray-900/50 px-8 py-3 font-ui text-sm font-medium text-gray-300 hover:bg-gray-800/50 transition-colors active:scale-95 text-center">
+                  <a
+                    href={backHref}
+                    className="w-full rounded-full border border-rule bg-bg-surface px-6 py-3 font-ui text-sm font-medium text-text-secondary hover:bg-bg-surface-2 transition-colors active:scale-[0.98] text-center inline-flex items-center justify-center"
+                  >
                     Back to briefing
                   </a>
                 </div>
@@ -697,25 +607,25 @@ export default function LanguageLearningView({
         </div>
 
         {/* ================================================================ */}
-        {/*  ELEGANT BOTTOM CONTROLS: Counter + Nav Dots + Playback           */}
+        {/*  BOTTOM CONTROLS: Counter + Nav Dots + Playback                  */}
         {/* ================================================================ */}
         {!isLessonComplete && (
           <div className="fixed bottom-0 left-0 right-0 z-40"
                style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))" }}>
-            {/* Glass container */}
-            <div className="mx-3 sm:mx-auto sm:max-w-lg rounded-2xl bg-gray-900/80 backdrop-blur-xl border border-gray-800/40 shadow-2xl">
+            {/* Container */}
+            <div className="mx-4 sm:mx-auto sm:max-w-lg rounded-2xl bg-bg-surface border border-rule shadow-lg">
               {/* Lesson counter + label row */}
               <div className="flex items-center justify-between px-5 pt-2.5 pb-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="font-ui text-[11px] font-medium text-indigo-300 tabular-nums">
+                  <span className="font-ui text-[11px] font-medium text-accent-primary tabular-nums" dir="ltr">
                     {currentPhraseIndex + 1} / {phrases.length}
                   </span>
-                  <span className="font-ui text-[9px] text-gray-500 uppercase tracking-wider">
+                  <span className="font-ui text-[9px] text-text-muted uppercase tracking-wider">
                     {scriptLabels[currentScriptIndex]}
                   </span>
                 </div>
-                <span className="font-ui text-[10px] text-gray-500 tabular-nums">
-                  {fmt(audio.currentTime)} / {fmt(audio.duration > 0 ? audio.duration : (scriptDurations[audio.currentSectionIndex] || 0))}
+                <span className="font-ui text-[10px] text-text-muted tabular-nums" dir="ltr">
+                  {fmt(audio.currentTime)} / {fmt(audio.duration > 0 && isFinite(audio.duration) ? Math.max(audio.duration, audio.currentTime) : (scriptDurations[audio.currentSectionIndex] || 0))}
                 </span>
               </div>
 
@@ -736,7 +646,7 @@ export default function LanguageLearningView({
                 <button
                   onClick={() => { if (currentPhraseIndex > 0) handlePhraseSelect(currentPhraseIndex - 1); }}
                   disabled={currentPhraseIndex <= 0}
-                  className="flex items-center justify-center w-9 h-9 rounded-full text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-full text-text-muted hover:text-text-secondary hover:bg-bg-surface-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                   aria-label="Previous sentence"
                 >
                   <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
@@ -746,16 +656,16 @@ export default function LanguageLearningView({
                 <button
                   onClick={handleTapToggle}
                   disabled={!hasAnyAudio}
-                  className="flex items-center justify-center w-13 h-13 rounded-full bg-indigo-500 text-white hover:bg-indigo-400 active:scale-95 transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center rounded-full bg-accent-primary text-accent-foreground hover:bg-accent-hover active:scale-95 transition-all shadow-lg shadow-accent-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ width: "52px", height: "52px" }}
                   aria-label={isPaused || !audio.isPlaying ? "Play" : "Pause"}
                 >
                   {audio.isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : isPaused || !audio.isPlaying ? (
-                    <Play className="w-5 h-5 ml-0.5" fill="white" strokeWidth={1.5} />
+                    <Play className="w-5 h-5 ml-0.5" fill="currentColor" strokeWidth={1.5} />
                   ) : (
-                    <Pause className="w-5 h-5" fill="white" strokeWidth={1.5} />
+                    <Pause className="w-5 h-5" fill="currentColor" strokeWidth={1.5} />
                   )}
                 </button>
 
@@ -769,7 +679,7 @@ export default function LanguageLearningView({
                     }
                   }}
                   disabled={currentPhraseIndex >= phrases.length - 1 && !(!audio.isPlaying && !isPaused)}
-                  className="flex items-center justify-center w-9 h-9 rounded-full text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-full text-text-muted hover:text-text-secondary hover:bg-bg-surface-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                   aria-label="Next sentence"
                 >
                   <ChevronRight className="w-5 h-5" strokeWidth={1.5} />

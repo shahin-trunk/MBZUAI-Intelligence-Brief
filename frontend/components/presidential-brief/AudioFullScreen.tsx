@@ -4,6 +4,7 @@ import { ChevronDown, Loader2, Pause, Play, RotateCcw, RotateCw } from "lucide-r
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { AudioPlayerState, AudioPlayerActions } from "@/lib/presidential-brief/hooks/useAudioPlayer";
 import { formatBriefDateShort, formatTime } from "@/lib/utils";
+import { LanguageSelector } from "@/components/common/LanguageSelector";
 
 const MOCK_TRANSCRIPT =
   "Today's MBZUAI Intelligence Brief. April 6th, 2026. 8 stories.\n\nUAE. The UAE government announced a 2 billion dollar sovereign AI fund targeting regional startups, with initial deployment expected in Q3. ADNOC signed a multi-year research agreement with Google DeepMind for industrial AI applications.\n\nInternational Politics. The EU AI Act enforcement timeline has been accelerated to January 2027, compressing the compliance window by six months. China unveiled a national AI compute infrastructure plan spanning 10 provinces.\n\nModel Releases. Meta open-sourced Llama 4 Maverick, a 400 billion parameter mixture of experts model with 128 expert modules. Google DeepMind achieved a 10x protein folding speed improvement.\n\nEnd of brief.";
@@ -70,6 +71,8 @@ interface AudioFullScreenProps {
   transcript?: string;
   /** Used when audio language is French. Falls back to `transcript` if omitted. */
   transcriptFr?: string;
+  /** Used when audio language is Arabic. Falls back to `transcript` if omitted. */
+  transcriptAr?: string;
   onClose: () => void;
   linkedStoryIds?: string[];
   onOpenStoryDetail?: (itemId: string) => void;
@@ -82,6 +85,7 @@ export default function AudioFullScreen({
   briefDate,
   transcript,
   transcriptFr,
+  transcriptAr,
   onClose,
   linkedStoryIds,
   onOpenStoryDetail,
@@ -97,6 +101,7 @@ export default function AudioFullScreen({
     language,
     hasEnglishAudio,
     hasFrenchAudio,
+    hasArabicAudio,
     currentTime,
     togglePlayPause,
     seek,
@@ -195,7 +200,11 @@ export default function AudioFullScreen({
   }, [behindStoryDetail, closeWithAnimation, skipBack, skipForward]);
 
   const scriptRaw =
-    language === "fr" ? (transcriptFr?.trim() ? transcriptFr : transcript) : transcript;
+    language === "ar"
+      ? (transcriptAr?.trim() ? transcriptAr : transcript)
+      : language === "fr"
+        ? (transcriptFr?.trim() ? transcriptFr : transcript)
+        : transcript;
   const displayTranscript = scriptRaw?.trim()
     ? stripSsmlForDisplay(scriptRaw)
     : MOCK_TRANSCRIPT;
@@ -569,38 +578,12 @@ export default function AudioFullScreen({
                 </div>
 
                 <div className="flex min-w-0 justify-end">
-                  <div
-                    className="inline-flex min-h-10 items-center rounded-full border border-rule bg-bg-surface p-1 shadow-sm"
-                    role="group"
-                    aria-label="Audio language"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setLanguage("en")}
-                      disabled={!hasEnglishAudio}
-                      aria-pressed={language === "en"}
-                      className={`min-h-8 min-w-[2.5rem] rounded-full px-2.5 py-1.5 font-ui text-[13px] font-semibold transition-colors sm:min-w-[3.1rem] sm:px-3 ${
-                        language === "en"
-                          ? "bg-accent text-white"
-                          : "text-text-primary hover:bg-bg-surface-2"
-                      } ${!hasEnglishAudio ? "cursor-not-allowed opacity-40 hover:bg-transparent" : ""}`}
-                    >
-                      EN
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLanguage("fr")}
-                      disabled={!hasFrenchAudio}
-                      aria-pressed={language === "fr"}
-                      className={`min-h-8 min-w-[2.5rem] rounded-full px-2.5 py-1.5 font-ui text-[13px] font-semibold transition-colors sm:min-w-[3.1rem] sm:px-3 ${
-                        language === "fr"
-                          ? "bg-accent text-white"
-                          : "text-text-primary hover:bg-bg-surface-2"
-                      } ${!hasFrenchAudio ? "cursor-not-allowed opacity-40 hover:bg-transparent" : ""}`}
-                    >
-                      FR
-                    </button>
-                  </div>
+                  <LanguageSelector
+                    language={language}
+                    onLanguageChange={setLanguage}
+                    availability={{ en: true, fr: hasFrenchAudio, ar: hasArabicAudio }}
+                    size="md"
+                  />
                 </div>
               </div>
             </div>

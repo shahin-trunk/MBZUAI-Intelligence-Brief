@@ -52,9 +52,10 @@ export default function BriefViewRouter({
   const hasAudio = Boolean(
     brief.audio_url ||
     brief.audio_url_fr ||
+    brief.audio_url_ar ||
     brief.items.some((item) => item.audio_url)
   );
-  const player = useAudioPlayer(brief.audio_url, brief.audio_url_fr);
+  const player = useAudioPlayer(brief.audio_url, brief.audio_url_fr, brief.audio_url_ar);
 
   // Build per-item audio URL map from brief items
   const itemUrlMap = useMemo(() => {
@@ -132,6 +133,7 @@ export default function BriefViewRouter({
           briefDate={brief.brief_date}
           transcript={brief.audio_script}
           transcriptFr={brief.audio_script_fr}
+          transcriptAr={brief.audio_script_ar}
           onClose={() => {
             setAudioExpanded(false);
             setAudioBehindStoryDetail(false);

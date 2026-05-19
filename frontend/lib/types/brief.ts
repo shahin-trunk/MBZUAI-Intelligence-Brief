@@ -37,6 +37,8 @@ export interface Brief {
   audio_script?: string;
   audio_url_fr?: string;
   audio_script_fr?: string;
+  audio_url_ar?: string;
+  audio_script_ar?: string;
   audio_segments?: AudioSegment[];
 }
 

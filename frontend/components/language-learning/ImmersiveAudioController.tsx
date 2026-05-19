@@ -19,7 +19,7 @@ const ImmersiveAudioController = memo(function ImmersiveAudioController({
   return (
     <div className="fixed top-0 left-0 right-0 z-50" role="banner" aria-label="Lesson progress">
       <div
-        className="h-[2px] bg-gray-800/20"
+        className="h-[2px] bg-rule/50"
         role="progressbar"
         aria-label={`Lesson progress: ${Math.round(pct)}%`}
         aria-valuenow={Math.round(pct)}
@@ -27,11 +27,11 @@ const ImmersiveAudioController = memo(function ImmersiveAudioController({
         aria-valuemax={100}
       >
         <div
-          className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-[width] duration-500 ease-out relative"
+          className="h-full bg-accent-primary transition-[width] duration-500 ease-out relative"
           style={{ width: `${pct}%` }}
         >
           {isLoading && (
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-white/70 animate-pulse" aria-hidden="true" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-accent-foreground/70 animate-pulse" aria-hidden="true" />
           )}
         </div>
       </div>

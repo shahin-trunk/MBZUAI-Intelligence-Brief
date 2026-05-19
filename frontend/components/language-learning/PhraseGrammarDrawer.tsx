@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { Play, Pause, X, Loader2, AlertCircle, ChevronDown } from "lucide-react";
 import type { PhraseGrammar } from "@/lib/types/brief";
-import { registerAudio, unregisterAudio, killAllPageAudio } from "@/hooks/useSectionAudio";
+import { registerAudio, unregisterAudio, killAllPageAudio, GLOBAL_AUDIO_REGISTRY } from "@/hooks/useSectionAudio";
 
 interface PhraseGrammarDrawerProps {
   grammar: PhraseGrammar;
@@ -92,10 +92,29 @@ export default function PhraseGrammarDrawer({
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      killAllPageAudio();
+      // Pause all OTHER audio elements but preserve this drawer's own
+      document.querySelectorAll("audio").forEach((el) => {
+        el.pause();
+        el.removeAttribute("src");
+        el.load();
+      });
+      GLOBAL_AUDIO_REGISTRY.forEach((other) => {
+        if (other !== audioRef.current) {
+          try {
+            other.pause();
+            other.removeAttribute("src");
+            other.load();
+          } catch {
+            // already destroyed
+          }
+        }
+      });
+      // Ensure this audio is in the registry
       registerAudio(audioRef.current);
-      audioRef.current.play();
-      setIsPlaying(true);
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {
+        setIsPlaying(false);
+      });
     }
   }, [isPlaying]);
 
@@ -152,7 +171,7 @@ export default function PhraseGrammarDrawer({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 animate-in fade-in duration-300"
+        className="fixed inset-0 bg-black/50 z-40 animate-in fade-in duration-300"
         onClick={onToggle}
         aria-hidden="true"
       />
@@ -173,40 +192,40 @@ export default function PhraseGrammarDrawer({
         aria-label="Grammar deep dive"
       >
         {/* Mobile */}
-        <div className="sm:hidden bg-gray-950 border-t border-gray-800/50 rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl">
+        <div className="sm:hidden bg-bg-primary border-t border-rule rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl">
           {/* Handle */}
-          <div className="flex justify-center py-3 border-b border-gray-800/20">
-            <div className="w-10 h-1 rounded-full bg-gray-700/40" />
+          <div className="flex justify-center py-3 border-b border-rule/50">
+            <div className="w-10 h-1 rounded-full bg-rule" />
           </div>
 
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800/20">
-            <h3 className="font-ui text-xs font-semibold text-gray-300 uppercase tracking-wider">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-rule/50">
+            <h3 className="font-ui text-xs font-semibold text-text-secondary uppercase tracking-wider">
               Deep Dive
             </h3>
             <button
               onClick={onToggle}
-              className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-800/50 transition-colors"
+              className="flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-full hover:bg-bg-surface-2 transition-colors"
               aria-label="Close"
             >
-              <X className="w-4 h-4 text-gray-400" />
+              <X className="w-4 h-4 text-text-muted" />
             </button>
           </div>
 
           {/* Script4 audio */}
           {script4AudioUrl && (
-            <div className="px-5 py-3 border-b border-gray-800/20">
+            <div className="px-5 py-3 border-b border-rule/50">
               {hasError ? (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/5 border border-red-500/20">
-                  <AlertCircle className="w-3.5 h-3.5 text-red-400/70 shrink-0" />
-                  <p className="text-[11px] text-gray-400">Audio unavailable</p>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent-danger/5 border border-accent-danger/20">
+                  <AlertCircle className="w-3.5 h-3.5 text-accent-danger/70 shrink-0" />
+                  <p className="text-[11px] text-text-secondary">Audio unavailable</p>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
                   <button
                     onClick={togglePlay}
                     disabled={isLoading}
-                    className="flex items-center justify-center w-9 h-9 rounded-full bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-colors shrink-0 disabled:opacity-50"
+                    className="flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-accent/10 text-accent-primary hover:bg-accent/20 transition-colors shrink-0 disabled:opacity-50"
                     aria-label={isPlaying ? "Pause" : "Play"}
                   >
                     {isLoading ? (
@@ -218,15 +237,15 @@ export default function PhraseGrammarDrawer({
                     )}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <div className="h-1 bg-gray-800/40 rounded-full overflow-hidden">
+                    <div className="h-1 bg-rule rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-indigo-500 transition-all duration-200 rounded-full"
+                        className="h-full bg-accent-primary transition-all duration-200 rounded-full"
                         style={{ width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%" }}
                       />
                     </div>
                     <div className="flex justify-between mt-1">
-                      <span className="text-[9px] text-gray-500 font-mono">{formatTime(currentTime)}</span>
-                      <span className="text-[9px] text-gray-500 font-mono">{formatTime(duration)}</span>
+                      <span className="text-[9px] text-text-muted font-mono">{formatTime(currentTime)}</span>
+                      <span className="text-[9px] text-text-muted font-mono">{formatTime(duration)}</span>
                     </div>
                   </div>
                 </div>
@@ -236,21 +255,21 @@ export default function PhraseGrammarDrawer({
 
           {/* Script4 narration */}
           {script4Text && (
-            <div className="px-5 py-4 border-b border-gray-800/20 bg-indigo-500/[0.03]">
-              <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-indigo-400/60 block mb-2">
+            <div className="px-5 py-4 border-b border-rule/50 bg-accent/[0.03]">
+              <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-accent-primary/60 block mb-2">
                 Narration
               </span>
-              <p className="font-body text-[13px] text-gray-300 leading-relaxed">
+              <p className="font-body text-[13px] text-text-secondary leading-relaxed">
                 {script4Text}
               </p>
             </div>
           )}
 
           {/* Grammar fields */}
-          <div className="divide-y divide-gray-800/10 overflow-y-auto flex-1" style={{ maxHeight: "calc(85vh - 220px)" }}>
+          <div className="divide-y divide-rule/10 overflow-y-auto flex-1" style={{ maxHeight: "calc(85vh - 220px)" }}>
             {activeFields.length > 0 && (
               <div className="px-5 py-2">
-                <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-gray-500">
+                <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-text-muted">
                   Grammar Breakdown
                 </span>
               </div>
@@ -260,16 +279,16 @@ export default function PhraseGrammarDrawer({
               if (key === "key_words" && Array.isArray(value)) {
                 return (
                   <div key={key} className="px-5 py-3 animate-in fade-in duration-300" style={{ animationDelay: `${idx * 80}ms` }}>
-                    <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-gray-500 block mb-2.5">
+                    <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-text-muted block mb-2.5">
                       {label}
                     </span>
                     <div className="space-y-2">
                       {value.map((kw, i) => (
                         <div key={i} className="flex items-baseline gap-2">
-                          <code className="font-mono text-[12px] text-indigo-300 font-semibold" dir={language === "ar" ? "rtl" : "ltr"}>
+                          <code className="font-mono text-[12px] text-accent-primary font-semibold" dir={language === "ar" ? "rtl" : "ltr"}>
                             {kw.word}
                           </code>
-                          <span className="font-body text-[11px] text-gray-400">— {kw.note}</span>
+                          <span className="font-body text-[11px] text-text-muted">— {kw.note}</span>
                         </div>
                       ))}
                     </div>
@@ -278,10 +297,10 @@ export default function PhraseGrammarDrawer({
               }
               return (
                 <div key={key} className="px-5 py-3 animate-in fade-in duration-300" style={{ animationDelay: `${idx * 80}ms` }}>
-                  <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-gray-500 block mb-1">
+                  <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-text-muted block mb-1">
                     {label}
                   </span>
-                  <p dir={language === "ar" ? "rtl" : "ltr"} className="font-body text-[12px] text-gray-300 leading-relaxed">
+                  <p dir={language === "ar" ? "rtl" : "ltr"} className="font-body text-[12px] text-text-secondary leading-relaxed">
                     {String(value)}
                   </p>
                 </div>
@@ -293,35 +312,35 @@ export default function PhraseGrammarDrawer({
         </div>
 
         {/* Desktop */}
-        <div className="hidden sm:block rounded-2xl border border-gray-800/50 bg-gray-950/90 backdrop-blur-sm overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800/20">
-            <h3 className="font-ui text-xs font-semibold text-gray-300 uppercase tracking-wider">
+        <div className="hidden sm:block rounded-2xl border border-rule bg-bg-primary overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-rule/50">
+            <h3 className="font-ui text-xs font-semibold text-text-secondary uppercase tracking-wider">
               Deep Dive
             </h3>
-            <button onClick={onToggle} className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-800/50 transition-colors" aria-label="Close">
-              <X className="w-4 h-4 text-gray-400" />
+            <button onClick={onToggle} className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-bg-surface-2 transition-colors" aria-label="Close">
+              <X className="w-4 h-4 text-text-muted" />
             </button>
           </div>
 
           {script4AudioUrl && (
-            <div className="px-5 py-3 border-b border-gray-800/20">
+            <div className="px-5 py-3 border-b border-rule/50">
               {hasError ? (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/5 border border-red-500/20">
-                  <AlertCircle className="w-3.5 h-3.5 text-red-400/70 shrink-0" />
-                  <p className="text-[11px] text-gray-400">Audio unavailable</p>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent-danger/5 border border-accent-danger/20">
+                  <AlertCircle className="w-3.5 h-3.5 text-accent-danger/70 shrink-0" />
+                  <p className="text-[11px] text-text-secondary">Audio unavailable</p>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <button onClick={togglePlay} disabled={isLoading} className="flex items-center justify-center w-9 h-9 rounded-full bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-colors shrink-0 disabled:opacity-50" aria-label={isPlaying ? "Pause" : "Play"}>
+                  <button onClick={togglePlay} disabled={isLoading} className="flex items-center justify-center w-9 h-9 rounded-full bg-accent/10 text-accent-primary hover:bg-accent/20 transition-colors shrink-0 disabled:opacity-50" aria-label={isPlaying ? "Pause" : "Play"}>
                     {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <div className="h-1 bg-gray-800/40 rounded-full overflow-hidden">
-                      <div className="h-full bg-indigo-500 transition-all duration-200 rounded-full" style={{ width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%" }} />
+                    <div className="h-1 bg-rule rounded-full overflow-hidden">
+                      <div className="h-full bg-accent-primary transition-all duration-200 rounded-full" style={{ width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%" }} />
                     </div>
                     <div className="flex justify-between mt-1">
-                      <span className="text-[9px] text-gray-500 font-mono">{formatTime(currentTime)}</span>
-                      <span className="text-[9px] text-gray-500 font-mono">{formatTime(duration)}</span>
+                      <span className="text-[9px] text-text-muted font-mono">{formatTime(currentTime)}</span>
+                      <span className="text-[9px] text-text-muted font-mono">{formatTime(duration)}</span>
                     </div>
                   </div>
                 </div>
@@ -330,16 +349,16 @@ export default function PhraseGrammarDrawer({
           )}
 
           {script4Text && (
-            <div className="px-5 py-4 border-b border-gray-800/20 bg-indigo-500/[0.03]">
-              <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-indigo-400/60 block mb-2">Narration</span>
-              <p className="font-body text-[13px] text-gray-300 leading-relaxed">{script4Text}</p>
+            <div className="px-5 py-4 border-b border-rule/50 bg-accent/[0.03]">
+              <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-accent-primary/60 block mb-2">Narration</span>
+              <p className="font-body text-[13px] text-text-secondary leading-relaxed">{script4Text}</p>
             </div>
           )}
 
-          <div className="divide-y divide-gray-800/10 max-h-[50vh] overflow-y-auto">
+          <div className="divide-y divide-rule/10 max-h-[50vh] overflow-y-auto">
             {activeFields.length > 0 && (
               <div className="px-5 py-2">
-                <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-gray-500">Grammar Breakdown</span>
+                <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-text-muted">Grammar Breakdown</span>
               </div>
             )}
             {activeFields.map(({ key, label }, idx) => {
@@ -347,12 +366,12 @@ export default function PhraseGrammarDrawer({
               if (key === "key_words" && Array.isArray(value)) {
                 return (
                   <div key={key} className="px-5 py-3 animate-in fade-in duration-300" style={{ animationDelay: `${idx * 80}ms` }}>
-                    <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-gray-500 block mb-2.5">{label}</span>
+                    <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-text-muted block mb-2.5">{label}</span>
                     <div className="space-y-2">
                       {value.map((kw, i) => (
                         <div key={i} className="flex items-baseline gap-2">
-                          <code className="font-mono text-[12px] text-indigo-300 font-semibold" dir={language === "ar" ? "rtl" : "ltr"}>{kw.word}</code>
-                          <span className="font-body text-[11px] text-gray-400">— {kw.note}</span>
+                          <code className="font-mono text-[12px] text-accent-primary font-semibold" dir={language === "ar" ? "rtl" : "ltr"}>{kw.word}</code>
+                          <span className="font-body text-[11px] text-text-muted">— {kw.note}</span>
                         </div>
                       ))}
                     </div>
@@ -361,15 +380,15 @@ export default function PhraseGrammarDrawer({
               }
               return (
                 <div key={key} className="px-5 py-3 animate-in fade-in duration-300" style={{ animationDelay: `${idx * 80}ms` }}>
-                  <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-gray-500 block mb-1">{label}</span>
-                  <p dir={language === "ar" ? "rtl" : "ltr"} className="font-body text-[12px] text-gray-300 leading-relaxed">{String(value)}</p>
+                  <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-text-muted block mb-1">{label}</span>
+                  <p dir={language === "ar" ? "rtl" : "ltr"} className="font-body text-[12px] text-text-secondary leading-relaxed">{String(value)}</p>
                 </div>
               );
             })}
           </div>
 
-          <div className="flex justify-center px-5 py-3 border-t border-gray-800/10">
-            <button onClick={onToggle} className="flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-300 transition-colors">
+          <div className="flex justify-center px-5 py-3 border-t border-rule/10">
+            <button onClick={onToggle} className="flex items-center gap-1 text-[11px] text-text-muted hover:text-text-secondary transition-colors">
               <ChevronDown className="w-3.5 h-3.5" />
               <span>Close</span>
             </button>

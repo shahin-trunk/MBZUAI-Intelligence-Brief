@@ -44,7 +44,7 @@ async function fetchBrief(date: string) {
     const { data, error } = await supabase
       .from("briefs")
       .select(
-        "raw_json, brief_date, audio_url, audio_script, audio_url_fr, audio_script_fr, audio_status, generated_at, item_count, sources_consulted, items_reviewed, pipeline_cost_usd, executive_summary"
+        "raw_json, brief_date, audio_url, audio_script, audio_url_fr, audio_script_fr, audio_url_ar, audio_script_ar, audio_status, generated_at, item_count, sources_consulted, items_reviewed, pipeline_cost_usd, executive_summary"
       )
       .order("brief_date", { ascending: false })
       .limit(1)
@@ -60,7 +60,7 @@ async function fetchBrief(date: string) {
   const { data, error } = await supabase
     .from("briefs")
     .select(
-      "raw_json, brief_date, audio_url, audio_script, audio_url_fr, audio_script_fr, audio_status, generated_at, item_count, sources_consulted, items_reviewed, pipeline_cost_usd, executive_summary"
+      "raw_json, brief_date, audio_url, audio_script, audio_url_fr, audio_script_fr, audio_url_ar, audio_script_ar, audio_status, generated_at, item_count, sources_consulted, items_reviewed, pipeline_cost_usd, executive_summary"
     )
     .eq("brief_date", date)
     .single();
@@ -93,6 +93,8 @@ async function fetchBriefForDate(date: string): Promise<Brief | null> {
   brief.audio_script = data.audio_script ?? undefined;
   brief.audio_url_fr = data.audio_url_fr ?? undefined;
   brief.audio_script_fr = data.audio_script_fr ?? undefined;
+  brief.audio_url_ar = data.audio_url_ar ?? undefined;
+  brief.audio_script_ar = data.audio_script_ar ?? undefined;
 
   return brief;
 }

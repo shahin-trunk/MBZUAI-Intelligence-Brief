@@ -8,6 +8,8 @@ interface BriefHeaderProps {
   audioScript?: string;
   audioUrlFr?: string;
   audioScriptFr?: string;
+  audioUrlAr?: string;
+  audioScriptAr?: string;
   audioStatus?: string;
 }
 
@@ -31,6 +33,8 @@ export default function BriefHeader({
   audioScript,
   audioUrlFr,
   audioScriptFr,
+  audioUrlAr,
+  audioScriptAr,
   audioStatus,
 }: BriefHeaderProps) {
   return (
@@ -81,6 +85,8 @@ export default function BriefHeader({
           audioScript={audioScript}
           audioUrlFr={audioUrlFr}
           audioScriptFr={audioScriptFr}
+          audioUrlAr={audioUrlAr}
+          audioScriptAr={audioScriptAr}
         />
       )}
     </header>

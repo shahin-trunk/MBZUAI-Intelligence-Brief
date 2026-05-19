@@ -97,7 +97,8 @@ export default function AudioMiniPlayer({ player, onExpand }: AudioMiniPlayerPro
             Today&apos;s Brief
           </span>
           <span className="font-mono text-[11px] leading-tight text-text-muted">
-            {formattedTime} / {formattedDuration} · {language === "en" ? "EN" : "FR"}
+            {formattedTime} / {formattedDuration} ·{" "}
+            {language === "ar" ? "AR" : language === "fr" ? "FR" : "EN"}
           </span>
         </button>
 

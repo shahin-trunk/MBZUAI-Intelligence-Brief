@@ -3,6 +3,7 @@
 import { Loader2, Pause, Play } from "lucide-react";
 import type { AudioPlayerState, AudioPlayerActions } from "@/lib/presidential-brief/hooks/useAudioPlayer";
 import { formatBriefDateShort } from "@/lib/utils";
+import { LanguageSelector } from "@/components/common/LanguageSelector";
 
 interface BriefingPinnedPlayerProps {
   player: AudioPlayerState & AudioPlayerActions;
@@ -23,6 +24,11 @@ export default function BriefingPinnedPlayer({
     formattedDuration,
     togglePlayPause,
     isUnavailable,
+    language,
+    setLanguage,
+    hasEnglishAudio,
+    hasFrenchAudio,
+    hasArabicAudio,
   } = player;
 
   const title = `Daily brief for ${formatBriefDateShort(briefDate)}`;
@@ -34,7 +40,7 @@ export default function BriefingPinnedPlayer({
       role="region"
       aria-label="Briefing audio"
     >
-      <div className="flex items-center gap-3 px-4 pb-0.5 pt-3">
+      <div className="flex items-center gap-2 px-4 pb-0.5 pt-3 sm:gap-3">
         <button
           type="button"
           onClick={onOpenFullScreen}
@@ -48,6 +54,13 @@ export default function BriefingPinnedPlayer({
             {formattedTime} / {formattedDuration}
           </span>
         </button>
+
+        <LanguageSelector
+          language={language}
+          onLanguageChange={setLanguage}
+          availability={{ en: true, fr: hasFrenchAudio, ar: hasArabicAudio }}
+          size="sm"
+        />
 
         <button
           type="button"

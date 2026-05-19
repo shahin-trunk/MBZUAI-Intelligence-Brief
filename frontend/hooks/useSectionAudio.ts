@@ -30,7 +30,7 @@ const SPEED_CYCLE = [0.75, 1, 1.25];
 // ---------------------------------------------------------------------------
 // Global Audio Registry — tracks ALL Audio objects across the app (DOM + non-DOM)
 // ---------------------------------------------------------------------------
-const GLOBAL_AUDIO_REGISTRY = new Set<HTMLAudioElement>();
+export const GLOBAL_AUDIO_REGISTRY = new Set<HTMLAudioElement>();
 
 export function registerAudio(el: HTMLAudioElement) {
   GLOBAL_AUDIO_REGISTRY.add(el);
@@ -309,6 +309,12 @@ export function useSectionAudio(
     if (index < 0 || index >= sectionUrlsRef.current.length) return;
     // Kill ALL existing audio immediately to prevent overlaps
     killAllPageAudio();
+    // Reset timing state BEFORE the re-render so the newly mounting
+    // PhraseCard never sees stale currentTime/duration/isPlaying.
+    setCurrentTime(0);
+    setDuration(0);
+    setIsPlaying(false);
+    setIsLoading(true);
     pendingPlayRef.current = true;
     setCurrentSectionIndex(index);
     setEpoch((e) => e + 1); // Force effect re-run
@@ -322,6 +328,11 @@ export function useSectionAudio(
     if (target < sectionUrlsRef.current.length) {
       // Kill ALL existing audio immediately to prevent overlaps
       killAllPageAudio();
+      // Reset timing before re-render (see playSection for rationale)
+      setCurrentTime(0);
+      setDuration(0);
+      setIsPlaying(false);
+      setIsLoading(true);
       pendingPlayRef.current = true;
       setCurrentSectionIndex(target);
     }
@@ -340,6 +351,11 @@ export function useSectionAudio(
     if (target >= 0) {
       // Kill ALL existing audio immediately to prevent overlaps
       killAllPageAudio();
+      // Reset timing before re-render (see playSection for rationale)
+      setCurrentTime(0);
+      setDuration(0);
+      setIsPlaying(false);
+      setIsLoading(true);
       pendingPlayRef.current = true;
       setCurrentSectionIndex(target);
     }

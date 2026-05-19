@@ -14,6 +14,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { LanguageSelector, type AudioLanguage } from "@/components/common/LanguageSelector";
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
 
@@ -22,6 +23,8 @@ interface AudioPlayerProps {
   audioScript?: string;
   audioUrlFr?: string;
   audioScriptFr?: string;
+  audioUrlAr?: string;
+  audioScriptAr?: string;
 }
 
 /* ─── Constants ──────────────────────────────────────────────────────── */
@@ -76,13 +79,27 @@ function stripSsmlTags(text: string): string {
 
 /* ─── Component ──────────────────────────────────────────────────────── */
 
-export default function AudioPlayer({ audioUrl, audioScript, audioUrlFr, audioScriptFr }: AudioPlayerProps) {
+export default function AudioPlayer({
+  audioUrl,
+  audioScript,
+  audioUrlFr,
+  audioScriptFr,
+  audioUrlAr,
+  audioScriptAr,
+}: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const [lang, setLang] = useState<"en" | "fr">("en");
+  const [lang, setLang] = useState<AudioLanguage>("en");
   const hasFrench = !!audioUrlFr;
-  const activeUrl = lang === "fr" && audioUrlFr ? audioUrlFr : audioUrl;
-  const activeScript = lang === "fr" && audioScriptFr ? audioScriptFr : audioScript;
+  const hasArabic = !!audioUrlAr;
+  const activeUrl =
+    lang === "ar" ? (audioUrlAr ?? audioUrl) :
+    lang === "fr" ? (audioUrlFr ?? audioUrl) :
+    audioUrl;
+  const activeScript =
+    lang === "ar" ? (audioScriptAr ?? audioScript) :
+    lang === "fr" ? (audioScriptFr ?? audioScript) :
+    audioScript;
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -298,33 +315,15 @@ export default function AudioPlayer({ audioUrl, audioScript, audioUrlFr, audioSc
             {SPEED_OPTIONS[speedIndex]}x
           </button>
 
-          {/* Language toggle */}
-          {hasFrench && (
-            <div className="flex shrink-0 overflow-hidden rounded-[6px] border border-border-primary">
-              <button
-                onClick={() => setLang("en")}
-                className={`px-2.5 py-1 font-mono text-[12px] transition-colors ${
-                  lang === "en"
-                    ? "bg-sig-high text-[var(--surface-primary)] font-semibold"
-                    : "bg-transparent text-text-muted hover:text-text-secondary"
-                }`}
-                aria-label="Switch to English"
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLang("fr")}
-                className={`px-2.5 py-1 font-mono text-[12px] transition-colors ${
-                  lang === "fr"
-                    ? "bg-sig-high text-[var(--surface-primary)] font-semibold"
-                    : "bg-transparent text-text-muted hover:text-text-secondary"
-                }`}
-                aria-label="Switch to French"
-              >
-                FR
-              </button>
-            </div>
-          )}
+          {/* Language selector with flags */}
+          {hasArabic || hasFrench ? (
+            <LanguageSelector
+              language={lang}
+              onLanguageChange={setLang}
+              availability={{ en: true, fr: hasFrench, ar: hasArabic }}
+              size="sm"
+            />
+          ) : null}
 
           {/* Volume icon */}
           <Volume2 className="h-3.5 w-3.5 text-text-muted shrink-0 hidden sm:block" />

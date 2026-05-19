@@ -26,7 +26,7 @@ export async function GET(
     const { data, error } = await supabase
       .from("briefs")
       .select(
-        "raw_json, brief_date, audio_script, audio_script_fr, audio_url_fr"
+        "raw_json, brief_date, audio_script, audio_script_fr, audio_url_fr, audio_script_ar, audio_url_ar"
       )
       .eq("brief_date", briefDate)
       .maybeSingle();
@@ -46,6 +46,8 @@ export async function GET(
       audio_script: data.audio_script ?? null,
       audio_script_fr: data.audio_script_fr ?? null,
       audio_url_fr: data.audio_url_fr ?? null,
+      audio_script_ar: data.audio_script_ar ?? null,
+      audio_url_ar: data.audio_url_ar ?? null,
     });
   } catch (err) {
     return handleRouteError(err, "briefs/[date]/items GET");

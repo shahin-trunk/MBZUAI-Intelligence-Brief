@@ -40,8 +40,8 @@ export default class LanguageLearningErrorBoundary extends Component<Props, Stat
           <div className="flex min-h-[100dvh] items-center justify-center bg-bg-primary px-6">
             <div className="mx-auto max-w-md text-center">
               <div className="mb-4 flex justify-center">
-                <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-red-500">
+                <div className="w-16 h-16 rounded-full bg-accent-danger/10 flex items-center justify-center">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-accent-danger">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
                     <path d="M12 8V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                     <circle cx="12" cy="16" r="1" fill="currentColor" />
@@ -57,7 +57,7 @@ export default class LanguageLearningErrorBoundary extends Component<Props, Stat
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => this.setState({ hasError: false, error: null })}
-                  className="rounded-full bg-accent-primary px-6 py-2.5 font-ui text-sm font-medium text-white transition-colors hover:bg-accent-primary/90"
+                  className="rounded-full bg-accent-primary px-6 py-2.5 font-ui text-sm font-medium text-accent-foreground transition-colors hover:bg-accent-primary/90"
                 >
                   Try Again
                 </button>

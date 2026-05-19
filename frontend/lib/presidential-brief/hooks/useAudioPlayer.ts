@@ -15,6 +15,7 @@ export interface AudioPlayerState {
   language: Language;
   hasEnglishAudio: boolean;
   hasFrenchAudio: boolean;
+  hasArabicAudio: boolean;
   isLoading: boolean;
   isUnavailable: boolean;
   formattedTime: string;
@@ -43,6 +44,7 @@ const SPEED_CYCLE: Speed[] = [1, 1.25, 1.5, 2];
 export function useAudioPlayer(
   audioUrlEn: string | undefined,
   audioUrlFr: string | undefined,
+  audioUrlAr?: string | undefined,
   options?: { onItemEnded?: () => void }
 ): AudioPlayerState & AudioPlayerActions {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -60,9 +62,14 @@ export function useAudioPlayer(
 
   const hasEnglishAudio = Boolean(audioUrlEn);
   const hasFrenchAudio = Boolean(audioUrlFr);
+  const hasArabicAudio = Boolean(audioUrlAr);
 
-  // Derive current URL: item audio takes precedence over narrative audio
-  const narrativeUrl = language === "en" ? audioUrlEn : audioUrlFr;
+  // Derive current URL: item audio takes precedence over narrative audio.
+  // Fall back to English when the selected language's audio is unavailable.
+  const narrativeUrl =
+    language === "ar" ? (audioUrlAr ?? audioUrlEn) :
+    language === "fr" ? (audioUrlFr ?? audioUrlEn) :
+    audioUrlEn;
   const currentUrl = currentItemId && itemAudioUrls[currentItemId]
     ? itemAudioUrls[currentItemId]
     : narrativeUrl;
@@ -257,6 +264,7 @@ export function useAudioPlayer(
     language,
     hasEnglishAudio,
     hasFrenchAudio,
+    hasArabicAudio,
     isLoading,
     isUnavailable,
     formattedTime,
