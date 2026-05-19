@@ -94,6 +94,21 @@ class WorkflowRunSummary(BaseModel):
     event: str | None = None
     created_at: str | None = None
 
+class RegenerateLearningRequest(BaseModel):
+    brief_date: str = Field(..., description="Brief date in YYYY-MM-DD format")
+    phrase_count: int = Field(default=3, ge=2, le=8, description="Number of learning sentences (2-8)")
+    language: str = Field(default="fr,ar", description="Comma-separated language codes (fr, ar, or fr,ar)")
+
+class RegenerateLearningResponse(BaseModel):
+    ok: bool
+    dispatched: bool
+    workflow: str = "regenerate-learning.yml"
+    brief_date: str | None = None
+    phrase_count: int | None = None
+    error: str | None = None
+    status_code: int | None = None
+    response: dict | None = None
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -205,6 +220,16 @@ async def _run_exists_today(client: httpx.AsyncClient, ref: str) -> dict | None:
     return None
 
 
+def _learning_dispatch_url() -> str:
+    """Build URL to dispatch the regenerate-learning workflow."""
+    owner = _env("GITHUB_OWNER")
+    repo = _env("GITHUB_REPO")
+    return (
+        f"https://api.github.com/repos/{owner}/{repo}"
+        f"/actions/workflows/regenerate-learning.yml/dispatches"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -256,4 +281,72 @@ async def dispatch(token: str = Depends(get_api_key)):
             dispatched=True,
             ref=ref,
             prevent_duplicate_same_day=prevent_duplicates,
+        )
+
+
+@app.post("/regenerate-learning", response_model=RegenerateLearningResponse)
+async def regenerate_learning(
+    req: RegenerateLearningRequest,
+    token: str = Depends(get_api_key),
+):
+    """Trigger on-demand regeneration of language learning content for a brief date.
+
+    Dispatches the regenerate-learning.yml workflow with the specified
+    phrase_count and language parameters.
+    """
+    logger.info(
+        "regenerate_learning_request",
+        extra={
+            "brief_date": req.brief_date,
+            "phrase_count": req.phrase_count,
+            "language": req.language,
+        },
+    )
+
+    ref = os.getenv("GITHUB_REF", "main")
+
+    payload = {
+        "ref": ref,
+        "inputs": {
+            "brief_date": req.brief_date,
+            "phrase_count": str(req.phrase_count),
+            "language": req.language,
+        },
+    }
+
+    async with httpx.AsyncClient() as client:
+        status_code, response = await _request_json(
+            client,
+            _learning_dispatch_url(),
+            method="POST",
+            payload=payload,
+        )
+
+        if status_code not in (200, 201, 204):
+            logger.error(
+                "regenerate_learning_failed",
+                extra={"status_code": status_code, "response": response},
+            )
+            return RegenerateLearningResponse(
+                ok=False,
+                dispatched=False,
+                brief_date=req.brief_date,
+                phrase_count=req.phrase_count,
+                error="github_dispatch_failed",
+                status_code=status_code,
+                response=response,
+            )
+
+        logger.info(
+            "regenerate_learning_success",
+            extra={
+                "brief_date": req.brief_date,
+                "phrase_count": req.phrase_count,
+            },
+        )
+        return RegenerateLearningResponse(
+            ok=True,
+            dispatched=True,
+            brief_date=req.brief_date,
+            phrase_count=req.phrase_count,
         )

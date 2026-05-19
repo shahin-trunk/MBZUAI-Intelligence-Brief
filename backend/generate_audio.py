@@ -2424,6 +2424,7 @@ def _generate_learning_content_sync(
     languages: list[str],
     brief_json: dict,
     force: bool = False,
+    phrase_count: int = DEFAULT_PHRASE_COUNT,
 ) -> None:
     """Generate v3 learning content synchronously (non-Celery mode)."""
     voice_config = _get_voice_config()
@@ -2441,7 +2442,7 @@ def _generate_learning_content_sync(
         for item in pending_items:
             item_id = item.get("id", "?")
             try:
-                learning = _generate_learning_content_v3(item, lang)
+                learning = _generate_learning_content_v3(item, lang, phrase_count)
                 if not learning:
                     continue
 
@@ -2496,6 +2497,7 @@ def _submit_learning_tasks(
     languages: list[str],
     brief_json: dict,
     sb: Client,
+    phrase_count: int = DEFAULT_PHRASE_COUNT,
 ) -> None:
     """Submit Celery tasks for v3 learning content generation."""
     try:
@@ -2513,7 +2515,7 @@ def _submit_learning_tasks(
                     continue
 
                 task = generate_learning_content.apply_async(
-                    args=[target_date, item_id, lang, DEFAULT_PHRASE_COUNT],
+                    args=[target_date, item_id, lang, phrase_count],
                     queue="learning",
                 )
                 task_ids.append({
@@ -2540,10 +2542,10 @@ def _submit_learning_tasks(
         log.info("Submitted %d learning tasks for %s", len(task_ids), target_date)
     except ImportError:
         log.warning("Celery not available — falling back to sync generation")
-        _generate_learning_content_sync(sb, target_date, active_items, languages, brief_json)
+        _generate_learning_content_sync(sb, target_date, active_items, languages, brief_json, phrase_count=phrase_count)
     except Exception as exc:
         log.warning("Celery task submission failed: %s — falling back to sync", exc)
-        _generate_learning_content_sync(sb, target_date, active_items, languages, brief_json)
+        _generate_learning_content_sync(sb, target_date, active_items, languages, brief_json, phrase_count=phrase_count)
 
 
 def _now_iso() -> str:
@@ -2645,6 +2647,8 @@ def generate_audio_brief(
     from_db: bool = False,
     force: bool = False,
     async_mode: bool = False,
+    learning_only: bool = False,
+    phrase_count: int | None = None,
 ) -> bool:
     """Full pipeline: read brief -> generate transcript script -> generate per-item audio -> upload -> update DB.
 
@@ -2691,6 +2695,43 @@ def generate_audio_brief(
         except (json.JSONDecodeError, OSError) as exc:
             log.error("Failed to read %s: %s", brief_path, exc)
             return False
+
+    # Resolve phrase_count from CLI arg or default
+    resolved_phrase_count = phrase_count if phrase_count is not None else DEFAULT_PHRASE_COUNT
+
+    # learning-only mode: skip audio script + item audio, just regenerate learning content
+    if learning_only:
+        log.info("Learning-only mode — regenerating language learning content for %s", target_date)
+        items = brief_json.get("items", [])
+        active_items = [item for item in items if not item.get("is_placeholder") and item.get("id")]
+        if not active_items:
+            log.warning("No active items found for %s", target_date)
+            return False
+
+        if _learning_content_enabled():
+            _update_audio_status(sb, target_date, "generating_learning_content")
+            LEARNING_LANGS = []
+            if _french_audio_enabled():
+                LEARNING_LANGS.append("fr")
+            if _arabic_audio_enabled() and _get_voice_config().get("ar", {}).get("voice_id"):
+                LEARNING_LANGS.append("ar")
+
+            if LEARNING_LANGS:
+                if async_mode:
+                    _submit_learning_tasks(target_date, active_items, LEARNING_LANGS, brief_json, sb, resolved_phrase_count)
+                else:
+                    _generate_learning_content_sync(sb, target_date, active_items, LEARNING_LANGS, brief_json, force=True, phrase_count=resolved_phrase_count)
+
+        # Save updated raw_json with learning content to DB
+        try:
+            sb.table("briefs").update({"raw_json": brief_json}).eq("brief_date", target_date).execute()
+            log.info("Updated raw_json with regenerated learning content for %s", target_date)
+        except Exception as exc:
+            log.warning("Failed to update raw_json with learning content: %s", exc)
+
+        _update_audio_status(sb, target_date, "ready")
+        _revalidate_frontend(target_date)
+        return True
 
     # 2. Generate Claude narrative script for the transcript display
     _update_audio_status(sb, target_date, "generating_script")
@@ -2826,13 +2867,13 @@ def generate_audio_brief(
                     "Submitting v3 learning content tasks for %s (languages: %s)",
                     target_date, ", ".join(LEARNING_LANGS),
                 )
-                _submit_learning_tasks(target_date, active_items, LEARNING_LANGS, brief_json, sb)
+                _submit_learning_tasks(target_date, active_items, LEARNING_LANGS, brief_json, sb, resolved_phrase_count)
             else:
                 log.info(
                     "Generating v3 language learning content for %s (languages: %s)",
                     target_date, ", ".join(LEARNING_LANGS),
                 )
-                _generate_learning_content_sync(sb, target_date, active_items, LEARNING_LANGS, brief_json, force)
+                _generate_learning_content_sync(sb, target_date, active_items, LEARNING_LANGS, brief_json, force, resolved_phrase_count)
 
     # Save updated raw_json with per-item audio URLs to DB
     if en_item_audio_count > 0:
@@ -2902,6 +2943,17 @@ def main() -> None:
         dest="async_mode",
         action="store_true",
         help="Submit generation tasks to Celery workers instead of running synchronously.",
+    )
+    parser.add_argument(
+        "--phrase-count",
+        type=int,
+        default=None,
+        help="Number of learning sentences to generate (default: 3).",
+    )
+    parser.add_argument(
+        "--learning-only",
+        action="store_true",
+        help="Only regenerate language learning content, skip audio script generation.",
     )
     args = parser.parse_args()
 
@@ -2985,6 +3037,8 @@ def main() -> None:
             from_db=args.from_db,
             force=args.force,
             async_mode=args.async_mode,
+            learning_only=args.learning_only,
+            phrase_count=args.phrase_count,
         )
         if not ok:
             sys.exit(1)

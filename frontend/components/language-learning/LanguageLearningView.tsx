@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { Pause, Play, Loader2, Sparkles, SkipBack, SkipForward, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pause, Play, Loader2, Sparkles, SkipBack, SkipForward, ChevronLeft, ChevronRight, RotateCw } from "lucide-react";
 import type { BriefItem, LearningPhrase } from "@/lib/types/brief";
 import { useSectionAudio } from "@/hooks/useSectionAudio";
 import { useLearningAnalytics } from "@/hooks/useLearningAnalytics";
@@ -45,6 +45,15 @@ export default function LanguageLearningView({
   const [lessonStartTime] = useState(Date.now());
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionMessage, setTransitionMessage] = useState<string | null>(null);
+  const [selectedSentenceCount, setSelectedSentenceCount] = useState<number>(() => {
+    if (typeof window === "undefined") return 3;
+    try {
+      const saved = localStorage.getItem("ll-sentence-count");
+      return saved ? parseInt(saved, 10) : 3;
+    } catch { return 3; }
+  });
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regenerateMessage, setRegenerateMessage] = useState<string | null>(null);
 
   const hasFr = Boolean(item.learning_fr);
   const hasAr = Boolean(item.learning_ar);
@@ -374,6 +383,40 @@ export default function LanguageLearningView({
   );
 
   /* ------------------------------------------------------------------ */
+  /*  Sentence count / regeneration                                      */
+  /* ------------------------------------------------------------------ */
+  const handleSentenceCountChange = useCallback((count: number) => {
+    setSelectedSentenceCount(count);
+    try { localStorage.setItem("ll-sentence-count", String(count)); } catch { /* ignore */ }
+  }, []);
+
+  const handleRegenerate = useCallback(async () => {
+    setIsRegenerating(true);
+    setRegenerateMessage(null);
+    try {
+      const res = await fetch("/api/learning/regenerate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brief_date: briefDate,
+          phrase_count: selectedSentenceCount,
+          language,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok && data.dispatched) {
+        setRegenerateMessage("Regeneration started. Refresh in 2-3 minutes to see new content.");
+      } else {
+        setRegenerateMessage("Regeneration request queued. Refresh shortly to see new content.");
+      }
+    } catch {
+      setRegenerateMessage("Could not reach regeneration service. Try again later.");
+    } finally {
+      setIsRegenerating(false);
+    }
+  }, [selectedSentenceCount, language, briefDate]);
+
+  /* ------------------------------------------------------------------ */
   /*  Derived                                                            */
   /* ------------------------------------------------------------------ */
   const backHref = `/brief/${briefDate}?slideIndex=${slideIndex}`;
@@ -478,6 +521,56 @@ export default function LanguageLearningView({
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/5 border border-amber-500/15">
               <span className="text-[10px] text-amber-400/70 font-ui">Audio is being generated. Text available.</span>
             </div>
+          </div>
+        )}
+
+        {/* Sentence count selector — visible when content exists but lesson hasn't started */}
+        {!isLessonComplete && phrases.length > 0 && !hasStartedRef.current && (
+          <div className="px-5 py-3">
+            <div className="flex flex-wrap items-center justify-center gap-3 rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-3">
+              <span className="font-ui text-[10px] uppercase tracking-wider text-gray-500">
+                Sentences
+              </span>
+              <div className="flex items-center gap-1">
+                {[2, 3, 4, 5, 6].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => handleSentenceCountChange(n)}
+                    className={`flex h-7 w-7 items-center justify-center rounded-full font-ui text-[11px] font-medium transition-all ${
+                      selectedSentenceCount === n
+                        ? "bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/30"
+                        : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+              {selectedSentenceCount !== phrases.length && (
+                <>
+                  <div className="hidden sm:block h-4 w-px bg-white/10" />
+                  <button
+                    type="button"
+                    onClick={handleRegenerate}
+                    disabled={isRegenerating}
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 font-ui text-[10px] font-medium text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-all disabled:opacity-50"
+                  >
+                    {isRegenerating ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <RotateCw className="h-3 w-3" strokeWidth={1.5} />
+                    )}
+                    {isRegenerating ? "Regenerating..." : `Regenerate (${selectedSentenceCount})`}
+                  </button>
+                </>
+              )}
+            </div>
+            {regenerateMessage && (
+              <div className="mt-2 text-center">
+                <span className="font-ui text-[10px] text-indigo-400/70">{regenerateMessage}</span>
+              </div>
+            )}
           </div>
         )}
 

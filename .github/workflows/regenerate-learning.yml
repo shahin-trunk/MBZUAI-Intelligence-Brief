@@ -1,0 +1,77 @@
+name: Regenerate Language Learning Content
+
+on:
+  workflow_dispatch:
+    inputs:
+      brief_date:
+        description: "Brief date (YYYY-MM-DD)"
+        required: true
+        type: string
+      phrase_count:
+        description: "Number of learning sentences per item"
+        required: false
+        type: number
+        default: 3
+      language:
+        description: "Target language (fr, ar, or both)"
+        required: false
+        type: string
+        default: "fr,ar"
+
+concurrency:
+  group: regenerate-learning-${{ inputs.brief_date }}
+  cancel-in-progress: false
+
+jobs:
+  regenerate-learning:
+    if: ${{ vars.ENABLE_LEARNING_CONTENT != 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write .env
+        run: |
+          cat <<EOF > .env
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          VOICE_API_KEY=${{ secrets.VOICE_API_KEY }}
+          REVALIDATION_SECRET=${{ secrets.REVALIDATION_SECRET }}
+          SITE_URL=${{ secrets.SITE_URL }}
+          NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          VOICE_BASE_URL=${{ vars.VOICE_BASE_URL || 'https://txt2sph.audarai.com' }}
+          ENABLE_FRENCH_AUDIO=true
+          ENABLE_ARABIC_AUDIO=true
+          ENGLISH_VOICE_ID=${{ secrets.ENGLISH_VOICE_ID || 'Isabella' }}
+          FRENCH_VOICE_ID=${{ secrets.FRENCH_VOICE_ID || '84fe56fcc955' }}
+          ARABIC_VOICE_ID=${{ secrets.ARABIC_VOICE_ID || 'Tariq' }}
+          ENABLE_LEARNING_CONTENT=true
+          EOF
+
+      - name: Write frontend/.env.local
+        run: |
+          mkdir -p frontend
+          cat <<EOF > frontend/.env.local
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          EOF
+
+      - name: Regenerate learning content
+        run: |
+          cd backend && python generate_audio.py \
+            --date "${{ inputs.brief_date }}" \
+            --from-db \
+            --learning-only \
+            --phrase-count "${{ inputs.phrase_count }}"
